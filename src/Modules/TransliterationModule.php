@@ -24,9 +24,27 @@ final class TransliterationModule implements ModuleInterface
 
     public function register(): void
     {
+        add_filter('sanitize_title', [$this, 'filter_sanitize_title'], 9, 3);
         add_filter('wp_unique_post_slug', [$this, 'filter_post_slug'], 10, 6);
         add_filter('pre_term_slug', [$this, 'filter_term_slug']);
         add_filter('sanitize_file_name', [$this, 'filter_file_name'], 10, 2);
+    }
+
+    public function filter_sanitize_title(string $title, string $raw_title, string $context): string
+    {
+        if ($context !== 'save') {
+            return $title;
+        }
+
+        if (! $this->has_non_latin_characters($raw_title)) {
+            return $title;
+        }
+
+        if ($title !== '' && ! $this->has_non_latin_characters($title)) {
+            return $title;
+        }
+
+        return $this->normalize_slug($raw_title);
     }
 
     public function filter_post_slug(string $slug, int $post_id, string $post_status, string $post_type, int $post_parent, string $original_slug): string
@@ -69,6 +87,10 @@ final class TransliterationModule implements ModuleInterface
         $extension = isset($parts['extension']) ? (string) $parts['extension'] : '';
 
         $name = $this->normalize_slug($name);
+
+        if ($name === '') {
+            return $filename;
+        }
 
         if ($extension === '') {
             return $name;

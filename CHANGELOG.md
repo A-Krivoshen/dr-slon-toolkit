@@ -6,3 +6,5 @@
 - Added native settings page with module toggles and cleanup sub-settings.
 - Implemented Transliteration, Disable Comments, and Cleanup modules.
 - Added The SEO Framework compatibility detector notice.
+- Hardened nested settings merge behavior and transliteration slug edge-case handling.
+- Reduced Disable Comments and Cleanup side effects for safer defaults.

@@ -37,3 +37,4 @@ This release includes:
 * First production bootstrap milestone.
 * Added Transliteration, Disable Comments, and Cleanup modules.
 * Added modular settings architecture and TSF detection notice.
+* Hardened nested settings merge, slug transliteration edge cases, and conservative cleanup behavior.

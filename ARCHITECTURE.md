@@ -19,7 +19,7 @@
 - `DrSlon\Toolkit\Core\Plugin`
   - Boots admin wiring and registers enabled modules.
 - `DrSlon\Toolkit\Core\Settings`
-  - Provides defaults and option access (`dstk_settings`).
+  - Provides defaults, nested-safe settings merge, and option access (`dstk_settings`).
 - `DrSlon\Toolkit\Core\Activator`
   - Ensures baseline options/version on activation.
 

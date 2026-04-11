@@ -28,6 +28,7 @@ This first real bootstrap milestone includes:
 - Converts non-Latin post slugs when needed.
 - Converts non-Latin term slugs when needed.
 - Converts uploaded filenames to safe Latin slugs.
+- Hooks into slug sanitization on save to better handle Cyrillic post-title edge cases.
 
 ### Disable Comments
 - Closes comments and pingbacks globally.
@@ -40,7 +41,7 @@ This first real bootstrap milestone includes:
   - disable emojis
   - disable wp-embed script
   - disable XML-RPC
-  - remove selected `<head>` tags safely
+  - remove selected low-risk `<head>` tags safely
 
 ## Development
 

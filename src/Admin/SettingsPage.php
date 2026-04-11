@@ -76,28 +76,11 @@ final class SettingsPage
      */
     public function sanitize_settings($input): array
     {
-        $defaults = Settings::defaults();
-
         if (! is_array($input)) {
-            return $defaults;
+            return Settings::defaults();
         }
 
-        $modules_input = isset($input['modules']) && is_array($input['modules']) ? $input['modules'] : [];
-        $cleanup_input = isset($input['cleanup']) && is_array($input['cleanup']) ? $input['cleanup'] : [];
-
-        return [
-            'modules' => [
-                'transliteration'  => ! empty($modules_input['transliteration']),
-                'disable_comments' => ! empty($modules_input['disable_comments']),
-                'cleanup'          => ! empty($modules_input['cleanup']),
-            ],
-            'cleanup' => [
-                'disable_emojis'   => ! empty($cleanup_input['disable_emojis']),
-                'disable_wp_embed' => ! empty($cleanup_input['disable_wp_embed']),
-                'disable_xmlrpc'   => ! empty($cleanup_input['disable_xmlrpc']),
-                'clean_head'       => ! empty($cleanup_input['clean_head']),
-            ],
-        ];
+        return Settings::merge_with_defaults($input);
     }
 
     public function render_module_fields(): void
