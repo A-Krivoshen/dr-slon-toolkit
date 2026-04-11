@@ -72,3 +72,10 @@ Build a production-oriented modular plugin with these planned modules:
 ## When unsure
 - Choose the simpler implementation.
 - Leave a clear TODO in `TODO.md` instead of inventing unfinished behavior.
+
+## Release build rules
+- Composer is a developer/build-time dependency, not a runtime requirement for the client.
+- End users must install a ready-to-use ZIP release of the plugin.
+- Release ZIPs must include `vendor/` and all required runtime files.
+- Do not commit `vendor/` just to make GitHub source installs work.
+- Keep repository sources clean; package a complete installable artifact for releases.
