@@ -68,6 +68,10 @@ final class HideLoginModule implements ModuleInterface
             return;
         }
 
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST') {
+            return;
+        }
+
         $this->redirect_to_custom_login();
     }
 
@@ -76,7 +80,7 @@ final class HideLoginModule implements ModuleInterface
         $custom_url = $this->custom_login_url();
 
         if ($redirect !== '') {
-            $custom_url = add_query_arg('redirect_to', rawurlencode($redirect), $custom_url);
+            $custom_url = add_query_arg('redirect_to', esc_url_raw($redirect), $custom_url);
         }
 
         if ($force_reauth) {
@@ -91,7 +95,7 @@ final class HideLoginModule implements ModuleInterface
         $url = add_query_arg('action', 'lostpassword', $this->custom_login_url());
 
         if ($redirect !== '') {
-            $url = add_query_arg('redirect_to', rawurlencode($redirect), $url);
+            $url = add_query_arg('redirect_to', esc_url_raw($redirect), $url);
         }
 
         return $url;
