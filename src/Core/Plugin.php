@@ -8,6 +8,7 @@ use DrSlon\Toolkit\Admin\SettingsPage;
 use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
 use DrSlon\Toolkit\Modules\CleanupModule;
 use DrSlon\Toolkit\Modules\DisableCommentsModule;
+use DrSlon\Toolkit\Modules\HideLoginModule;
 use DrSlon\Toolkit\Modules\TransliterationModule;
 
 final class Plugin
@@ -36,6 +37,7 @@ final class Plugin
             'transliteration'  => new TransliterationModule(),
             'disable_comments' => new DisableCommentsModule(),
             'cleanup'          => new CleanupModule(),
+            'hide_login'       => new HideLoginModule(),
         ];
 
         foreach ($modules as $slug => $module) {

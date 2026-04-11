@@ -68,6 +68,21 @@ final class SettingsPage
             'dr-slon-toolkit',
             'dstk_cleanup_section'
         );
+
+        add_settings_section(
+            'dstk_hide_login_section',
+            __('Параметры скрытого входа', 'dr-slon-toolkit'),
+            [$this, 'render_hide_login_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_hide_login_slug',
+            __('Slug страницы входа', 'dr-slon-toolkit'),
+            [$this, 'render_hide_login_slug_field'],
+            'dr-slon-toolkit',
+            'dstk_hide_login_section'
+        );
     }
 
     /**
@@ -102,6 +117,11 @@ final class SettingsPage
             <label>
                 <input type="checkbox" name="dstk_settings[modules][cleanup]" value="1" <?php checked(! empty($modules['cleanup'])); ?>>
                 <?php echo esc_html__('Очистка', 'dr-slon-toolkit'); ?>
+            </label>
+            <br>
+            <label>
+                <input type="checkbox" name="dstk_settings[modules][hide_login]" value="1" <?php checked(! empty($modules['hide_login'])); ?>>
+                <?php echo esc_html__('Скрытый вход', 'dr-slon-toolkit'); ?>
             </label>
         </fieldset>
         <?php
@@ -139,6 +159,40 @@ final class SettingsPage
                 <input type="checkbox" name="dstk_settings[cleanup][clean_head]" value="1" <?php checked(! empty($cleanup['clean_head'])); ?>>
                 <?php echo esc_html__('Удалять выбранные теги в блоке head', 'dr-slon-toolkit'); ?>
             </label>
+        </fieldset>
+        <?php
+    }
+
+    public function render_hide_login_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('Модуль «Скрытый вход» скрывает прямой доступ к wp-login.php для неавторизованных пользователей.', 'dr-slon-toolkit');
+        echo '<br>';
+        echo esc_html__('Аварийное отключение: добавьте в wp-config.php константу KRV_DSTK_DISABLE_HIDE_LOGIN = true.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_hide_login_slug_field(): void
+    {
+        $settings = Settings::all();
+        $hide_login = isset($settings['hide_login']) && is_array($settings['hide_login']) ? $settings['hide_login'] : [];
+        $slug = isset($hide_login['slug']) ? (string) $hide_login['slug'] : 'login';
+        ?>
+        <fieldset>
+            <label for="dstk-hide-login-slug" class="screen-reader-text">
+                <?php echo esc_html__('Slug страницы входа', 'dr-slon-toolkit'); ?>
+            </label>
+            <input
+                id="dstk-hide-login-slug"
+                type="text"
+                name="dstk_settings[hide_login][slug]"
+                value="<?php echo esc_attr($slug); ?>"
+                class="regular-text"
+                placeholder="my-login"
+            >
+            <p class="description">
+                <?php echo esc_html__('Пример: my-login. Итоговый адрес входа: /my-login/.', 'dr-slon-toolkit'); ?>
+            </p>
         </fieldset>
         <?php
     }
