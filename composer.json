@@ -8,8 +8,11 @@
   },
   "autoload": {
     "psr-4": {
-      "DrSlon\\\\Toolkit\\\\": "src/"
+      "DrSlon\\Toolkit\\": "src/"
     }
+  },
+  "scripts": {
+    "build-release": "bash tools/build-release.sh"
   },
   "config": {
     "sort-packages": true
