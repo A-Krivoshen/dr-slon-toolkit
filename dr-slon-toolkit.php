@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Dr.Slon Toolkit
  * Plugin URI: https://github.com/A-Krivoshen/dr-slon-toolkit
- * Description: Modular WordPress toolkit for client websites.
+ * Description: Модульный плагин WordPress для задач клиентских сайтов.
  * Version: 0.2.0
  * Author: Dr.Slon
  * Author URI: https://krivoshein.site
@@ -35,7 +35,7 @@ if (! is_readable($dstk_autoloader)) {
             }
 
             echo '<div class="notice notice-error"><p>';
-            echo esc_html__('Dr.Slon Toolkit не удалось запустить, потому что не найден автозагрузчик Composer. Выполните "composer install" в директории плагина.', 'dr-slon-toolkit');
+            echo esc_html__('Не удалось запустить Dr.Slon Toolkit: не найден автозагрузчик Composer. Выполните "composer install" в папке плагина.', 'dr-slon-toolkit');
             echo '</p></div>';
         }
     );
