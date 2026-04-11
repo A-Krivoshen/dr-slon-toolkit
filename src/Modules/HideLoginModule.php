@@ -18,7 +18,7 @@ final class HideLoginModule implements ModuleInterface
 
         $this->slug = isset($hide_login['slug']) ? sanitize_title_with_dashes((string) $hide_login['slug']) : 'login';
 
-        if ($this->slug === '') {
+        if ($this->slug === '' || in_array($this->slug, ['wp-admin', 'wp-login', 'wp-loginphp'], true)) {
             $this->slug = 'login';
         }
     }

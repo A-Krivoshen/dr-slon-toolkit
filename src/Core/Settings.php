@@ -71,7 +71,13 @@ final class Settings
             $slug = sanitize_title_with_dashes((string) $hide_login['slug']);
         }
 
-        if ($slug === '' || $slug === 'wp-login.php' || $slug === 'wp-admin') {
+        $reserved_slugs = [
+            'wp-admin',
+            'wp-login',
+            'wp-loginphp',
+        ];
+
+        if ($slug === '' || in_array($slug, $reserved_slugs, true)) {
             $slug = $defaults['hide_login']['slug'];
         }
 

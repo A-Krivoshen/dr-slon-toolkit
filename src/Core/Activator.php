@@ -19,5 +19,6 @@ final class Activator
         }
 
         update_option('dstk_version', DSTK_VERSION);
+        flush_rewrite_rules();
     }
 }

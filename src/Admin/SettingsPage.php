@@ -8,10 +8,18 @@ use DrSlon\Toolkit\Core\Settings;
 
 final class SettingsPage
 {
+    private InfoPanel $info_panel;
+
+    public function __construct()
+    {
+        $this->info_panel = new InfoPanel();
+    }
+
     public function register(): void
     {
         add_action('admin_menu', [$this, 'register_menu']);
         add_action('admin_init', [$this, 'register_settings']);
+        $this->info_panel->register_assets();
     }
 
     public function register_menu(): void
@@ -95,7 +103,20 @@ final class SettingsPage
             return Settings::defaults();
         }
 
-        return Settings::merge_with_defaults($input);
+        $previous = Settings::all();
+        $sanitized = Settings::merge_with_defaults($input);
+
+        $hide_login_changed = (
+            ! empty($previous['modules']['hide_login']) !== ! empty($sanitized['modules']['hide_login'])
+        ) || (
+            (string) ($previous['hide_login']['slug'] ?? '') !== (string) ($sanitized['hide_login']['slug'] ?? '')
+        );
+
+        if ($hide_login_changed) {
+            flush_rewrite_rules();
+        }
+
+        return $sanitized;
     }
 
     public function render_module_fields(): void
@@ -168,6 +189,8 @@ final class SettingsPage
         echo '<p>';
         echo esc_html__('Модуль «Скрытый вход» скрывает прямой доступ к wp-login.php для неавторизованных пользователей.', 'dr-slon-toolkit');
         echo '<br>';
+        echo esc_html__('После изменения slug нажмите «Сохранить изменения»: правила маршрутизации обновятся автоматически.', 'dr-slon-toolkit');
+        echo '<br>';
         echo esc_html__('Аварийное отключение: добавьте в wp-config.php константу KRV_DSTK_DISABLE_HIDE_LOGIN = true.', 'dr-slon-toolkit');
         echo '</p>';
     }
@@ -214,6 +237,8 @@ final class SettingsPage
                 submit_button(__('Сохранить изменения', 'dr-slon-toolkit'));
                 ?>
             </form>
+
+            <?php $this->info_panel->render(); ?>
         </div>
         <?php
     }
