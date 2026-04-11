@@ -1,10 +1,10 @@
 # Changelog
 
 ## 0.2.0
-- Added real bootstrap architecture with Composer PSR-4 loading.
-- Added central plugin runtime, activation handler, and uninstall cleanup.
-- Added native settings page with module toggles and cleanup sub-settings.
-- Implemented Transliteration, Disable Comments, and Cleanup modules.
-- Added The SEO Framework compatibility detector notice.
-- Hardened nested settings merge behavior and transliteration slug edge-case handling.
-- Reduced Disable Comments and Cleanup side effects for safer defaults.
+- Добавлена рабочая bootstrap-архитектура с Composer PSR-4 загрузкой.
+- Добавлены центральный runtime плагина, обработчик активации и очистка при uninstall.
+- Добавлена нативная страница настроек с переключателями модулей и поднастройками cleanup.
+- Реализованы модули Транслитерации, Отключения комментариев и Очистки.
+- Добавлен детектор совместимости с The SEO Framework.
+- Усилено поведение merge вложенных настроек и edge-case обработка slug при транслитерации.
+- Снижены побочные эффекты в Disable Comments и Cleanup для более безопасного поведения.

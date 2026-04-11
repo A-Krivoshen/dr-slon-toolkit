@@ -41,14 +41,14 @@ final class SettingsPage
 
         add_settings_section(
             'dstk_modules_section',
-            __('Module toggles', 'dr-slon-toolkit'),
+            __('Переключатели модулей', 'dr-slon-toolkit'),
             '__return_false',
             'dr-slon-toolkit'
         );
 
         add_settings_field(
             'dstk_modules',
-            __('Enable modules', 'dr-slon-toolkit'),
+            __('Включение модулей', 'dr-slon-toolkit'),
             [$this, 'render_module_fields'],
             'dr-slon-toolkit',
             'dstk_modules_section'
@@ -56,14 +56,14 @@ final class SettingsPage
 
         add_settings_section(
             'dstk_cleanup_section',
-            __('Cleanup options', 'dr-slon-toolkit'),
+            __('Параметры очистки', 'dr-slon-toolkit'),
             [$this, 'render_cleanup_section_description'],
             'dr-slon-toolkit'
         );
 
         add_settings_field(
             'dstk_cleanup',
-            __('Cleanup behavior', 'dr-slon-toolkit'),
+            __('Поведение очистки', 'dr-slon-toolkit'),
             [$this, 'render_cleanup_fields'],
             'dr-slon-toolkit',
             'dstk_cleanup_section'
@@ -91,17 +91,17 @@ final class SettingsPage
         <fieldset>
             <label>
                 <input type="checkbox" name="dstk_settings[modules][transliteration]" value="1" <?php checked(! empty($modules['transliteration'])); ?>>
-                <?php echo esc_html__('Transliteration', 'dr-slon-toolkit'); ?>
+                <?php echo esc_html__('Транслитерация', 'dr-slon-toolkit'); ?>
             </label>
             <br>
             <label>
                 <input type="checkbox" name="dstk_settings[modules][disable_comments]" value="1" <?php checked(! empty($modules['disable_comments'])); ?>>
-                <?php echo esc_html__('Disable Comments', 'dr-slon-toolkit'); ?>
+                <?php echo esc_html__('Отключение комментариев', 'dr-slon-toolkit'); ?>
             </label>
             <br>
             <label>
                 <input type="checkbox" name="dstk_settings[modules][cleanup]" value="1" <?php checked(! empty($modules['cleanup'])); ?>>
-                <?php echo esc_html__('Cleanup', 'dr-slon-toolkit'); ?>
+                <?php echo esc_html__('Очистка', 'dr-slon-toolkit'); ?>
             </label>
         </fieldset>
         <?php
@@ -110,7 +110,7 @@ final class SettingsPage
     public function render_cleanup_section_description(): void
     {
         echo '<p>';
-        echo esc_html__('These toggles apply only when the Cleanup module is enabled.', 'dr-slon-toolkit');
+        echo esc_html__('Эти переключатели применяются только если включён модуль «Очистка».', 'dr-slon-toolkit');
         echo '</p>';
     }
 
@@ -122,22 +122,22 @@ final class SettingsPage
         <fieldset>
             <label>
                 <input type="checkbox" name="dstk_settings[cleanup][disable_emojis]" value="1" <?php checked(! empty($cleanup['disable_emojis'])); ?>>
-                <?php echo esc_html__('Disable emoji scripts and styles', 'dr-slon-toolkit'); ?>
+                <?php echo esc_html__('Отключить emoji-скрипты и стили', 'dr-slon-toolkit'); ?>
             </label>
             <br>
             <label>
                 <input type="checkbox" name="dstk_settings[cleanup][disable_wp_embed]" value="1" <?php checked(! empty($cleanup['disable_wp_embed'])); ?>>
-                <?php echo esc_html__('Disable wp-embed frontend script', 'dr-slon-toolkit'); ?>
+                <?php echo esc_html__('Отключить фронтенд-скрипт wp-embed', 'dr-slon-toolkit'); ?>
             </label>
             <br>
             <label>
                 <input type="checkbox" name="dstk_settings[cleanup][disable_xmlrpc]" value="1" <?php checked(! empty($cleanup['disable_xmlrpc'])); ?>>
-                <?php echo esc_html__('Disable XML-RPC', 'dr-slon-toolkit'); ?>
+                <?php echo esc_html__('Отключить XML-RPC', 'dr-slon-toolkit'); ?>
             </label>
             <br>
             <label>
                 <input type="checkbox" name="dstk_settings[cleanup][clean_head]" value="1" <?php checked(! empty($cleanup['clean_head'])); ?>>
-                <?php echo esc_html__('Remove selected head tags', 'dr-slon-toolkit'); ?>
+                <?php echo esc_html__('Удалять выбранные head-теги', 'dr-slon-toolkit'); ?>
             </label>
         </fieldset>
         <?php
@@ -151,13 +151,13 @@ final class SettingsPage
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('Dr.Slon Toolkit', 'dr-slon-toolkit'); ?></h1>
-            <p><?php echo esc_html__('Modular toolkit for practical client website tasks.', 'dr-slon-toolkit'); ?></p>
+            <p><?php echo esc_html__('Модульный набор инструментов для практических задач клиентских сайтов.', 'dr-slon-toolkit'); ?></p>
 
             <form method="post" action="options.php">
                 <?php
                 settings_fields('dstk_settings_group');
                 do_settings_sections('dr-slon-toolkit');
-                submit_button(__('Save Changes', 'dr-slon-toolkit'));
+                submit_button(__('Сохранить изменения', 'dr-slon-toolkit'));
                 ?>
             </form>
         </div>

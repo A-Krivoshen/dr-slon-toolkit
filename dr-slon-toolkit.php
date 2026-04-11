@@ -35,7 +35,7 @@ if (! is_readable($dstk_autoloader)) {
             }
 
             echo '<div class="notice notice-error"><p>';
-            echo esc_html__('Dr.Slon Toolkit could not start because the Composer autoloader was not found. Run "composer install" in the plugin directory.', 'dr-slon-toolkit');
+            echo esc_html__('Dr.Slon Toolkit не удалось запустить, потому что не найден автозагрузчик Composer. Выполните "composer install" в директории плагина.', 'dr-slon-toolkit');
             echo '</p></div>';
         }
     );

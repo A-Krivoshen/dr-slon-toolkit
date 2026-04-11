@@ -1,6 +1,6 @@
 # TODO
 
-## Next modules
+## Следующие модули
 
 - Hide Login
 - Redirect Manager
@@ -10,8 +10,8 @@
 - Sitemap
 - Update Controls
 
-## Engineering follow-ups
+## Инженерные задачи
 
-- Add integration tests for module behavior using WordPress test suite.
-- Add per-module service classes for larger features as they are introduced.
-- Add explicit compatibility mode rules for The SEO Framework in future SEO-adjacent modules.
+- Добавить интеграционные тесты поведения модулей на WordPress test suite.
+- Для будущих крупных функций выделять сервисные классы внутри модулей.
+- Для SEO-смежных модулей добавить явные правила режима совместимости с The SEO Framework.

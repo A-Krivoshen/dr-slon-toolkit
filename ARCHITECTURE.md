@@ -1,42 +1,42 @@
-# Architecture
+# Архитектура
 
-## Directory layout
+## Структура директорий
 
 - `dr-slon-toolkit.php`
-  - Minimal bootstrap entrypoint.
-  - Loads Composer autoloader, translations, activation hook, and plugin runtime.
+  - Минимальный bootstrap-вход плагина.
+  - Загружает Composer autoloader, переводы, хук активации и runtime плагина.
 - `src/Core`
-  - Runtime and lifecycle classes (`Plugin`, `Activator`, `Settings`, `ModuleInterface`).
+  - Классы runtime и жизненного цикла (`Plugin`, `Activator`, `Settings`, `ModuleInterface`).
 - `src/Admin`
-  - Native wp-admin screen and Settings API wiring.
+  - Нативная страница wp-admin и регистрация настроек через Settings API.
 - `src/Modules`
-  - Feature modules with clear responsibilities.
+  - Функциональные модули с чёткой зоной ответственности.
 - `src/Integrations`
-  - Third-party compatibility helpers (currently The SEO Framework detector).
+  - Хелперы совместимости со сторонними системами (сейчас — детектор The SEO Framework).
 
-## Core classes
+## Основные классы
 
 - `DrSlon\Toolkit\Core\Plugin`
-  - Boots admin wiring and registers enabled modules.
+  - Запускает admin-часть и регистрирует включённые модули.
 - `DrSlon\Toolkit\Core\Settings`
-  - Provides defaults, nested-safe settings merge, and option access (`dstk_settings`).
+  - Хранит значения по умолчанию, безопасно объединяет вложенные настройки и отдаёт доступ к опции (`dstk_settings`).
 - `DrSlon\Toolkit\Core\Activator`
-  - Ensures baseline options/version on activation.
+  - Инициализирует базовые опции и версию при активации.
 
-## Modules
+## Модули
 
-Each module implements `ModuleInterface` and registers only its own hooks.
+Каждый модуль реализует `ModuleInterface` и регистрирует только собственные WordPress hooks.
 
 - `TransliterationModule`
-  - Handles post slug, term slug, and filename transliteration.
+  - Отвечает за транслитерацию slug записей, терминов и имён загружаемых файлов.
 - `DisableCommentsModule`
-  - Disables comments globally and removes comments-related UI surfaces.
+  - Глобально отключает комментарии и убирает связанные элементы интерфейса.
 - `CleanupModule`
-  - Applies conservative cleanup toggles based on plugin settings.
+  - Применяет консервативные cleanup-переключатели по настройкам.
 
-## Data model
+## Модель данных
 
-- Main option: `dstk_settings`
-  - `modules` map for module toggles.
-  - `cleanup` map for cleanup sub-toggles.
-- Version option: `dstk_version`
+- Основная опция: `dstk_settings`
+  - `modules` — карта переключателей модулей.
+  - `cleanup` — карта поднастроек cleanup.
+- Опция версии: `dstk_version`

@@ -21,7 +21,7 @@ final class SeoFrameworkDetector
         }
 
         echo '<div class="notice notice-info"><p>';
-        echo esc_html__('Dr.Slon Toolkit detected The SEO Framework. SEO-overlapping features will stay compatibility-safe when introduced.', 'dr-slon-toolkit');
+        echo esc_html__('Dr.Slon Toolkit обнаружил The SEO Framework. SEO-пересекающиеся функции будут добавляться в совместимом режиме.', 'dr-slon-toolkit');
         echo '</p></div>';
     }
 }

@@ -8,33 +8,33 @@ Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Modular WordPress toolkit for practical client website tasks.
+Модульный WordPress-плагин для практических задач клиентских сайтов.
 
 == Description ==
 
-Dr.Slon Toolkit is a clean-room, modular toolkit plugin for WordPress client projects.
+Dr.Slon Toolkit — clean-room модульный toolkit-плагин для WordPress-проектов.
 
-This release includes:
-- plugin bootstrap with Composer PSR-4 autoloading
-- central plugin runtime
-- admin settings page using Settings API
-- module toggles
-- Transliteration module
-- Disable Comments module
-- Cleanup module
-- The SEO Framework compatibility detection notice
+Этот релиз включает:
+- bootstrap плагина с Composer PSR-4 autoload
+- центральный runtime плагина
+- страницу настроек в админке на Settings API
+- переключатели модулей
+- модуль Транслитерации
+- модуль Отключения комментариев
+- модуль Очистки
+- детектор совместимости с The SEO Framework
 
 == Installation ==
 
-1. Upload the plugin to `/wp-content/plugins/dr-slon-toolkit`.
-2. Run `composer install` inside the plugin directory.
-3. Activate through **Plugins** in wp-admin.
-4. Configure the plugin in **Dr.Slon Toolkit**.
+1. Загрузите плагин в `/wp-content/plugins/dr-slon-toolkit`.
+2. Выполните `composer install` в директории плагина.
+3. Активируйте плагин через **Плагины** в wp-admin.
+4. Настройте плагин в меню **Dr.Slon Toolkit**.
 
 == Changelog ==
 
 = 0.2.0 =
-* First production bootstrap milestone.
-* Added Transliteration, Disable Comments, and Cleanup modules.
-* Added modular settings architecture and TSF detection notice.
-* Hardened nested settings merge, slug transliteration edge cases, and conservative cleanup behavior.
+* Первая рабочая bootstrap-веха.
+* Добавлены модули Транслитерации, Отключения комментариев и Очистки.
+* Добавлена модульная архитектура настроек и notice о TSF.
+* Усилены merge вложенных настроек, edge-case обработка slug и консервативность очистки.

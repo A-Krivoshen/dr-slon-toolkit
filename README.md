@@ -1,52 +1,52 @@
 # Dr.Slon Toolkit
 
-Dr.Slon Toolkit is a modular WordPress plugin for practical client-site maintenance and hardening tasks.
+Dr.Slon Toolkit — модульный плагин WordPress для практического обслуживания и базового усиления клиентских сайтов.
 
-## Current milestone (0.2.0)
+## Текущий этап (0.2.0)
 
-This first real bootstrap milestone includes:
+Первая рабочая веха включает:
 
-- Composer PSR-4 autoload bootstrap
-- Central plugin coordinator class
-- Activation and uninstall handlers
-- Native WordPress admin settings screen
-- Module toggles via the Settings API
-- First production-safe modules:
-  - Transliteration
-  - Disable Comments
-  - Cleanup
-- The SEO Framework detection notice
+- bootstrap с Composer PSR-4 autoload
+- центральный класс координатора плагина
+- обработчики активации и удаления
+- нативную страницу настроек WordPress
+- переключатели модулей через Settings API
+- первые рабочие безопасные модули:
+  - Транслитерация
+  - Отключение комментариев
+  - Очистка
+- детектор совместимости с The SEO Framework
 
-## Requirements
+## Требования
 
 - WordPress 6.6+
 - PHP 8.1+
 
-## Installed modules in this milestone
+## Модули в этой вехе
 
-### Transliteration
-- Converts non-Latin post slugs when needed.
-- Converts non-Latin term slugs when needed.
-- Converts uploaded filenames to safe Latin slugs.
-- Hooks into slug sanitization on save to better handle Cyrillic post-title edge cases.
+### Транслитерация
+- Преобразует нелатинские slug для записей при необходимости.
+- Преобразует нелатинские slug для терминов при необходимости.
+- Преобразует имена загружаемых файлов в безопасный латинский формат.
+- Подключается к генерации slug при сохранении для обработки edge-case сценариев с кириллическими заголовками.
 
-### Disable Comments
-- Closes comments and pingbacks globally.
-- Removes comment/trackback support from post types.
-- Hides comments menu and comments admin bar node.
-- Redirects comment management screens to the dashboard.
+### Отключение комментариев
+- Глобально закрывает комментарии и пинги.
+- Удаляет поддержку комментариев/трекбеков у типов записей.
+- Скрывает меню комментариев и пункт комментариев в админ-баре.
+- Перенаправляет экраны управления комментариями в консоль.
 
-### Cleanup
-- Optional toggles for:
-  - disable emojis
-  - disable wp-embed script
-  - disable XML-RPC
-  - remove selected low-risk `<head>` tags safely
+### Очистка
+- Опциональные переключатели для:
+  - отключения emoji
+  - отключения скрипта wp-embed
+  - отключения XML-RPC
+  - удаления выбранных low-risk тегов в `<head>`
 
-## Development
+## Разработка
 
 ```bash
 composer install
 ```
 
-Then activate the plugin and configure modules under **Dr.Slon Toolkit** in wp-admin.
+После этого активируйте плагин и настройте модули в меню **Dr.Slon Toolkit** в wp-admin.
