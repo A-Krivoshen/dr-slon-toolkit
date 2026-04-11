@@ -8,10 +8,18 @@ use DrSlon\Toolkit\Core\Settings;
 
 final class SettingsPage
 {
+    private InfoPanel $info_panel;
+
+    public function __construct()
+    {
+        $this->info_panel = new InfoPanel();
+    }
+
     public function register(): void
     {
         add_action('admin_menu', [$this, 'register_menu']);
         add_action('admin_init', [$this, 'register_settings']);
+        $this->info_panel->register_assets();
     }
 
     public function register_menu(): void
@@ -229,6 +237,8 @@ final class SettingsPage
                 submit_button(__('Сохранить изменения', 'dr-slon-toolkit'));
                 ?>
             </form>
+
+            <?php $this->info_panel->render(); ?>
         </div>
         <?php
     }
