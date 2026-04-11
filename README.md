@@ -1,16 +1,52 @@
 # Dr.Slon Toolkit
 
-Modular WordPress toolkit plugin for client websites.
+Dr.Slon Toolkit is a modular WordPress plugin for practical client-site maintenance and hardening tasks.
 
-## Planned modules
+## Current milestone (0.2.0)
 
-- Transliteration
-- Disable Comments
-- Cleanup
-- Hide Login
-- Redirect Manager
-- Login Attempts
-- REST API Control
-- IndexNow
-- Sitemap
-- Update Controls
+This first real bootstrap milestone includes:
+
+- Composer PSR-4 autoload bootstrap
+- Central plugin coordinator class
+- Activation and uninstall handlers
+- Native WordPress admin settings screen
+- Module toggles via the Settings API
+- First production-safe modules:
+  - Transliteration
+  - Disable Comments
+  - Cleanup
+- The SEO Framework detection notice
+
+## Requirements
+
+- WordPress 6.6+
+- PHP 8.1+
+
+## Installed modules in this milestone
+
+### Transliteration
+- Converts non-Latin post slugs when needed.
+- Converts non-Latin term slugs when needed.
+- Converts uploaded filenames to safe Latin slugs.
+- Hooks into slug sanitization on save to better handle Cyrillic post-title edge cases.
+
+### Disable Comments
+- Closes comments and pingbacks globally.
+- Removes comment/trackback support from post types.
+- Hides comments menu and comments admin bar node.
+- Redirects comment management screens to the dashboard.
+
+### Cleanup
+- Optional toggles for:
+  - disable emojis
+  - disable wp-embed script
+  - disable XML-RPC
+  - remove selected low-risk `<head>` tags safely
+
+## Development
+
+```bash
+composer install
+```
+
+Then activate the plugin and configure modules under **Dr.Slon Toolkit** in wp-admin.
