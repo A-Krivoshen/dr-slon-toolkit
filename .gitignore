@@ -1,0 +1,10 @@
+/vendor/
+/node_modules/
+/dist/
+/build/
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
+*.zip
+*.log
