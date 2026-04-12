@@ -11,6 +11,7 @@ use DrSlon\Toolkit\Modules\DisableCommentsModule;
 use DrSlon\Toolkit\Modules\HideLoginModule;
 use DrSlon\Toolkit\Modules\IndexNowModule;
 use DrSlon\Toolkit\Modules\RestApiControlModule;
+use DrSlon\Toolkit\Modules\SitemapModule;
 use DrSlon\Toolkit\Modules\TransliterationModule;
 
 final class Plugin
@@ -42,6 +43,7 @@ final class Plugin
             'hide_login'       => new HideLoginModule(),
             'rest_api_control' => new RestApiControlModule(),
             'indexnow'         => new IndexNowModule(),
+            'sitemap'          => new SitemapModule(),
         ];
 
         foreach ($modules as $slug => $module) {

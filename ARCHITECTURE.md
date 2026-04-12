@@ -46,6 +46,10 @@
   - Отправляет URL в IndexNow вручную и автоматически (publish/update/trash/delete).
   - Отдаёт проверочный ключ по `/<key>.txt` без записи файла на диск.
   - Имеет встроенный whitelist endpoint и простой антидубль отправок URL.
+- `SitemapModule`
+  - Отдаёт безопасный MVP XML sitemap по маршрутам `/sitemap.xml`, `/sitemap-pt-{post_type}.xml`, `/sitemap-tax-{taxonomy}.xml`.
+  - Исключает записи не в статусе `publish` и записи с паролем; noindex-исключения доступны через фильтр `dstk_sitemap_is_noindex`.
+  - Добавляет TSF-safe режим: при активном The SEO Framework runtime sitemap Dr.Slon Toolkit не обслуживается.
 
 ## Модель данных
 
@@ -55,4 +59,5 @@
   - `hide_login` — настройки скрытого входа (slug страницы входа).
   - `rest_api` — настройки доступа к REST API (режим, whitelist, capability, системные маршруты).
   - `indexnow` — настройки ключа, endpoint и поддерживаемых типов записей для отправки URL.
+  - `sitemap` — флаг runtime sitemap и набор включённых типов записей/таксономий для XML-карт.
 - Опция версии: `dstk_version`

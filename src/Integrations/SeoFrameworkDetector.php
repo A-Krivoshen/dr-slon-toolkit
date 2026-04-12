@@ -24,4 +24,17 @@ final class SeoFrameworkDetector
         echo esc_html__('Обнаружен плагин The SEO Framework. SEO-функции в Dr.Slon Toolkit будут добавляться с учётом совместимости.', 'dr-slon-toolkit');
         echo '</p></div>';
     }
+
+    public function is_sitemap_served(): bool
+    {
+        if (! $this->is_active()) {
+            return false;
+        }
+
+        if (defined('THE_SEO_FRAMEWORK_DISABLE_SITEMAP') && THE_SEO_FRAMEWORK_DISABLE_SITEMAP) {
+            return false;
+        }
+
+        return true;
+    }
 }

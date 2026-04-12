@@ -21,6 +21,7 @@ final class Settings
                 'hide_login'       => false,
                 'rest_api_control' => false,
                 'indexnow'         => false,
+                'sitemap'          => false,
             ],
             'cleanup' => [
                 'disable_emojis'   => true,
@@ -42,6 +43,11 @@ final class Settings
                 'key'        => '',
                 'endpoint'   => 'https://api.indexnow.org/indexnow',
                 'post_types' => ['post', 'page'],
+            ],
+            'sitemap' => [
+                'enabled'    => true,
+                'post_types' => ['post', 'page'],
+                'taxonomies' => ['category', 'post_tag'],
             ],
         ];
     }
@@ -80,6 +86,7 @@ final class Settings
         $hide_login = isset($input['hide_login']) && is_array($input['hide_login']) ? $input['hide_login'] : [];
         $rest_api = isset($input['rest_api']) && is_array($input['rest_api']) ? $input['rest_api'] : [];
         $indexnow = isset($input['indexnow']) && is_array($input['indexnow']) ? $input['indexnow'] : [];
+        $sitemap = isset($input['sitemap']) && is_array($input['sitemap']) ? $input['sitemap'] : [];
 
         $slug = '';
 
@@ -136,6 +143,53 @@ final class Settings
             $sanitized_post_types = $defaults['indexnow']['post_types'];
         }
 
+        $public_sitemap_post_types = get_post_types(
+            [
+                'public'             => true,
+                'publicly_queryable' => true,
+            ],
+            'names'
+        );
+        $selected_sitemap_post_types = isset($sitemap['post_types']) && is_array($sitemap['post_types']) ? $sitemap['post_types'] : $defaults['sitemap']['post_types'];
+        $sanitized_sitemap_post_types = [];
+
+        foreach ($selected_sitemap_post_types as $post_type) {
+            $post_type = sanitize_key((string) $post_type);
+
+            if ($post_type === '' || ! in_array($post_type, $public_sitemap_post_types, true)) {
+                continue;
+            }
+
+            $sanitized_sitemap_post_types[] = $post_type;
+        }
+
+        if ($sanitized_sitemap_post_types === []) {
+            $sanitized_sitemap_post_types = $defaults['sitemap']['post_types'];
+        }
+
+        $public_sitemap_taxonomies = get_taxonomies(
+            [
+                'public' => true,
+            ],
+            'names'
+        );
+        $selected_sitemap_taxonomies = isset($sitemap['taxonomies']) && is_array($sitemap['taxonomies']) ? $sitemap['taxonomies'] : $defaults['sitemap']['taxonomies'];
+        $sanitized_sitemap_taxonomies = [];
+
+        foreach ($selected_sitemap_taxonomies as $taxonomy) {
+            $taxonomy = sanitize_key((string) $taxonomy);
+
+            if ($taxonomy === '' || ! in_array($taxonomy, $public_sitemap_taxonomies, true)) {
+                continue;
+            }
+
+            $sanitized_sitemap_taxonomies[] = $taxonomy;
+        }
+
+        if ($sanitized_sitemap_taxonomies === []) {
+            $sanitized_sitemap_taxonomies = $defaults['sitemap']['taxonomies'];
+        }
+
         return [
             'modules' => [
                 'transliteration'  => ! empty($modules['transliteration']),
@@ -144,6 +198,7 @@ final class Settings
                 'hide_login'       => ! empty($modules['hide_login']),
                 'rest_api_control' => ! empty($modules['rest_api_control']),
                 'indexnow'         => ! empty($modules['indexnow']),
+                'sitemap'          => ! empty($modules['sitemap']),
             ],
             'cleanup' => [
                 'disable_emojis'   => array_key_exists('disable_emojis', $cleanup) ? ! empty($cleanup['disable_emojis']) : $defaults['cleanup']['disable_emojis'],
@@ -165,6 +220,11 @@ final class Settings
                 'key'        => $indexnow_key,
                 'endpoint'   => $indexnow_endpoint,
                 'post_types' => array_values(array_unique($sanitized_post_types)),
+            ],
+            'sitemap' => [
+                'enabled'    => array_key_exists('enabled', $sitemap) ? ! empty($sitemap['enabled']) : $defaults['sitemap']['enabled'],
+                'post_types' => array_values(array_unique($sanitized_sitemap_post_types)),
+                'taxonomies' => array_values(array_unique($sanitized_sitemap_taxonomies)),
             ],
         ];
     }

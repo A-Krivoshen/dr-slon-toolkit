@@ -123,6 +123,21 @@ final class SettingsPage
             'dr-slon-toolkit',
             'dstk_indexnow_section'
         );
+
+        add_settings_section(
+            'dstk_sitemap_section',
+            __('Параметры Sitemap', 'dr-slon-toolkit'),
+            [$this, 'render_sitemap_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_sitemap',
+            __('Настройки Sitemap', 'dr-slon-toolkit'),
+            [$this, 'render_sitemap_fields'],
+            'dr-slon-toolkit',
+            'dstk_sitemap_section'
+        );
     }
 
     /**
@@ -185,6 +200,11 @@ final class SettingsPage
             <label>
                 <input type="checkbox" name="dstk_settings[modules][indexnow]" value="1" <?php checked(! empty($modules['indexnow'])); ?>>
                 <?php echo esc_html__('IndexNow', 'dr-slon-toolkit'); ?>
+            </label>
+            <br>
+            <label>
+                <input type="checkbox" name="dstk_settings[modules][sitemap]" value="1" <?php checked(! empty($modules['sitemap'])); ?>>
+                <?php echo esc_html__('Sitemap', 'dr-slon-toolkit'); ?>
             </label>
         </fieldset>
         <?php
@@ -373,6 +393,54 @@ final class SettingsPage
             <input type="url" name="dstk_indexnow_manual_url" class="regular-text" placeholder="<?php echo esc_attr(home_url('/sample-page/')); ?>" required>
             <?php submit_button(__('Отправить URL в IndexNow', 'dr-slon-toolkit'), 'secondary', 'submit', false); ?>
         </form>
+        <?php
+    }
+
+    public function render_sitemap_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('MVP Sitemap отдаётся только при включённом модуле и отдельном флаге ниже. При активном The SEO Framework runtime Dr.Slon Toolkit отключается для защиты от дублей.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_sitemap_fields(): void
+    {
+        $settings = Settings::all();
+        $sitemap = isset($settings['sitemap']) && is_array($settings['sitemap']) ? $settings['sitemap'] : [];
+        $enabled = ! empty($sitemap['enabled']);
+        $selected_post_types = isset($sitemap['post_types']) && is_array($sitemap['post_types']) ? $sitemap['post_types'] : ['post', 'page'];
+        $selected_taxonomies = isset($sitemap['taxonomies']) && is_array($sitemap['taxonomies']) ? $sitemap['taxonomies'] : ['category', 'post_tag'];
+        $public_post_types = get_post_types(['public' => true, 'publicly_queryable' => true], 'objects');
+        $public_taxonomies = get_taxonomies(['public' => true], 'objects');
+        ?>
+        <fieldset>
+            <p>
+                <label>
+                    <input type="checkbox" name="dstk_settings[sitemap][enabled]" value="1" <?php checked($enabled); ?>>
+                    <?php echo esc_html__('Включить runtime XML Sitemap', 'dr-slon-toolkit'); ?>
+                </label>
+            </p>
+
+            <p><strong><?php echo esc_html__('Типы записей в sitemap', 'dr-slon-toolkit'); ?></strong></p>
+            <?php foreach ($public_post_types as $post_type => $object) : ?>
+                <label style="display:block;margin-bottom:4px;">
+                    <input type="checkbox" name="dstk_settings[sitemap][post_types][]" value="<?php echo esc_attr($post_type); ?>" <?php checked(in_array($post_type, $selected_post_types, true)); ?>>
+                    <?php echo esc_html($object->labels->singular_name); ?> (<code><?php echo esc_html($post_type); ?></code>)
+                </label>
+            <?php endforeach; ?>
+
+            <p><strong><?php echo esc_html__('Таксономии в sitemap', 'dr-slon-toolkit'); ?></strong></p>
+            <?php foreach ($public_taxonomies as $taxonomy => $object) : ?>
+                <label style="display:block;margin-bottom:4px;">
+                    <input type="checkbox" name="dstk_settings[sitemap][taxonomies][]" value="<?php echo esc_attr($taxonomy); ?>" <?php checked(in_array($taxonomy, $selected_taxonomies, true)); ?>>
+                    <?php echo esc_html($object->labels->singular_name); ?> (<code><?php echo esc_html($taxonomy); ?></code>)
+                </label>
+            <?php endforeach; ?>
+
+            <p class="description">
+                <?php echo esc_html__('Исключаются записи со статусом не publish и записи с паролем. Для noindex доступен фильтр dstk_sitemap_is_noindex. Маршруты MVP: /sitemap.xml, /sitemap-pt-{post_type}.xml, /sitemap-tax-{taxonomy}.xml.', 'dr-slon-toolkit'); ?>
+            </p>
+        </fieldset>
         <?php
     }
 
