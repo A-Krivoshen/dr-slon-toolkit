@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Dr.Slon Toolkit
  * Plugin URI: https://github.com/A-Krivoshen/dr-slon-toolkit
- * Description: Modular WordPress toolkit for client websites.
- * Version: 0.1.0
+ * Description: Модульный плагин WordPress для задач клиентских сайтов.
+ * Version: 0.6.0
  * Author: Dr.Slon
  * Author URI: https://krivoshein.site
  * Text Domain: dr-slon-toolkit
@@ -20,39 +20,36 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('DSTK_VERSION', '0.1.0');
-define('DSTK_FILE', __FILE__);
-define('DSTK_DIR', plugin_dir_path(__FILE__));
-define('DSTK_URL', plugin_dir_url(__FILE__));
+const DSTK_VERSION = '0.6.0';
+const DSTK_PLUGIN_FILE = __FILE__;
+const DSTK_PLUGIN_DIR = __DIR__ . '/';
 
-$dstk_autoloader = DSTK_DIR . 'vendor/autoload.php';
+$dstk_autoloader = DSTK_PLUGIN_DIR . 'vendor/autoload.php';
 
-if (file_exists($dstk_autoloader)) {
-    require_once $dstk_autoloader;
-}
+if (! is_readable($dstk_autoloader)) {
+    add_action(
+        'admin_notices',
+        static function (): void {
+            if (! current_user_can('activate_plugins')) {
+                return;
+            }
 
-if (! class_exists(\DrSlon\Toolkit\Core\Plugin::class)) {
-    require_once DSTK_DIR . 'src/Core/Plugin.php';
-}
-
-register_activation_hook(DSTK_FILE, static function (): void {
-    if (get_option('dstk_settings', null) === null) {
-        add_option('dstk_settings', []);
-    }
-
-    update_option('dstk_version', DSTK_VERSION);
-});
-
-register_deactivation_hook(DSTK_FILE, static function (): void {
-    // Reserved for future cleanup tasks on deactivation.
-});
-
-add_action('plugins_loaded', static function (): void {
-    load_plugin_textdomain(
-        'dr-slon-toolkit',
-        false,
-        dirname(plugin_basename(DSTK_FILE)) . '/languages'
+            echo '<div class="notice notice-error"><p>';
+            echo esc_html__('Не удалось запустить Dr.Slon Toolkit: не найден автозагрузчик Composer. Выполните "composer install" в папке плагина.', 'dr-slon-toolkit');
+            echo '</p></div>';
+        }
     );
 
-    \DrSlon\Toolkit\Core\Plugin::instance()->boot();
+    return;
+}
+
+require_once $dstk_autoloader;
+
+register_activation_hook(DSTK_PLUGIN_FILE, [\DrSlon\Toolkit\Core\Activator::class, 'activate']);
+
+add_action('plugins_loaded', static function (): void {
+    load_plugin_textdomain('dr-slon-toolkit', false, dirname(plugin_basename(DSTK_PLUGIN_FILE)) . '/languages');
+
+    $plugin = new \DrSlon\Toolkit\Core\Plugin();
+    $plugin->boot();
 });
