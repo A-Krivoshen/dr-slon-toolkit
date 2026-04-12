@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrSlon\Toolkit\Admin;
 
 use DrSlon\Toolkit\Core\Settings;
+use DrSlon\Toolkit\Modules\IndexNowModule;
 
 final class SettingsPage
 {
@@ -19,6 +20,7 @@ final class SettingsPage
     {
         add_action('admin_menu', [$this, 'register_menu']);
         add_action('admin_init', [$this, 'register_settings']);
+        add_action('admin_post_dstk_indexnow_manual_submit', [$this, 'handle_indexnow_manual_submit']);
         $this->info_panel->register_assets();
     }
 
@@ -106,6 +108,21 @@ final class SettingsPage
             'dr-slon-toolkit',
             'dstk_rest_api_section'
         );
+
+        add_settings_section(
+            'dstk_indexnow_section',
+            __('Параметры IndexNow', 'dr-slon-toolkit'),
+            [$this, 'render_indexnow_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_indexnow',
+            __('Настройки IndexNow', 'dr-slon-toolkit'),
+            [$this, 'render_indexnow_fields'],
+            'dr-slon-toolkit',
+            'dstk_indexnow_section'
+        );
     }
 
     /**
@@ -163,6 +180,11 @@ final class SettingsPage
             <label>
                 <input type="checkbox" name="dstk_settings[modules][rest_api_control]" value="1" <?php checked(! empty($modules['rest_api_control'])); ?>>
                 <?php echo esc_html__('REST API Control', 'dr-slon-toolkit'); ?>
+            </label>
+            <br>
+            <label>
+                <input type="checkbox" name="dstk_settings[modules][indexnow]" value="1" <?php checked(! empty($modules['indexnow'])); ?>>
+                <?php echo esc_html__('IndexNow', 'dr-slon-toolkit'); ?>
             </label>
         </fieldset>
         <?php
@@ -295,15 +317,109 @@ final class SettingsPage
         <?php
     }
 
+    public function render_indexnow_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('IndexNow отправляет URL в поисковые системы после публикации/обновления. Укажите ключ и проверьте работу на тестовой записи.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_indexnow_fields(): void
+    {
+        $settings = Settings::all();
+        $indexnow = isset($settings['indexnow']) && is_array($settings['indexnow']) ? $settings['indexnow'] : [];
+        $key = isset($indexnow['key']) ? (string) $indexnow['key'] : '';
+        $endpoint = isset($indexnow['endpoint']) ? (string) $indexnow['endpoint'] : 'https://api.indexnow.org/indexnow';
+        $selected_post_types = isset($indexnow['post_types']) && is_array($indexnow['post_types']) ? $indexnow['post_types'] : ['post', 'page'];
+        $public_post_types = get_post_types(['public' => true], 'objects');
+        ?>
+        <fieldset>
+            <p>
+                <label for="dstk-indexnow-key"><strong><?php echo esc_html__('Ключ IndexNow', 'dr-slon-toolkit'); ?></strong></label><br>
+                <input id="dstk-indexnow-key" type="text" name="dstk_settings[indexnow][key]" value="<?php echo esc_attr($key); ?>" class="regular-text code" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                <span class="description"><?php echo esc_html__('Разрешены латиница, цифры и дефис. Если ключ пустой, отправка не выполняется.', 'dr-slon-toolkit'); ?></span>
+            </p>
+
+            <p>
+                <label for="dstk-indexnow-endpoint"><strong><?php echo esc_html__('Endpoint IndexNow', 'dr-slon-toolkit'); ?></strong></label><br>
+                <select id="dstk-indexnow-endpoint" name="dstk_settings[indexnow][endpoint]">
+                    <option value="https://api.indexnow.org/indexnow" <?php selected($endpoint, 'https://api.indexnow.org/indexnow'); ?>>IndexNow (универсальный)</option>
+                    <option value="https://www.bing.com/indexnow" <?php selected($endpoint, 'https://www.bing.com/indexnow'); ?>>Bing</option>
+                    <option value="https://yandex.com/indexnow" <?php selected($endpoint, 'https://yandex.com/indexnow'); ?>>Yandex</option>
+                </select>
+            </p>
+
+            <p><strong><?php echo esc_html__('Типы записей для автоотправки', 'dr-slon-toolkit'); ?></strong></p>
+            <?php foreach ($public_post_types as $post_type => $object) : ?>
+                <label style="display:block;margin-bottom:4px;">
+                    <input type="checkbox" name="dstk_settings[indexnow][post_types][]" value="<?php echo esc_attr($post_type); ?>" <?php checked(in_array($post_type, $selected_post_types, true)); ?>>
+                    <?php echo esc_html($object->labels->singular_name); ?> (<code><?php echo esc_html($post_type); ?></code>)
+                </label>
+            <?php endforeach; ?>
+
+            <?php if ($key !== '') : ?>
+                <p class="description">
+                    <?php echo esc_html__('Проверочный ключ-файл будет доступен по адресу:', 'dr-slon-toolkit'); ?>
+                    <code><?php echo esc_html(home_url('/' . $key . '.txt')); ?></code>
+                </p>
+            <?php endif; ?>
+        </fieldset>
+
+        <hr>
+        <h4><?php echo esc_html__('Ручная отправка URL', 'dr-slon-toolkit'); ?></h4>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <input type="hidden" name="action" value="dstk_indexnow_manual_submit">
+            <?php wp_nonce_field('dstk_indexnow_manual_submit'); ?>
+            <input type="url" name="dstk_indexnow_manual_url" class="regular-text" placeholder="<?php echo esc_attr(home_url('/sample-page/')); ?>" required>
+            <?php submit_button(__('Отправить URL в IndexNow', 'dr-slon-toolkit'), 'secondary', 'submit', false); ?>
+        </form>
+        <?php
+    }
+
+    public function handle_indexnow_manual_submit(): void
+    {
+        if (! current_user_can('manage_options')) {
+            wp_die(esc_html__('Недостаточно прав для выполнения действия.', 'dr-slon-toolkit'));
+        }
+
+        check_admin_referer('dstk_indexnow_manual_submit');
+
+        $url = isset($_POST['dstk_indexnow_manual_url']) ? (string) wp_unslash($_POST['dstk_indexnow_manual_url']) : '';
+        $module = new IndexNowModule();
+        $result = $module->submit_manual_url($url);
+
+        $notice = ! empty($result['success']) ? 'success' : 'error';
+        $message = isset($result['message']) ? (string) $result['message'] : __('Не удалось отправить URL.', 'dr-slon-toolkit');
+
+        $redirect = add_query_arg(
+            [
+                'page'                  => 'dr-slon-toolkit',
+                'dstk_indexnow_notice'  => $notice,
+                'dstk_indexnow_message' => $message,
+            ],
+            admin_url('admin.php')
+        );
+
+        wp_safe_redirect($redirect);
+        exit;
+    }
+
     public function render_page(): void
     {
         if (! current_user_can('manage_options')) {
             return;
         }
+
+        $notice_type = isset($_GET['dstk_indexnow_notice']) ? sanitize_key((string) wp_unslash($_GET['dstk_indexnow_notice'])) : '';
+        $notice_message = isset($_GET['dstk_indexnow_message']) ? sanitize_text_field((string) wp_unslash($_GET['dstk_indexnow_message'])) : '';
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('Dr.Slon Toolkit', 'dr-slon-toolkit'); ?></h1>
             <p><?php echo esc_html__('Модульный плагин для практических задач клиентских сайтов.', 'dr-slon-toolkit'); ?></p>
+
+            <?php if ($notice_message !== '' && in_array($notice_type, ['success', 'error'], true)) : ?>
+                <div class="notice notice-<?php echo esc_attr($notice_type === 'success' ? 'success' : 'error'); ?>"><p><?php echo esc_html($notice_message); ?></p></div>
+            <?php endif; ?>
 
             <form method="post" action="options.php">
                 <?php

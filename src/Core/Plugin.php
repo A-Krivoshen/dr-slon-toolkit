@@ -9,6 +9,7 @@ use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
 use DrSlon\Toolkit\Modules\CleanupModule;
 use DrSlon\Toolkit\Modules\DisableCommentsModule;
 use DrSlon\Toolkit\Modules\HideLoginModule;
+use DrSlon\Toolkit\Modules\IndexNowModule;
 use DrSlon\Toolkit\Modules\RestApiControlModule;
 use DrSlon\Toolkit\Modules\TransliterationModule;
 
@@ -40,6 +41,7 @@ final class Plugin
             'cleanup'          => new CleanupModule(),
             'hide_login'       => new HideLoginModule(),
             'rest_api_control' => new RestApiControlModule(),
+            'indexnow'         => new IndexNowModule(),
         ];
 
         foreach ($modules as $slug => $module) {

@@ -4,7 +4,6 @@
 
 - Redirect Manager — управление перенаправлениями.
 - Login Attempts — защита от перебора паролей.
-- IndexNow — отправка URL в IndexNow.
 - Sitemap — карта сайта.
 - Update Controls — управление обновлениями.
 
