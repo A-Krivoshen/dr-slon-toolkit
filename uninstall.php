@@ -8,3 +8,4 @@ if (! defined('WP_UNINSTALL_PLUGIN')) {
 
 delete_option('dstk_settings');
 delete_option('dstk_version');
+delete_option('dstk_indexnow_cache');
