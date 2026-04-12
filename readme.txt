@@ -4,7 +4,7 @@ Tags: wordpress, toolkit, maintenance, comments, transliteration, cleanup
 Requires at least: 6.6
 Tested up to: 6.6
 Requires PHP: 8.1
-Stable tag: 0.3.0
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,6 +44,12 @@ Composer нужен только разработчику:
 - для сборки релизного ZIP (`composer build-release` или `bash tools/build-release.sh`).
 
 == Changelog ==
+
+= 0.5.0 =
+* Выполнен hardening MVP модуля «REST API Control».
+* Добавлен встроенный системный allowlist WordPress, который не зависит от редактируемых настроек.
+* Добавлены префиксные маршруты (без regex) для критичных REST-сценариев редактора и медиа.
+* Поле системных маршрутов в настройках теперь только расширяет встроенный allowlist.
 
 = 0.3.0 =
 * Добавлен MVP модуля «REST API Control».

@@ -12,6 +12,36 @@ use WP_REST_Server;
 
 final class RestApiControlModule implements ModuleInterface
 {
+    /**
+     * Базовый встроенный allowlist, который нельзя случайно «сломать» правкой настроек.
+     *
+     * Суффикс * означает префиксное совпадение (без regex).
+     *
+     * @var array<int, string>
+     */
+    private const CORE_ROUTE_ALLOWLIST = [
+        '/',
+        '/oembed/1.0/embed',
+        '/wp/v2/types',
+        '/wp/v2/taxonomies',
+        '/wp/v2/statuses',
+        '/wp/v2/search',
+        '/wp/v2/users/me',
+        '/wp/v2/media*',
+        '/wp/v2/posts*',
+        '/wp/v2/pages*',
+        '/wp/v2/block-renderer*',
+        '/wp/v2/templates*',
+        '/wp/v2/template-parts*',
+    ];
+
+    /**
+     * @var array<int, string>
+     */
+    private const CORE_NAMESPACE_ALLOWLIST = [
+        'oembed/1.0',
+    ];
+
     public function register(): void
     {
         add_filter('rest_pre_dispatch', [$this, 'maybe_block_request'], 9, 3);
@@ -41,11 +71,11 @@ final class RestApiControlModule implements ModuleInterface
             return $result;
         }
 
-        if ($this->is_allowed_by_route($route, $config) || $this->is_allowed_by_namespace($route, $config)) {
-            return $result;
-        }
-
         if ($config['mode'] === 'authenticated_only') {
+            if ($this->is_allowed_by_route($route, $config['public_routes']) || $this->is_allowed_by_namespace($route, $config['public_namespaces'])) {
+                return $result;
+            }
+
             if (is_user_logged_in()) {
                 return $result;
             }
@@ -54,6 +84,10 @@ final class RestApiControlModule implements ModuleInterface
         }
 
         if ($config['mode'] === 'whitelist') {
+            if ($this->is_allowed_by_route($route, $config['allowlist_routes']) || $this->is_allowed_by_namespace($route, $config['allowlist_namespaces'])) {
+                return $result;
+            }
+
             if ($this->user_has_trusted_capability($config['trusted_capability'])) {
                 return $result;
             }
@@ -65,7 +99,14 @@ final class RestApiControlModule implements ModuleInterface
     }
 
     /**
-     * @return array{mode:string, routes:array<int,string>, namespaces:array<int,string>, trusted_capability:string}
+     * @return array{
+     *   mode:string,
+     *   allowlist_routes:array<int,string>,
+     *   allowlist_namespaces:array<int,string>,
+     *   public_routes:array<int,string>,
+     *   public_namespaces:array<int,string>,
+     *   trusted_capability:string
+     * }
      */
     private function config(): array
     {
@@ -75,16 +116,25 @@ final class RestApiControlModule implements ModuleInterface
         $mode = isset($rest_api['mode']) ? (string) $rest_api['mode'] : 'allow_all';
         $trusted_capability = isset($rest_api['trusted_capability']) ? sanitize_key((string) $rest_api['trusted_capability']) : 'edit_posts';
 
-        $system_routes = $this->parse_lines(isset($rest_api['system_routes']) ? (string) $rest_api['system_routes'] : '');
+        $additional_system_routes = $this->parse_lines(isset($rest_api['system_routes']) ? (string) $rest_api['system_routes'] : '');
         $whitelist_routes = $this->parse_lines(isset($rest_api['whitelist_routes']) ? (string) $rest_api['whitelist_routes'] : '');
 
-        $system_namespaces = ['oembed/1.0'];
+        $core_routes = self::CORE_ROUTE_ALLOWLIST;
+        $core_namespaces = self::CORE_NAMESPACE_ALLOWLIST;
+
+        $public_routes = [
+            '/',
+            '/oembed/1.0/embed',
+        ];
+
         $whitelist_namespaces = $this->parse_lines(isset($rest_api['whitelist_namespaces']) ? (string) $rest_api['whitelist_namespaces'] : '', false);
 
         return [
             'mode'               => in_array($mode, ['allow_all', 'authenticated_only', 'whitelist'], true) ? $mode : 'allow_all',
-            'routes'             => array_values(array_unique(array_merge($system_routes, $whitelist_routes))),
-            'namespaces'         => array_values(array_unique(array_merge($system_namespaces, $whitelist_namespaces))),
+            'allowlist_routes'   => array_values(array_unique(array_merge($core_routes, $additional_system_routes, $whitelist_routes))),
+            'allowlist_namespaces' => array_values(array_unique(array_merge($core_namespaces, $whitelist_namespaces))),
+            'public_routes'      => array_values(array_unique($public_routes)),
+            'public_namespaces'  => $core_namespaces,
             'trusted_capability' => $trusted_capability !== '' ? $trusted_capability : 'edit_posts',
         ];
     }
@@ -118,17 +168,35 @@ final class RestApiControlModule implements ModuleInterface
     }
 
     /**
-     * @param array{routes:array<int,string>} $config
+     * @param array<int,string> $allowlist_routes
      */
-    private function is_allowed_by_route(string $route, array $config): bool
+    private function is_allowed_by_route(string $route, array $allowlist_routes): bool
     {
-        return in_array($route, $config['routes'], true);
+        foreach ($allowlist_routes as $allowed_route) {
+            if ($allowed_route === $route) {
+                return true;
+            }
+
+            if (str_ends_with($allowed_route, '*')) {
+                $prefix = rtrim(substr($allowed_route, 0, -1), '/');
+
+                if ($prefix === '') {
+                    continue;
+                }
+
+                if ($route === $prefix || str_starts_with($route, $prefix . '/')) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
-     * @param array{namespaces:array<int,string>} $config
+     * @param array<int,string> $allowlist_namespaces
      */
-    private function is_allowed_by_namespace(string $route, array $config): bool
+    private function is_allowed_by_namespace(string $route, array $allowlist_namespaces): bool
     {
         $namespace = $this->route_namespace($route);
 
@@ -136,7 +204,7 @@ final class RestApiControlModule implements ModuleInterface
             return false;
         }
 
-        return in_array($namespace, $config['namespaces'], true);
+        return in_array($namespace, $allowlist_namespaces, true);
     }
 
     private function route_namespace(string $route): string

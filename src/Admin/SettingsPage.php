@@ -256,7 +256,7 @@ final class SettingsPage
         $whitelist_routes = isset($rest_api['whitelist_routes']) ? (string) $rest_api['whitelist_routes'] : '';
         $whitelist_namespaces = isset($rest_api['whitelist_namespaces']) ? (string) $rest_api['whitelist_namespaces'] : '';
         $trusted_capability = isset($rest_api['trusted_capability']) ? (string) $rest_api['trusted_capability'] : 'edit_posts';
-        $system_routes = isset($rest_api['system_routes']) ? (string) $rest_api['system_routes'] : "/oembed/1.0/embed\n/wp/v2/types\n/wp/v2/taxonomies\n/wp/v2/statuses\n/wp/v2/search";
+        $system_routes = isset($rest_api['system_routes']) ? (string) $rest_api['system_routes'] : '';
         ?>
         <fieldset>
             <p>
@@ -287,9 +287,9 @@ final class SettingsPage
             </p>
 
             <p>
-                <label for="dstk-rest-system-routes"><strong><?php echo esc_html__('Системные маршруты, которые остаются разрешёнными', 'dr-slon-toolkit'); ?></strong></label><br>
+                <label for="dstk-rest-system-routes"><strong><?php echo esc_html__('Дополнительные безопасные маршруты (расширение встроенного allowlist)', 'dr-slon-toolkit'); ?></strong></label><br>
                 <textarea id="dstk-rest-system-routes" name="dstk_settings[rest_api][system_routes]" rows="5" class="large-text code"><?php echo esc_textarea($system_routes); ?></textarea>
-                <span class="description"><?php echo esc_html__('Используйте осторожно: удаление системных маршрутов может сломать редактор и интеграции.', 'dr-slon-toolkit'); ?></span>
+                <span class="description"><?php echo esc_html__('Встроенный базовый allowlist WordPress всегда активен и не зависит от этого поля. Здесь можно только добавить дополнительные маршруты.', 'dr-slon-toolkit'); ?></span>
             </p>
         </fieldset>
         <?php

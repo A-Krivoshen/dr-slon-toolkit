@@ -35,7 +35,7 @@ final class Settings
                 'whitelist_routes'     => '',
                 'whitelist_namespaces' => '',
                 'trusted_capability'   => 'edit_posts',
-                'system_routes'        => "/oembed/1.0/embed\n/wp/v2/types\n/wp/v2/taxonomies\n/wp/v2/statuses\n/wp/v2/search",
+                'system_routes'        => '',
             ],
         ];
     }
