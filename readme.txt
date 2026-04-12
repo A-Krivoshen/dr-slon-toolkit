@@ -4,7 +4,7 @@ Tags: wordpress, toolkit, maintenance, comments, transliteration, cleanup
 Requires at least: 6.6
 Tested up to: 6.6
 Requires PHP: 8.1
-Stable tag: 0.8.0
+Stable tag: 0.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,10 @@ Composer нужен только разработчику:
 - для сборки релизного ZIP (`composer build-release` или `bash tools/build-release.sh`).
 
 == Changelog ==
+
+= 0.8.1 =
+* Выполнен pre-release hardening: исправлена типобезопасность фильтров модуля «Update Controls» для корректной работы с null/boolean значениями WordPress.
+* В uninstall добавлена очистка служебного кеша `dstk_indexnow_cache`.
 
 = 0.8.0 =
 * Добавлен первый безопасный MVP модуля «Update Controls».

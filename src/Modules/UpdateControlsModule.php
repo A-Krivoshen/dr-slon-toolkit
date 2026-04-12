@@ -66,10 +66,13 @@ final class UpdateControlsModule implements ModuleInterface
     }
 
     /**
-     * @param object $update
+     * @param mixed $update
+     * @param mixed $item
      */
-    public function filter_auto_update_core(bool $update, $item): bool
+    public function filter_auto_update_core($update, $item): bool
     {
+        unset($item);
+
         $mode = $this->config()['core_mode'];
 
         if ($mode === self::CORE_OFF) {
@@ -84,30 +87,39 @@ final class UpdateControlsModule implements ModuleInterface
             return true;
         }
 
-        return $update;
+        return (bool) $update;
     }
 
     /**
-     * @param object $item
+     * @param mixed $update
+     * @param mixed $item
      */
-    public function filter_auto_update_plugin(bool $update, $item): bool
+    public function filter_auto_update_plugin($update, $item): bool
     {
+        unset($update, $item);
+
         return $this->config()['plugins'];
     }
 
     /**
-     * @param object $item
+     * @param mixed $update
+     * @param mixed $item
      */
-    public function filter_auto_update_theme(bool $update, $item): bool
+    public function filter_auto_update_theme($update, $item): bool
     {
+        unset($update, $item);
+
         return $this->config()['themes'];
     }
 
     /**
-     * @param object $item
+     * @param mixed $update
+     * @param mixed $item
      */
-    public function filter_auto_update_translation(bool $update, $item): bool
+    public function filter_auto_update_translation($update, $item): bool
     {
+        unset($update, $item);
+
         return $this->config()['translations'];
     }
 

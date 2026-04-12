@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.1
+- Выполнен pre-release hardening модуля «Update Controls»: убраны жёсткие bool-типизации входных аргументов filter callbacks, чтобы избежать конфликтов с `null` в нативных фильтрах WordPress.
+- В `uninstall.php` добавлена очистка служебной опции кеша `dstk_indexnow_cache`.
+
 ## 0.8.0
 - Добавлен первый безопасный MVP модуля «Update Controls».
 - Добавлены настройки управления автообновлениями ядра (all/minor/security/off).
