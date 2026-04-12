@@ -22,6 +22,7 @@ final class Settings
                 'rest_api_control' => false,
                 'indexnow'         => false,
                 'sitemap'          => false,
+                'update_controls'  => false,
             ],
             'cleanup' => [
                 'disable_emojis'   => true,
@@ -48,6 +49,13 @@ final class Settings
                 'enabled'    => true,
                 'post_types' => ['post', 'page'],
                 'taxonomies' => ['category', 'post_tag'],
+            ],
+            'update_controls' => [
+                'core_mode'           => 'minor',
+                'plugins'             => true,
+                'themes'              => true,
+                'translations'        => true,
+                'email_notifications' => true,
             ],
         ];
     }
@@ -87,6 +95,7 @@ final class Settings
         $rest_api = isset($input['rest_api']) && is_array($input['rest_api']) ? $input['rest_api'] : [];
         $indexnow = isset($input['indexnow']) && is_array($input['indexnow']) ? $input['indexnow'] : [];
         $sitemap = isset($input['sitemap']) && is_array($input['sitemap']) ? $input['sitemap'] : [];
+        $update_controls = isset($input['update_controls']) && is_array($input['update_controls']) ? $input['update_controls'] : [];
 
         $slug = '';
 
@@ -190,6 +199,12 @@ final class Settings
             $sanitized_sitemap_taxonomies = $defaults['sitemap']['taxonomies'];
         }
 
+        $core_mode = isset($update_controls['core_mode']) ? sanitize_key((string) $update_controls['core_mode']) : $defaults['update_controls']['core_mode'];
+
+        if (! in_array($core_mode, ['all', 'minor', 'security', 'off'], true)) {
+            $core_mode = $defaults['update_controls']['core_mode'];
+        }
+
         return [
             'modules' => [
                 'transliteration'  => ! empty($modules['transliteration']),
@@ -199,6 +214,7 @@ final class Settings
                 'rest_api_control' => ! empty($modules['rest_api_control']),
                 'indexnow'         => ! empty($modules['indexnow']),
                 'sitemap'          => ! empty($modules['sitemap']),
+                'update_controls'  => ! empty($modules['update_controls']),
             ],
             'cleanup' => [
                 'disable_emojis'   => array_key_exists('disable_emojis', $cleanup) ? ! empty($cleanup['disable_emojis']) : $defaults['cleanup']['disable_emojis'],
@@ -225,6 +241,13 @@ final class Settings
                 'enabled'    => array_key_exists('enabled', $sitemap) ? ! empty($sitemap['enabled']) : $defaults['sitemap']['enabled'],
                 'post_types' => array_values(array_unique($sanitized_sitemap_post_types)),
                 'taxonomies' => array_values(array_unique($sanitized_sitemap_taxonomies)),
+            ],
+            'update_controls' => [
+                'core_mode'           => $core_mode,
+                'plugins'             => array_key_exists('plugins', $update_controls) ? ! empty($update_controls['plugins']) : $defaults['update_controls']['plugins'],
+                'themes'              => array_key_exists('themes', $update_controls) ? ! empty($update_controls['themes']) : $defaults['update_controls']['themes'],
+                'translations'        => array_key_exists('translations', $update_controls) ? ! empty($update_controls['translations']) : $defaults['update_controls']['translations'],
+                'email_notifications' => array_key_exists('email_notifications', $update_controls) ? ! empty($update_controls['email_notifications']) : $defaults['update_controls']['email_notifications'],
             ],
         ];
     }

@@ -13,6 +13,7 @@ use DrSlon\Toolkit\Modules\IndexNowModule;
 use DrSlon\Toolkit\Modules\RestApiControlModule;
 use DrSlon\Toolkit\Modules\SitemapModule;
 use DrSlon\Toolkit\Modules\TransliterationModule;
+use DrSlon\Toolkit\Modules\UpdateControlsModule;
 
 final class Plugin
 {
@@ -44,6 +45,7 @@ final class Plugin
             'rest_api_control' => new RestApiControlModule(),
             'indexnow'         => new IndexNowModule(),
             'sitemap'          => new SitemapModule(),
+            'update_controls'  => new UpdateControlsModule(),
         ];
 
         foreach ($modules as $slug => $module) {

@@ -21,7 +21,7 @@ final class SettingsPage
         add_action('admin_menu', [$this, 'register_menu']);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_post_dstk_indexnow_manual_submit', [$this, 'handle_indexnow_manual_submit']);
-        $this->info_panel->register_assets();
+        $this->info_panel->register();
     }
 
     public function register_menu(): void
@@ -138,6 +138,21 @@ final class SettingsPage
             'dr-slon-toolkit',
             'dstk_sitemap_section'
         );
+
+        add_settings_section(
+            'dstk_update_controls_section',
+            __('Параметры Update Controls', 'dr-slon-toolkit'),
+            [$this, 'render_update_controls_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_update_controls',
+            __('Настройки обновлений', 'dr-slon-toolkit'),
+            [$this, 'render_update_controls_fields'],
+            'dr-slon-toolkit',
+            'dstk_update_controls_section'
+        );
     }
 
     /**
@@ -205,6 +220,11 @@ final class SettingsPage
             <label>
                 <input type="checkbox" name="dstk_settings[modules][sitemap]" value="1" <?php checked(! empty($modules['sitemap'])); ?>>
                 <?php echo esc_html__('Sitemap', 'dr-slon-toolkit'); ?>
+            </label>
+            <br>
+            <label>
+                <input type="checkbox" name="dstk_settings[modules][update_controls]" value="1" <?php checked(! empty($modules['update_controls'])); ?>>
+                <?php echo esc_html__('Update Controls', 'dr-slon-toolkit'); ?>
             </label>
         </fieldset>
         <?php
@@ -444,6 +464,66 @@ final class SettingsPage
         <?php
     }
 
+    public function render_update_controls_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('Модуль управляет автообновлениями через нативные фильтры WordPress. Полное отключение обновлений повышает риски безопасности.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_update_controls_fields(): void
+    {
+        $settings = Settings::all();
+        $update_controls = isset($settings['update_controls']) && is_array($settings['update_controls']) ? $settings['update_controls'] : [];
+        $core_mode = isset($update_controls['core_mode']) ? (string) $update_controls['core_mode'] : 'minor';
+        $plugins = ! array_key_exists('plugins', $update_controls) || ! empty($update_controls['plugins']);
+        $themes = ! array_key_exists('themes', $update_controls) || ! empty($update_controls['themes']);
+        $translations = ! array_key_exists('translations', $update_controls) || ! empty($update_controls['translations']);
+        $email_notifications = ! array_key_exists('email_notifications', $update_controls) || ! empty($update_controls['email_notifications']);
+        ?>
+        <fieldset>
+            <p>
+                <label for="dstk-core-update-mode"><strong><?php echo esc_html__('Обновления ядра WordPress', 'dr-slon-toolkit'); ?></strong></label><br>
+                <select id="dstk-core-update-mode" name="dstk_settings[update_controls][core_mode]">
+                    <option value="all" <?php selected($core_mode, 'all'); ?>><?php echo esc_html__('Все автообновления (major + minor)', 'dr-slon-toolkit'); ?></option>
+                    <option value="minor" <?php selected($core_mode, 'minor'); ?>><?php echo esc_html__('Только minor (рекомендуется)', 'dr-slon-toolkit'); ?></option>
+                    <option value="security" <?php selected($core_mode, 'security'); ?>><?php echo esc_html__('Только security/критические (MVP-режим)', 'dr-slon-toolkit'); ?></option>
+                    <option value="off" <?php selected($core_mode, 'off'); ?>><?php echo esc_html__('Полностью отключить автообновления ядра', 'dr-slon-toolkit'); ?></option>
+                </select>
+            </p>
+
+            <p>
+                <label>
+                    <input type="checkbox" name="dstk_settings[update_controls][plugins]" value="1" <?php checked($plugins); ?>>
+                    <?php echo esc_html__('Включить автообновления плагинов', 'dr-slon-toolkit'); ?>
+                </label>
+                <br>
+                <label>
+                    <input type="checkbox" name="dstk_settings[update_controls][themes]" value="1" <?php checked($themes); ?>>
+                    <?php echo esc_html__('Включить автообновления тем', 'dr-slon-toolkit'); ?>
+                </label>
+                <br>
+                <label>
+                    <input type="checkbox" name="dstk_settings[update_controls][translations]" value="1" <?php checked($translations); ?>>
+                    <?php echo esc_html__('Включить автообновления переводов', 'dr-slon-toolkit'); ?>
+                </label>
+                <br>
+                <label>
+                    <input type="checkbox" name="dstk_settings[update_controls][email_notifications]" value="1" <?php checked($email_notifications); ?>>
+                    <?php echo esc_html__('Включить e-mail уведомления об автообновлениях', 'dr-slon-toolkit'); ?>
+                </label>
+            </p>
+
+            <p class="description">
+                <?php echo esc_html__('Внимание: полное отключение автообновлений может увеличить риски безопасности. Используйте этот режим только при наличии собственного процесса ручных обновлений.', 'dr-slon-toolkit'); ?>
+            </p>
+            <p class="description">
+                <?php echo esc_html__('Примечание для режима «Только security/критические»: в WordPress MVP-реализация использует безопасное приближение через minor-канал без major/dev обновлений.', 'dr-slon-toolkit'); ?>
+            </p>
+        </fieldset>
+        <?php
+    }
+
     public function handle_indexnow_manual_submit(): void
     {
         if (! current_user_can('manage_options')) {
@@ -496,8 +576,6 @@ final class SettingsPage
                 submit_button(__('Сохранить изменения', 'dr-slon-toolkit'));
                 ?>
             </form>
-
-            <?php $this->info_panel->render(); ?>
         </div>
         <?php
     }
