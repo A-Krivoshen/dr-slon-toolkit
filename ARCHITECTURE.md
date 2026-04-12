@@ -45,6 +45,7 @@
 - `IndexNowModule`
   - Отправляет URL в IndexNow вручную и автоматически (publish/update/trash/delete).
   - Отдаёт проверочный ключ по `/<key>.txt` без записи файла на диск.
+  - Имеет встроенный whitelist endpoint и простой антидубль отправок URL.
 
 ## Модель данных
 

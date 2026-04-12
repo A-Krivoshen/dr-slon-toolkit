@@ -11,6 +11,17 @@ use WP_Post;
 final class IndexNowModule implements ModuleInterface
 {
     private const CACHE_OPTION = 'dstk_indexnow_cache';
+    private const CACHE_TTL = 600;
+    private const CACHE_GC_TTL = 7200;
+
+    /**
+     * @var array<int,string>
+     */
+    private const ALLOWED_ENDPOINTS = [
+        'https://api.indexnow.org/indexnow',
+        'https://www.bing.com/indexnow',
+        'https://yandex.com/indexnow',
+    ];
 
     public function register(): void
     {
@@ -32,6 +43,12 @@ final class IndexNowModule implements ModuleInterface
             return;
         }
 
+        $request_method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) $_SERVER['REQUEST_METHOD']) : 'GET';
+
+        if (! in_array($request_method, ['GET', 'HEAD'], true)) {
+            return;
+        }
+
         $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
         $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
         $request_path = '/' . ltrim(trim($request_path), '/');
@@ -43,7 +60,11 @@ final class IndexNowModule implements ModuleInterface
         nocache_headers();
         status_header(200);
         header('Content-Type: text/plain; charset=utf-8');
-        echo esc_html($key);
+        if ($request_method === 'HEAD') {
+            exit;
+        }
+
+        echo $key;
         exit;
     }
 
@@ -69,7 +90,7 @@ final class IndexNowModule implements ModuleInterface
     {
         $post = get_post($post_id);
 
-        if (! ($post instanceof WP_Post) || ! $this->is_supported_post($post)) {
+        if (! ($post instanceof WP_Post) || ! $this->is_supported_post($post, ['publish'])) {
             return;
         }
 
@@ -80,7 +101,7 @@ final class IndexNowModule implements ModuleInterface
     {
         $post = get_post($post_id);
 
-        if (! ($post instanceof WP_Post) || ! $this->is_supported_post($post)) {
+        if (! ($post instanceof WP_Post) || ! $this->is_supported_post($post, ['publish', 'trash'])) {
             return;
         }
 
@@ -112,12 +133,15 @@ final class IndexNowModule implements ModuleInterface
 
         return [
             'key'       => $key,
-            'endpoint'  => $endpoint,
+            'endpoint'  => $this->normalize_endpoint($endpoint),
             'post_types'=> array_map('sanitize_key', $post_types),
         ];
     }
 
-    private function is_supported_post(WP_Post $post): bool
+    /**
+     * @param array<int,string> $allowed_statuses
+     */
+    private function is_supported_post(WP_Post $post, array $allowed_statuses = ['publish']): bool
     {
         $config = $this->config();
 
@@ -125,7 +149,7 @@ final class IndexNowModule implements ModuleInterface
             return false;
         }
 
-        if ($post->post_status !== 'publish') {
+        if (! in_array($post->post_status, $allowed_statuses, true)) {
             return false;
         }
 
@@ -158,7 +182,7 @@ final class IndexNowModule implements ModuleInterface
             return ['success' => false, 'message' => __('Ключ IndexNow не задан.', 'dr-slon-toolkit')];
         }
 
-        if ($this->is_duplicate_recent_submission($url, $reason)) {
+        if ($this->is_duplicate_recent_submission($url)) {
             return ['success' => true, 'message' => __('URL уже недавно отправлялся, повтор пропущен.', 'dr-slon-toolkit')];
         }
 
@@ -190,7 +214,7 @@ final class IndexNowModule implements ModuleInterface
             return ['success' => false, 'message' => sprintf(__('IndexNow вернул код %d.', 'dr-slon-toolkit'), $status_code)];
         }
 
-        $this->store_submission_mark($url, $reason);
+        $this->store_submission_mark($url);
 
         return ['success' => true, 'message' => __('URL успешно отправлен в IndexNow.', 'dr-slon-toolkit')];
     }
@@ -219,7 +243,7 @@ final class IndexNowModule implements ModuleInterface
         return in_array($scheme, ['http', 'https'], true);
     }
 
-    private function is_duplicate_recent_submission(string $url, string $reason): bool
+    private function is_duplicate_recent_submission(string $url): bool
     {
         $cache = get_option(self::CACHE_OPTION, []);
 
@@ -228,25 +252,25 @@ final class IndexNowModule implements ModuleInterface
         }
 
         $now = time();
-        $hash = md5($reason . '|' . $url);
+        $hash = md5($url);
 
         foreach ($cache as $key => $timestamp) {
-            if (! is_string($key) || ! is_int($timestamp)) {
+            if (! is_string($key) || ! is_numeric($timestamp)) {
                 unset($cache[$key]);
                 continue;
             }
 
-            if (($now - $timestamp) > 3600) {
+            if (($now - (int) $timestamp) > self::CACHE_GC_TTL) {
                 unset($cache[$key]);
             }
         }
 
         update_option(self::CACHE_OPTION, $cache, false);
 
-        return isset($cache[$hash]) && (($now - $cache[$hash]) < 300);
+        return isset($cache[$hash]) && (($now - (int) $cache[$hash]) < self::CACHE_TTL);
     }
 
-    private function store_submission_mark(string $url, string $reason): void
+    private function store_submission_mark(string $url): void
     {
         $cache = get_option(self::CACHE_OPTION, []);
 
@@ -254,8 +278,19 @@ final class IndexNowModule implements ModuleInterface
             $cache = [];
         }
 
-        $cache[md5($reason . '|' . $url)] = time();
+        $cache[md5($url)] = time();
 
         update_option(self::CACHE_OPTION, $cache, false);
+    }
+
+    private function normalize_endpoint(string $endpoint): string
+    {
+        $endpoint = esc_url_raw($endpoint);
+
+        if (! in_array($endpoint, self::ALLOWED_ENDPOINTS, true)) {
+            return self::ALLOWED_ENDPOINTS[0];
+        }
+
+        return $endpoint;
     }
 }

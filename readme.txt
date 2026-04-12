@@ -4,7 +4,7 @@ Tags: wordpress, toolkit, maintenance, comments, transliteration, cleanup
 Requires at least: 6.6
 Tested up to: 6.6
 Requires PHP: 8.1
-Stable tag: 0.6.0
+Stable tag: 0.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,12 @@ Composer нужен только разработчику:
 - для сборки релизного ZIP (`composer build-release` или `bash tools/build-release.sh`).
 
 == Changelog ==
+
+= 0.6.1 =
+* Выполнен hardening MVP модуля «IndexNow».
+* Усилен runtime отдачи ключа `/<key>.txt` (предсказуемое поведение для GET/HEAD).
+* Добавлен runtime-whitelist endpoint и безопасный fallback при некорректном значении.
+* Улучшен антидубль отправок URL, чтобы снизить конфликты между ручной и автоматической отправкой.
 
 = 0.6.0 =
 * Добавлен MVP модуля «IndexNow».
