@@ -3,7 +3,7 @@
  * Plugin Name: Dr.Slon Toolkit
  * Plugin URI: https://github.com/A-Krivoshen/dr-slon-toolkit
  * Description: Модульный плагин WordPress для задач клиентских сайтов.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Author: Dr.Slon
  * Author URI: https://krivoshein.site
  * Text Domain: dr-slon-toolkit
@@ -20,7 +20,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-const DSTK_VERSION = '0.2.0';
+const DSTK_VERSION = '0.3.0';
 const DSTK_PLUGIN_FILE = __FILE__;
 const DSTK_PLUGIN_DIR = __DIR__ . '/';
 

@@ -91,6 +91,21 @@ final class SettingsPage
             'dr-slon-toolkit',
             'dstk_hide_login_section'
         );
+
+        add_settings_section(
+            'dstk_rest_api_section',
+            __('Параметры REST API Control', 'dr-slon-toolkit'),
+            [$this, 'render_rest_api_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_rest_api',
+            __('Настройки REST API', 'dr-slon-toolkit'),
+            [$this, 'render_rest_api_fields'],
+            'dr-slon-toolkit',
+            'dstk_rest_api_section'
+        );
     }
 
     /**
@@ -143,6 +158,11 @@ final class SettingsPage
             <label>
                 <input type="checkbox" name="dstk_settings[modules][hide_login]" value="1" <?php checked(! empty($modules['hide_login'])); ?>>
                 <?php echo esc_html__('Скрытый вход', 'dr-slon-toolkit'); ?>
+            </label>
+            <br>
+            <label>
+                <input type="checkbox" name="dstk_settings[modules][rest_api_control]" value="1" <?php checked(! empty($modules['rest_api_control'])); ?>>
+                <?php echo esc_html__('REST API Control', 'dr-slon-toolkit'); ?>
             </label>
         </fieldset>
         <?php
@@ -215,6 +235,61 @@ final class SettingsPage
             >
             <p class="description">
                 <?php echo esc_html__('Пример: my-login. Итоговый адрес входа: /my-login/.', 'dr-slon-toolkit'); ?>
+            </p>
+        </fieldset>
+        <?php
+    }
+
+    public function render_rest_api_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('Ограничение REST API может повлиять на редактор и интеграции. Начните с мягкого режима и проверяйте сайт после изменений.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_rest_api_fields(): void
+    {
+        $settings = Settings::all();
+        $rest_api = isset($settings['rest_api']) && is_array($settings['rest_api']) ? $settings['rest_api'] : [];
+
+        $mode = isset($rest_api['mode']) ? (string) $rest_api['mode'] : 'allow_all';
+        $whitelist_routes = isset($rest_api['whitelist_routes']) ? (string) $rest_api['whitelist_routes'] : '';
+        $whitelist_namespaces = isset($rest_api['whitelist_namespaces']) ? (string) $rest_api['whitelist_namespaces'] : '';
+        $trusted_capability = isset($rest_api['trusted_capability']) ? (string) $rest_api['trusted_capability'] : 'edit_posts';
+        $system_routes = isset($rest_api['system_routes']) ? (string) $rest_api['system_routes'] : "/oembed/1.0/embed\n/wp/v2/types\n/wp/v2/taxonomies\n/wp/v2/statuses\n/wp/v2/search";
+        ?>
+        <fieldset>
+            <p>
+                <label for="dstk-rest-mode"><strong><?php echo esc_html__('Режим REST API', 'dr-slon-toolkit'); ?></strong></label><br>
+                <select id="dstk-rest-mode" name="dstk_settings[rest_api][mode]">
+                    <option value="allow_all" <?php selected($mode, 'allow_all'); ?>><?php echo esc_html__('Разрешить всем', 'dr-slon-toolkit'); ?></option>
+                    <option value="authenticated_only" <?php selected($mode, 'authenticated_only'); ?>><?php echo esc_html__('Только авторизованным', 'dr-slon-toolkit'); ?></option>
+                    <option value="whitelist" <?php selected($mode, 'whitelist'); ?>><?php echo esc_html__('Ограниченный режим по whitelist', 'dr-slon-toolkit'); ?></option>
+                </select>
+            </p>
+
+            <p>
+                <label for="dstk-rest-whitelist-routes"><strong><?php echo esc_html__('Whitelist маршрутов (точные пути)', 'dr-slon-toolkit'); ?></strong></label><br>
+                <textarea id="dstk-rest-whitelist-routes" name="dstk_settings[rest_api][whitelist_routes]" rows="4" class="large-text code"><?php echo esc_textarea($whitelist_routes); ?></textarea>
+                <span class="description"><?php echo esc_html__('По одному маршруту в строке. Пример: /wp/v2/posts', 'dr-slon-toolkit'); ?></span>
+            </p>
+
+            <p>
+                <label for="dstk-rest-whitelist-namespaces"><strong><?php echo esc_html__('Whitelist namespace', 'dr-slon-toolkit'); ?></strong></label><br>
+                <textarea id="dstk-rest-whitelist-namespaces" name="dstk_settings[rest_api][whitelist_namespaces]" rows="3" class="large-text code"><?php echo esc_textarea($whitelist_namespaces); ?></textarea>
+                <span class="description"><?php echo esc_html__('По одному namespace в строке. Пример: wp/v2', 'dr-slon-toolkit'); ?></span>
+            </p>
+
+            <p>
+                <label for="dstk-rest-capability"><strong><?php echo esc_html__('Доверенная capability для обхода ограничений', 'dr-slon-toolkit'); ?></strong></label><br>
+                <input id="dstk-rest-capability" type="text" name="dstk_settings[rest_api][trusted_capability]" value="<?php echo esc_attr($trusted_capability); ?>" class="regular-text code">
+                <span class="description"><?php echo esc_html__('Пример: edit_posts. В режиме whitelist пользователи с этой capability получают полный доступ.', 'dr-slon-toolkit'); ?></span>
+            </p>
+
+            <p>
+                <label for="dstk-rest-system-routes"><strong><?php echo esc_html__('Системные маршруты, которые остаются разрешёнными', 'dr-slon-toolkit'); ?></strong></label><br>
+                <textarea id="dstk-rest-system-routes" name="dstk_settings[rest_api][system_routes]" rows="5" class="large-text code"><?php echo esc_textarea($system_routes); ?></textarea>
+                <span class="description"><?php echo esc_html__('Используйте осторожно: удаление системных маршрутов может сломать редактор и интеграции.', 'dr-slon-toolkit'); ?></span>
             </p>
         </fieldset>
         <?php
