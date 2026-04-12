@@ -69,6 +69,13 @@ Build a production-oriented modular plugin with these planned modules:
 - Do not reformat unrelated files.
 - Do not rename files unless necessary.
 
+## Release build rules
+- Composer is a developer/build tool only.
+- Do not require Composer on client servers.
+- Client delivery format is a ready-to-install ZIP archive.
+- Use `tools/build-release.sh` (or `composer build-release`) to assemble release ZIP.
+- Release archive must include runtime files (`src/`, `vendor/`, main plugin file, uninstall, readme, license) and exclude development junk.
+
 ## When unsure
 - Choose the simpler implementation.
 - Leave a clear TODO in `TODO.md` instead of inventing unfinished behavior.
