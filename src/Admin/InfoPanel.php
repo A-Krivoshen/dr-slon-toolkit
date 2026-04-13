@@ -7,6 +7,7 @@ namespace DrSlon\Toolkit\Admin;
 final class InfoPanel
 {
     private const SCRIPT_HANDLE = 'dstk-partner-widget';
+    private const STYLE_HANDLE = 'dstk-admin-info-panel';
 
     public function register(): void
     {
@@ -21,8 +22,16 @@ final class InfoPanel
         }
 
         if (wp_script_is(self::SCRIPT_HANDLE, 'enqueued')) {
+            wp_enqueue_style(self::STYLE_HANDLE);
             return;
         }
+
+        wp_enqueue_style(
+            self::STYLE_HANDLE,
+            plugins_url('assets/admin/info-panel.css', DSTK_PLUGIN_FILE),
+            [],
+            DSTK_VERSION
+        );
 
         wp_enqueue_script(
             self::SCRIPT_HANDLE,
@@ -54,17 +63,19 @@ final class InfoPanel
     public function render(): void
     {
         ?>
-        <div class="card" style="max-width:920px;margin-top:20px;padding:16px 20px;">
-            <h2 style="margin-top:0;"><?php echo esc_html__('Служебная информация', 'dr-slon-toolkit'); ?></h2>
-            <p>
+        <section class="card dstk-info-panel" aria-label="<?php echo esc_attr__('Служебная информация Dr.Slon Toolkit', 'dr-slon-toolkit'); ?>">
+            <h2 class="dstk-info-panel__title"><?php echo esc_html__('Служебная информация', 'dr-slon-toolkit'); ?></h2>
+            <p class="dstk-info-panel__contacts">
                 <strong><?php echo esc_html__('По всем вопросам:', 'dr-slon-toolkit'); ?></strong>
                 <a href="mailto:aleksey@krivoshein.site">aleksey@krivoshein.site</a>
             </p>
-            <p style="margin:8px 0 14px;">
+            <p class="dstk-info-panel__note">
                 <?php echo esc_html__('Этот блок помогает поддерживать и развивать Dr.Slon Toolkit. Здесь размещаются полезные материалы без навязчивой рекламы и без вмешательства в рабочий интерфейс.', 'dr-slon-toolkit'); ?>
             </p>
-            <div class="wps-widget" data-w="//wpwidget.ru/greetings?orientation=3&pid=11291"></div>
-        </div>
+            <div class="dstk-info-panel__widget-wrap" aria-hidden="true">
+                <div class="wps-widget dstk-info-panel__widget" data-w="//wpwidget.ru/greetings?orientation=3&pid=11291"></div>
+            </div>
+        </section>
         <?php
     }
 

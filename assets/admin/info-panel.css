@@ -1,0 +1,42 @@
+.dstk-info-panel {
+    margin-top: 20px;
+    padding: 16px 20px;
+    max-width: 920px;
+    box-sizing: border-box;
+}
+
+.dstk-info-panel__title {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.dstk-info-panel__contacts {
+    margin: 0;
+}
+
+.dstk-info-panel__contacts a {
+    word-break: break-word;
+}
+
+.dstk-info-panel__note {
+    margin: 8px 0 14px;
+}
+
+.dstk-info-panel__widget-wrap {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.dstk-info-panel__widget {
+    max-width: 100%;
+}
+
+@media (max-width: 782px) {
+    .dstk-info-panel {
+        padding: 14px 16px;
+    }
+
+    .dstk-info-panel__widget-wrap {
+        display: none;
+    }
+}
