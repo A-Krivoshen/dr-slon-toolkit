@@ -158,6 +158,12 @@ final class RestApiControlModule implements ModuleInterface
             return '';
         }
 
+        $route = (string) wp_parse_url($route, PHP_URL_PATH);
+
+        if ($route === '') {
+            return '';
+        }
+
         $route = '/' . ltrim($route, '/');
 
         if ($route !== '/') {
@@ -252,6 +258,11 @@ final class RestApiControlModule implements ModuleInterface
                 $line = $this->normalize_route($line);
             } else {
                 $line = trim($line, '/');
+                $line = preg_replace('/[^a-z0-9_\\/-]/i', '', $line);
+
+                if (! is_string($line)) {
+                    continue;
+                }
             }
 
             if ($line === '') {

@@ -3,7 +3,11 @@
  * Plugin Name: Dr.Slon Toolkit
  * Plugin URI: https://github.com/A-Krivoshen/dr-slon-toolkit
  * Description: Модульный плагин WordPress для задач клиентских сайтов.
+<<<<<<< codex/build-foundational-structure-for-dr.slon-toolkit-vsv7sz
+ * Version: 0.8.3
+=======
  * Version: 0.8.2
+>>>>>>> main
  * Author: Dr.Slon
  * Author URI: https://krivoshein.site
  * Text Domain: dr-slon-toolkit
@@ -20,7 +24,11 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+<<<<<<< codex/build-foundational-structure-for-dr.slon-toolkit-vsv7sz
+const DSTK_VERSION = '0.8.3';
+=======
 const DSTK_VERSION = '0.8.2';
+>>>>>>> main
 const DSTK_PLUGIN_FILE = __FILE__;
 const DSTK_PLUGIN_DIR = __DIR__ . '/';
 
