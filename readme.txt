@@ -4,7 +4,11 @@ Tags: wordpress, toolkit, maintenance, comments, transliteration, cleanup
 Requires at least: 6.6
 Tested up to: 6.6
 Requires PHP: 8.1
+<<<<<<< codex/build-foundational-structure-for-dr.slon-toolkit-vsv7sz
 Stable tag: 0.8.3
+=======
+Stable tag: 0.8.2
+>>>>>>> main
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,10 +52,13 @@ Composer нужен только разработчику:
 
 == Changelog ==
 
+<<<<<<< codex/build-foundational-structure-for-dr.slon-toolkit-vsv7sz
 = 0.8.3 =
 * Усилен MVP «REST API Control»: улучшена нормализация whitelist-маршрутов через безопасный разбор пути URL.
 * Для whitelist namespace добавлена дополнительная runtime-санитизация как защита от некорректных значений в опциях.
 
+=======
+>>>>>>> main
 = 0.8.2 =
 * Синхронизирована документация и релизные данные с фактическим составом модулей.
 * Подтверждено, что модули Redirect Manager и Login Attempts в текущем релизе не реализованы и остаются в roadmap.
