@@ -6,23 +6,16 @@ namespace DrSlon\Toolkit\Admin;
 
 final class InfoPanel
 {
-    private const SCRIPT_HANDLE = 'dstk-partner-widget';
     private const STYLE_HANDLE = 'dstk-admin-info-panel';
 
     public function register(): void
     {
         add_action('admin_enqueue_scripts', [$this, 'enqueue_assets']);
-        add_action('in_admin_footer', [$this, 'render_for_current_screen'], 20);
     }
 
     public function enqueue_assets(string $hook_suffix): void
     {
         if (! $this->is_plugin_screen($hook_suffix)) {
-            return;
-        }
-
-        if (wp_script_is(self::SCRIPT_HANDLE, 'enqueued')) {
-            wp_enqueue_style(self::STYLE_HANDLE);
             return;
         }
 
@@ -32,50 +25,38 @@ final class InfoPanel
             [],
             DSTK_VERSION
         );
-
-        wp_enqueue_script(
-            self::SCRIPT_HANDLE,
-            '//wpwidget.ru/js/wps-widget-entry.min.js',
-            [],
-            null,
-            [
-                'in_footer' => true,
-                'strategy'  => 'async',
-            ]
-        );
-    }
-
-    public function render_for_current_screen(): void
-    {
-        $screen = get_current_screen();
-
-        if (! ($screen instanceof \WP_Screen)) {
-            return;
-        }
-
-        if (! $this->is_plugin_screen($screen->id)) {
-            return;
-        }
-
-        $this->render();
     }
 
     public function render(): void
     {
         ?>
-        <section class="card dstk-info-panel" aria-label="<?php echo esc_attr__('Служебная информация Dr.Slon Toolkit', 'dr-slon-toolkit'); ?>">
-            <h2 class="dstk-info-panel__title"><?php echo esc_html__('Служебная информация', 'dr-slon-toolkit'); ?></h2>
-            <p class="dstk-info-panel__contacts">
-                <strong><?php echo esc_html__('По всем вопросам:', 'dr-slon-toolkit'); ?></strong>
-                <a href="mailto:aleksey@krivoshein.site">aleksey@krivoshein.site</a>
-            </p>
-            <p class="dstk-info-panel__note">
-                <?php echo esc_html__('Этот блок помогает поддерживать и развивать Dr.Slon Toolkit. Здесь размещаются полезные материалы без навязчивой рекламы и без вмешательства в рабочий интерфейс.', 'dr-slon-toolkit'); ?>
-            </p>
-            <div class="dstk-info-panel__widget-wrap" aria-hidden="true">
-                <div class="wps-widget dstk-info-panel__widget" data-w="//wpwidget.ru/greetings?orientation=3&pid=11291"></div>
-            </div>
-        </section>
+        <div class="dstk-info-panels">
+            <section class="card dstk-info-panel" aria-labelledby="dstk-support-title">
+                <h2 id="dstk-support-title" class="dstk-info-panel__title"><?php echo esc_html__('Поддержка плагина', 'dr-slon-toolkit'); ?></h2>
+                <p class="dstk-info-panel__text">
+                    <?php echo esc_html__('По всем вопросам пишите:', 'dr-slon-toolkit'); ?>
+                    <a href="mailto:aleksey@krivoshein.site">aleksey@krivoshein.site</a>.
+                </p>
+            </section>
+
+            <section class="card dstk-info-panel" aria-labelledby="dstk-review-title">
+                <h2 id="dstk-review-title" class="dstk-info-panel__title"><?php echo esc_html__('Нравится плагин?', 'dr-slon-toolkit'); ?></h2>
+                <p class="dstk-info-panel__text">
+                    <?php echo esc_html__('Если Dr.Slon Toolkit помогает вашему проекту, вы можете отблагодарить, оставив отзыв. Хороший отзыв помогает продвигать продукты и услуги.', 'dr-slon-toolkit'); ?>
+                </p>
+                <p class="dstk-info-panel__actions">
+                    <a class="button button-primary" href="<?php echo esc_url('https://yandex.ru/maps/org/ip_krivoshein_aleksey_sergeyevich/100156734340/reviews/'); ?>" target="_blank" rel="noopener noreferrer">
+                        <?php echo esc_html__('Оставить отзыв на Яндекс.Картах', 'dr-slon-toolkit'); ?>
+                    </a>
+                </p>
+                <p class="dstk-info-panel__text"><?php echo esc_html__('Также вы можете ознакомиться с другими услугами.', 'dr-slon-toolkit'); ?></p>
+                <p class="dstk-info-panel__actions">
+                    <a class="button" href="<?php echo esc_url('https://krivoshein.site/prays-list/'); ?>" target="_blank" rel="noopener noreferrer">
+                        <?php echo esc_html__('Посмотреть услуги', 'dr-slon-toolkit'); ?>
+                    </a>
+                </p>
+            </section>
+        </div>
         <?php
     }
 

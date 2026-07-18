@@ -4,28 +4,25 @@ declare(strict_types=1);
 
 namespace DrSlon\Toolkit\Core;
 
-final class Activator
+use DrSlon\Toolkit\Modules\IndexNowModule;
+
+final class Deactivator
 {
-    public static function activate(bool $network_wide = false): void
+    public static function deactivate(bool $network_wide = false): void
     {
         if (is_multisite() && $network_wide) {
-            self::for_each_site([self::class, 'activate_site']);
+            self::for_each_site([self::class, 'deactivate_site']);
             return;
         }
 
-        self::activate_site();
+        self::deactivate_site();
     }
 
-    public static function activate_site(): void
+    public static function deactivate_site(): void
     {
-        $settings = get_option(Settings::OPTION_KEY, null);
-
-        if (! is_array($settings)) {
-            add_option(Settings::OPTION_KEY, Settings::defaults());
-        }
-
-        update_option('dstk_version', DSTK_VERSION);
-        RewriteManager::schedule();
+        wp_clear_scheduled_hook(IndexNowModule::CRON_HOOK);
+        delete_option(IndexNowModule::QUEUE_LOCK_OPTION);
+        RewriteManager::deactivate();
     }
 
     /**

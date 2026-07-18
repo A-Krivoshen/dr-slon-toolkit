@@ -7,6 +7,7 @@ namespace DrSlon\Toolkit\Core;
 final class Settings
 {
     public const OPTION_KEY = 'dstk_settings';
+    public const REWRITE_FLUSH_PENDING_OPTION = 'dstk_rewrite_flush_pending';
 
     /**
      * @return array<string, mixed>
@@ -81,11 +82,54 @@ final class Settings
         return ! empty($settings['modules'][$module]);
     }
 
+    public static function sanitize_hide_login_slug(string $value): string
+    {
+        $slug = sanitize_title_with_dashes($value);
+        $reserved = [
+            'author',
+            'category',
+            'comment-page',
+            'comments',
+            'embed',
+            'favicon-ico',
+            'feed',
+            'index',
+            'index-php',
+            'page',
+            'robots-txt',
+            'search',
+            'sitemap',
+            'sitemap-xml',
+            'tag',
+            'trackback',
+            'well-known',
+            'wp',
+            'wp-admin',
+            'wp-content',
+            'wp-includes',
+            'wp-json',
+            'xmlrpc',
+            'xmlrpc-php',
+        ];
+
+        if (
+            $slug === ''
+            || strlen($slug) > 80
+            || preg_match('/\A[a-z0-9]+(?:-[a-z0-9]+)*\z/D', $slug) !== 1
+            || str_starts_with($slug, 'wp-')
+            || in_array($slug, $reserved, true)
+        ) {
+            return (string) self::defaults()['hide_login']['slug'];
+        }
+
+        return $slug;
+    }
+
     /**
      * @param array<string, mixed> $input
      * @return array<string, mixed>
      */
-    public static function merge_with_defaults(array $input): array
+    public static function merge_with_defaults(array $input, bool $validate_entities = false): array
     {
         $defaults = self::defaults();
 
@@ -96,22 +140,12 @@ final class Settings
         $indexnow = isset($input['indexnow']) && is_array($input['indexnow']) ? $input['indexnow'] : [];
         $sitemap = isset($input['sitemap']) && is_array($input['sitemap']) ? $input['sitemap'] : [];
         $update_controls = isset($input['update_controls']) && is_array($input['update_controls']) ? $input['update_controls'] : [];
+        $cleanup_submitted = ! empty($cleanup['_submitted']);
+        $indexnow_submitted = ! empty($indexnow['_submitted']);
+        $sitemap_submitted = ! empty($sitemap['_submitted']);
+        $update_controls_submitted = ! empty($update_controls['_submitted']);
 
-        $slug = '';
-
-        if (array_key_exists('slug', $hide_login)) {
-            $slug = sanitize_title_with_dashes((string) $hide_login['slug']);
-        }
-
-        $reserved_slugs = [
-            'wp-admin',
-            'wp-login',
-            'wp-loginphp',
-        ];
-
-        if ($slug === '' || in_array($slug, $reserved_slugs, true)) {
-            $slug = $defaults['hide_login']['slug'];
-        }
+        $slug = self::sanitize_hide_login_slug(isset($hide_login['slug']) ? (string) $hide_login['slug'] : '');
 
         $mode = isset($rest_api['mode']) ? sanitize_key((string) $rest_api['mode']) : $defaults['rest_api']['mode'];
 
@@ -134,69 +168,66 @@ final class Settings
             $indexnow_endpoint = $defaults['indexnow']['endpoint'];
         }
 
-        $public_post_types = get_post_types(['public' => true], 'names');
-        $selected_post_types = isset($indexnow['post_types']) && is_array($indexnow['post_types']) ? $indexnow['post_types'] : $defaults['indexnow']['post_types'];
+        $viewable_post_types = [];
+        $viewable_taxonomies = [];
+
+        if ($validate_entities) {
+            foreach (get_post_types([], 'objects') as $post_type => $object) {
+                if ($post_type !== 'attachment' && is_post_type_viewable($object)) {
+                    $viewable_post_types[] = $post_type;
+                }
+            }
+
+            foreach (get_taxonomies([], 'objects') as $taxonomy => $object) {
+                if (is_taxonomy_viewable($object)) {
+                    $viewable_taxonomies[] = $taxonomy;
+                }
+            }
+        }
+
+        $selected_post_types = isset($indexnow['post_types']) && is_array($indexnow['post_types'])
+            ? $indexnow['post_types']
+            : ($indexnow_submitted ? [] : $defaults['indexnow']['post_types']);
         $sanitized_post_types = [];
 
         foreach ($selected_post_types as $post_type) {
             $post_type = sanitize_key((string) $post_type);
 
-            if ($post_type === '' || ! in_array($post_type, $public_post_types, true)) {
+            if ($post_type === '' || ($validate_entities && ! in_array($post_type, $viewable_post_types, true))) {
                 continue;
             }
 
             $sanitized_post_types[] = $post_type;
         }
 
-        if ($sanitized_post_types === []) {
-            $sanitized_post_types = $defaults['indexnow']['post_types'];
-        }
-
-        $public_sitemap_post_types = get_post_types(
-            [
-                'public'             => true,
-                'publicly_queryable' => true,
-            ],
-            'names'
-        );
-        $selected_sitemap_post_types = isset($sitemap['post_types']) && is_array($sitemap['post_types']) ? $sitemap['post_types'] : $defaults['sitemap']['post_types'];
+        $selected_sitemap_post_types = isset($sitemap['post_types']) && is_array($sitemap['post_types'])
+            ? $sitemap['post_types']
+            : ($sitemap_submitted ? [] : $defaults['sitemap']['post_types']);
         $sanitized_sitemap_post_types = [];
 
         foreach ($selected_sitemap_post_types as $post_type) {
             $post_type = sanitize_key((string) $post_type);
 
-            if ($post_type === '' || ! in_array($post_type, $public_sitemap_post_types, true)) {
+            if ($post_type === '' || ($validate_entities && ! in_array($post_type, $viewable_post_types, true))) {
                 continue;
             }
 
             $sanitized_sitemap_post_types[] = $post_type;
         }
 
-        if ($sanitized_sitemap_post_types === []) {
-            $sanitized_sitemap_post_types = $defaults['sitemap']['post_types'];
-        }
-
-        $public_sitemap_taxonomies = get_taxonomies(
-            [
-                'public' => true,
-            ],
-            'names'
-        );
-        $selected_sitemap_taxonomies = isset($sitemap['taxonomies']) && is_array($sitemap['taxonomies']) ? $sitemap['taxonomies'] : $defaults['sitemap']['taxonomies'];
+        $selected_sitemap_taxonomies = isset($sitemap['taxonomies']) && is_array($sitemap['taxonomies'])
+            ? $sitemap['taxonomies']
+            : ($sitemap_submitted ? [] : $defaults['sitemap']['taxonomies']);
         $sanitized_sitemap_taxonomies = [];
 
         foreach ($selected_sitemap_taxonomies as $taxonomy) {
             $taxonomy = sanitize_key((string) $taxonomy);
 
-            if ($taxonomy === '' || ! in_array($taxonomy, $public_sitemap_taxonomies, true)) {
+            if ($taxonomy === '' || ($validate_entities && ! in_array($taxonomy, $viewable_taxonomies, true))) {
                 continue;
             }
 
             $sanitized_sitemap_taxonomies[] = $taxonomy;
-        }
-
-        if ($sanitized_sitemap_taxonomies === []) {
-            $sanitized_sitemap_taxonomies = $defaults['sitemap']['taxonomies'];
         }
 
         $core_mode = isset($update_controls['core_mode']) ? sanitize_key((string) $update_controls['core_mode']) : $defaults['update_controls']['core_mode'];
@@ -217,10 +248,10 @@ final class Settings
                 'update_controls'  => ! empty($modules['update_controls']),
             ],
             'cleanup' => [
-                'disable_emojis'   => array_key_exists('disable_emojis', $cleanup) ? ! empty($cleanup['disable_emojis']) : $defaults['cleanup']['disable_emojis'],
-                'disable_wp_embed' => array_key_exists('disable_wp_embed', $cleanup) ? ! empty($cleanup['disable_wp_embed']) : $defaults['cleanup']['disable_wp_embed'],
-                'disable_xmlrpc'   => array_key_exists('disable_xmlrpc', $cleanup) ? ! empty($cleanup['disable_xmlrpc']) : $defaults['cleanup']['disable_xmlrpc'],
-                'clean_head'       => array_key_exists('clean_head', $cleanup) ? ! empty($cleanup['clean_head']) : $defaults['cleanup']['clean_head'],
+                'disable_emojis'   => array_key_exists('disable_emojis', $cleanup) ? ! empty($cleanup['disable_emojis']) : ($cleanup_submitted ? false : $defaults['cleanup']['disable_emojis']),
+                'disable_wp_embed' => array_key_exists('disable_wp_embed', $cleanup) ? ! empty($cleanup['disable_wp_embed']) : ($cleanup_submitted ? false : $defaults['cleanup']['disable_wp_embed']),
+                'disable_xmlrpc'   => array_key_exists('disable_xmlrpc', $cleanup) ? ! empty($cleanup['disable_xmlrpc']) : ($cleanup_submitted ? false : $defaults['cleanup']['disable_xmlrpc']),
+                'clean_head'       => array_key_exists('clean_head', $cleanup) ? ! empty($cleanup['clean_head']) : ($cleanup_submitted ? false : $defaults['cleanup']['clean_head']),
             ],
             'hide_login' => [
                 'slug' => $slug,
@@ -238,16 +269,16 @@ final class Settings
                 'post_types' => array_values(array_unique($sanitized_post_types)),
             ],
             'sitemap' => [
-                'enabled'    => array_key_exists('enabled', $sitemap) ? ! empty($sitemap['enabled']) : $defaults['sitemap']['enabled'],
+                'enabled'    => array_key_exists('enabled', $sitemap) ? ! empty($sitemap['enabled']) : ($sitemap_submitted ? false : $defaults['sitemap']['enabled']),
                 'post_types' => array_values(array_unique($sanitized_sitemap_post_types)),
                 'taxonomies' => array_values(array_unique($sanitized_sitemap_taxonomies)),
             ],
             'update_controls' => [
                 'core_mode'           => $core_mode,
-                'plugins'             => array_key_exists('plugins', $update_controls) ? ! empty($update_controls['plugins']) : $defaults['update_controls']['plugins'],
-                'themes'              => array_key_exists('themes', $update_controls) ? ! empty($update_controls['themes']) : $defaults['update_controls']['themes'],
-                'translations'        => array_key_exists('translations', $update_controls) ? ! empty($update_controls['translations']) : $defaults['update_controls']['translations'],
-                'email_notifications' => array_key_exists('email_notifications', $update_controls) ? ! empty($update_controls['email_notifications']) : $defaults['update_controls']['email_notifications'],
+                'plugins'             => array_key_exists('plugins', $update_controls) ? ! empty($update_controls['plugins']) : ($update_controls_submitted ? false : $defaults['update_controls']['plugins']),
+                'themes'              => array_key_exists('themes', $update_controls) ? ! empty($update_controls['themes']) : ($update_controls_submitted ? false : $defaults['update_controls']['themes']),
+                'translations'        => array_key_exists('translations', $update_controls) ? ! empty($update_controls['translations']) : ($update_controls_submitted ? false : $defaults['update_controls']['translations']),
+                'email_notifications' => array_key_exists('email_notifications', $update_controls) ? ! empty($update_controls['email_notifications']) : ($update_controls_submitted ? false : $defaults['update_controls']['email_notifications']),
             ],
         ];
     }

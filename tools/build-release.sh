@@ -7,13 +7,14 @@ BUILD_DIR="$ROOT_DIR/build"
 DIST_DIR="$ROOT_DIR/dist"
 STAGE_DIR="$BUILD_DIR/$PLUGIN_SLUG"
 MAIN_FILE="$ROOT_DIR/dr-slon-toolkit.php"
+VERIFY_SCRIPT="$ROOT_DIR/tools/verify-release.php"
 
-if [[ ! -f "$MAIN_FILE" ]]; then
-  echo "Не найден главный файл плагина: $MAIN_FILE" >&2
+if [[ ! -f "$MAIN_FILE" || ! -f "$ROOT_DIR/readme.txt" || ! -f "$VERIFY_SCRIPT" ]]; then
+  echo "Не найдены файлы метаданных или проверки релиза." >&2
   exit 1
 fi
 
-VERSION="$(php -r '$contents = file_get_contents($argv[1]); if (!preg_match("/^[ \t]*\* Version:\s*([^\r\n]+)/m", $contents, $m)) { fwrite(STDERR, "Не удалось определить версию плагина.\n"); exit(1);} echo trim($m[1]);' "$MAIN_FILE")"
+VERSION="$(php "$VERIFY_SCRIPT" --source "$ROOT_DIR")"
 
 ZIP_NAME="${PLUGIN_SLUG}-${VERSION}.zip"
 ZIP_PATH="$DIST_DIR/$ZIP_NAME"
@@ -22,21 +23,14 @@ echo "==> Подготовка каталогов сборки"
 rm -rf "$STAGE_DIR" "$ZIP_PATH"
 mkdir -p "$STAGE_DIR" "$DIST_DIR"
 
-echo "==> Установка production-зависимостей Composer"
-composer install \
-  --working-dir="$ROOT_DIR" \
-  --no-dev \
-  --prefer-dist \
-  --optimize-autoloader \
-  --no-interaction
-
 echo "==> Копирование runtime-файлов"
 cp "$ROOT_DIR/dr-slon-toolkit.php" "$STAGE_DIR/"
 cp "$ROOT_DIR/readme.txt" "$STAGE_DIR/"
 cp "$ROOT_DIR/uninstall.php" "$STAGE_DIR/"
 cp "$ROOT_DIR/LICENSE" "$STAGE_DIR/"
+cp "$ROOT_DIR/composer.json" "$STAGE_DIR/"
+cp "$ROOT_DIR/composer.lock" "$STAGE_DIR/"
 cp -R "$ROOT_DIR/src" "$STAGE_DIR/src"
-cp -R "$ROOT_DIR/vendor" "$STAGE_DIR/vendor"
 
 if [[ -d "$ROOT_DIR/languages" ]]; then
   cp -R "$ROOT_DIR/languages" "$STAGE_DIR/languages"
@@ -46,10 +40,42 @@ if [[ -d "$ROOT_DIR/assets" ]]; then
   cp -R "$ROOT_DIR/assets" "$STAGE_DIR/assets"
 fi
 
+echo "==> Установка production-зависимостей в staging"
+composer install \
+  --working-dir="$STAGE_DIR" \
+  --no-dev \
+  --prefer-dist \
+  --classmap-authoritative \
+  --no-interaction \
+  --no-plugins \
+  --no-scripts
+
+rm "$STAGE_DIR/composer.json" "$STAGE_DIR/composer.lock"
+
+SYMLINK_PATH="$(find "$STAGE_DIR" -type l -print -quit)"
+
+if [[ -n "$SYMLINK_PATH" ]]; then
+  echo "Staging contains a symbolic link: $SYMLINK_PATH" >&2
+  exit 1
+fi
+
+SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(git -C "$ROOT_DIR" log -1 --format=%ct)}"
+
+if [[ ! "$SOURCE_DATE_EPOCH" =~ ^[0-9]+$ ]]; then
+  echo "SOURCE_DATE_EPOCH must be a non-negative integer." >&2
+  exit 1
+fi
+
+find "$STAGE_DIR" -type d -exec chmod 755 {} +
+find "$STAGE_DIR" -type f -exec chmod 644 {} +
+find "$STAGE_DIR" -exec touch -d "@$SOURCE_DATE_EPOCH" {} +
+
 echo "==> Создание ZIP-архива $ZIP_NAME"
 (
   cd "$BUILD_DIR"
-  zip -rq "$ZIP_PATH" "$PLUGIN_SLUG"
+  find "$PLUGIN_SLUG" -print0 | sort -z | xargs -0 zip -X -q "$ZIP_PATH"
 )
+
+php "$VERIFY_SCRIPT" "$ZIP_PATH" "$VERSION"
 
 echo "Готово: $ZIP_PATH"

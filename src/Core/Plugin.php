@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrSlon\Toolkit\Core;
 
 use DrSlon\Toolkit\Admin\SettingsPage;
+use DrSlon\Toolkit\Integrations\GitHubReleaseUpdater;
 use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
 use DrSlon\Toolkit\Modules\CleanupModule;
 use DrSlon\Toolkit\Modules\DisableCommentsModule;
@@ -27,12 +28,32 @@ final class Plugin
 
         $this->booted = true;
 
+        $this->maybe_upgrade();
+
+        $rewrite_manager = new RewriteManager();
+        $rewrite_manager->register();
+
+        $updater = new GitHubReleaseUpdater(DSTK_PLUGIN_FILE, DSTK_VERSION);
+        $updater->register();
+
         if (is_admin()) {
             $settings_page = new SettingsPage();
             $settings_page->register();
         }
 
         $this->register_modules();
+    }
+
+    private function maybe_upgrade(): void
+    {
+        $installed_version = (string) get_option('dstk_version', '');
+
+        if ($installed_version === DSTK_VERSION) {
+            return;
+        }
+
+        update_option('dstk_version', DSTK_VERSION);
+        RewriteManager::schedule();
     }
 
     private function register_modules(): void

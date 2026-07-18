@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DrSlon\Toolkit\Tests\Unit;
+
+use DrSlon\Toolkit\Modules\UpdateControlsModule;
+use PHPUnit\Framework\TestCase;
+
+final class UpdateControlsModuleTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        $GLOBALS['dstk_test_options']['dstk_settings'] = [
+            'update_controls' => [
+                'core_mode'           => 'minor',
+                'plugins'             => true,
+                'themes'              => true,
+                'translations'        => true,
+                'email_notifications' => true,
+            ],
+        ];
+    }
+
+    public function test_minor_mode_never_reverses_a_core_veto(): void
+    {
+        $module = new UpdateControlsModule();
+
+        self::assertFalse($module->filter_allow_major_auto_core_updates(true));
+        self::assertFalse($module->filter_auto_update_core(false, null));
+        self::assertTrue($module->filter_auto_update_core(true, null));
+        self::assertFalse($module->filter_allow_dev_auto_core_updates(true));
+    }
+
+    public function test_enabled_controls_preserve_incoming_decisions(): void
+    {
+        $module = new UpdateControlsModule();
+
+        self::assertFalse($module->filter_auto_update_plugin(false, null));
+        self::assertTrue($module->filter_auto_update_plugin(true, null));
+        self::assertFalse($module->filter_send_email(false));
+        self::assertTrue($module->filter_send_email(true));
+    }
+}

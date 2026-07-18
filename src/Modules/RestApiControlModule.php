@@ -59,6 +59,10 @@ final class RestApiControlModule implements ModuleInterface
             return $result;
         }
 
+        if (strtoupper($request->get_method()) === 'OPTIONS') {
+            return $result;
+        }
+
         $config = $this->config();
 
         if ($config['mode'] === 'allow_all') {

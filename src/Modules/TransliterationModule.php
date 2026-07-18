@@ -9,15 +9,19 @@ use DrSlon\Toolkit\Core\ModuleInterface;
 final class TransliterationModule implements ModuleInterface
 {
     /**
+     * Practical Russian URL profile. Shared letters deliberately use Russian
+     * forms (Г => g, И => i). Ukrainian-only Ґ/Є/І/Ї use g/ye/i/yi; the
+     * module does not attempt language detection.
+     *
      * @var array<string, string>
      */
     private array $map = [
-        'А' => 'A', 'Б' => 'B', 'В' => 'V', 'Г' => 'H', 'Ґ' => 'G', 'Д' => 'D', 'Е' => 'E', 'Є' => 'Ye', 'Ё' => 'Yo',
-        'Ж' => 'Zh', 'З' => 'Z', 'И' => 'Y', 'І' => 'I', 'Ї' => 'Yi', 'Й' => 'Y', 'К' => 'K', 'Л' => 'L', 'М' => 'M',
-        'Н' => 'N', 'О' => 'O', 'П' => 'P', 'Р' => 'R', 'С' => 'S', 'Т' => 'T', 'У' => 'U', 'Ф' => 'F', 'Х' => 'Kh',
-        'Ц' => 'Ts', 'Ч' => 'Ch', 'Ш' => 'Sh', 'Щ' => 'Shch', 'Ъ' => '', 'Ы' => 'Y', 'Ь' => '', 'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
-        'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'h', 'ґ' => 'g', 'д' => 'd', 'е' => 'e', 'є' => 'ye', 'ё' => 'yo',
-        'ж' => 'zh', 'з' => 'z', 'и' => 'y', 'і' => 'i', 'ї' => 'yi', 'й' => 'y', 'к' => 'k', 'л' => 'l', 'м' => 'm',
+        'А' => 'a', 'Б' => 'b', 'В' => 'v', 'Г' => 'g', 'Ґ' => 'g', 'Д' => 'd', 'Е' => 'e', 'Є' => 'ye', 'Ё' => 'yo',
+        'Ж' => 'zh', 'З' => 'z', 'И' => 'i', 'І' => 'i', 'Ї' => 'yi', 'Й' => 'y', 'К' => 'k', 'Л' => 'l', 'М' => 'm',
+        'Н' => 'n', 'О' => 'o', 'П' => 'p', 'Р' => 'r', 'С' => 's', 'Т' => 't', 'У' => 'u', 'Ф' => 'f', 'Х' => 'kh',
+        'Ц' => 'ts', 'Ч' => 'ch', 'Ш' => 'sh', 'Щ' => 'shch', 'Ъ' => '', 'Ы' => 'y', 'Ь' => '', 'Э' => 'e', 'Ю' => 'yu', 'Я' => 'ya',
+        'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'ґ' => 'g', 'д' => 'd', 'е' => 'e', 'є' => 'ye', 'ё' => 'yo',
+        'ж' => 'zh', 'з' => 'z', 'и' => 'i', 'і' => 'i', 'ї' => 'yi', 'й' => 'y', 'к' => 'k', 'л' => 'l', 'м' => 'm',
         'н' => 'n', 'о' => 'o', 'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't', 'у' => 'u', 'ф' => 'f', 'х' => 'kh',
         'ц' => 'ts', 'ч' => 'ch', 'ш' => 'sh', 'щ' => 'shch', 'ъ' => '', 'ы' => 'y', 'ь' => '', 'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
     ];
@@ -25,7 +29,6 @@ final class TransliterationModule implements ModuleInterface
     public function register(): void
     {
         add_filter('sanitize_title', [$this, 'filter_sanitize_title'], 9, 3);
-        add_filter('wp_unique_post_slug', [$this, 'filter_post_slug'], 10, 6);
         add_filter('pre_term_slug', [$this, 'filter_term_slug']);
         add_filter('sanitize_file_name', [$this, 'filter_file_name'], 10, 2);
     }
@@ -36,28 +39,23 @@ final class TransliterationModule implements ModuleInterface
             return $title;
         }
 
-        if (! $this->has_non_latin_characters($raw_title)) {
+        if (! $this->has_non_ascii_characters($raw_title)) {
             return $title;
         }
 
-        if ($title !== '' && ! $this->has_non_latin_characters($title)) {
+        if ($title !== '' && ! $this->has_non_ascii_characters($title)) {
             return $title;
         }
 
-        return $this->normalize_slug($raw_title);
-    }
+        $slug = $this->normalize_slug($raw_title);
 
-    public function filter_post_slug(string $slug, int $post_id, string $post_status, string $post_type, int $post_parent, string $original_slug): string
-    {
-        if ($this->has_non_latin_characters($slug)) {
-            return $this->normalize_slug($slug);
+        if ($slug !== '') {
+            return $slug;
         }
 
-        if ($slug === '' && $this->has_non_latin_characters($original_slug)) {
-            return $this->normalize_slug($original_slug);
-        }
+        $fallback = sanitize_title_with_dashes($raw_title, '', 'save');
 
-        return $slug;
+        return $fallback !== '' ? $fallback : $title;
     }
 
     /**
@@ -69,46 +67,61 @@ final class TransliterationModule implements ModuleInterface
             return (string) $slug;
         }
 
-        if (! $this->has_non_latin_characters($slug)) {
+        if (! $this->has_non_ascii_characters($slug)) {
             return $slug;
         }
 
-        return $this->normalize_slug($slug);
+        $normalized = $this->normalize_slug($slug);
+
+        return $normalized !== '' ? $normalized : sanitize_title_with_dashes($slug, '', 'save');
     }
 
     public function filter_file_name(string $filename, string $filename_raw): string
     {
-        if (! $this->has_non_latin_characters($filename_raw)) {
+        if (
+            ! $this->has_non_ascii_characters($filename_raw)
+            || preg_match('/\A[A-Za-z0-9][A-Za-z0-9._-]*\z/D', $filename) === 1
+        ) {
             return $filename;
         }
 
-        $parts = pathinfo($filename_raw);
+        $parts = pathinfo($filename);
         $name = isset($parts['filename']) ? (string) $parts['filename'] : '';
         $extension = isset($parts['extension']) ? (string) $parts['extension'] : '';
 
         $name = $this->normalize_slug($name);
 
         if ($name === '') {
-            return $filename;
+            $name = 'file';
         }
 
         if ($extension === '') {
             return $name;
         }
 
-        return $name . '.' . strtolower(sanitize_key($extension));
+        $extension = strtolower($extension);
+
+        if (preg_match('/^[a-z0-9]+$/D', $extension) !== 1) {
+            return $name;
+        }
+
+        return $name . '.' . $extension;
     }
 
-    private function has_non_latin_characters(string $value): bool
+    private function has_non_ascii_characters(string $value): bool
     {
-        return (bool) preg_match('/[^\x20-\x7E]/u', $value);
+        return preg_match('/[^\x00-\x7F]/', $value) === 1;
     }
 
     private function normalize_slug(string $value): string
     {
-        $transliterated = strtr($value, $this->map);
-        $slug = sanitize_title($transliterated);
+        $transliterated = remove_accents(strtr($value, $this->map));
+        $ascii = preg_replace('/[^A-Za-z0-9]+/', '-', $transliterated);
 
-        return $slug !== '' ? $slug : sanitize_title($value);
+        if (! is_string($ascii)) {
+            return '';
+        }
+
+        return sanitize_title_with_dashes($ascii, '', 'save');
     }
 }

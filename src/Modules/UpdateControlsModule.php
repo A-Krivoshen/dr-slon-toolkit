@@ -14,6 +14,11 @@ final class UpdateControlsModule implements ModuleInterface
     public const CORE_SECURITY = 'security';
     public const CORE_OFF = 'off';
 
+    /**
+     * @var array{core_mode:string,plugins:bool,themes:bool,translations:bool,email_notifications:bool}|null
+     */
+    private ?array $cached_config = null;
+
     public function register(): void
     {
         add_filter('allow_major_auto_core_updates', [$this, 'filter_allow_major_auto_core_updates']);
@@ -32,8 +37,10 @@ final class UpdateControlsModule implements ModuleInterface
         add_filter('automatic_updates_send_debug_email', [$this, 'filter_send_email'], 10, 1);
     }
 
-    public function filter_allow_major_auto_core_updates(bool $allow): bool
+    public function filter_allow_major_auto_core_updates(mixed $allow): bool
     {
+        unset($allow);
+
         $mode = $this->config()['core_mode'];
 
         if ($mode === self::CORE_ALL) {
@@ -47,7 +54,7 @@ final class UpdateControlsModule implements ModuleInterface
         return false;
     }
 
-    public function filter_allow_minor_auto_core_updates(bool $allow): bool
+    public function filter_allow_minor_auto_core_updates(mixed $allow): bool
     {
         $mode = $this->config()['core_mode'];
 
@@ -55,14 +62,18 @@ final class UpdateControlsModule implements ModuleInterface
             return false;
         }
 
-        return in_array($mode, [self::CORE_ALL, self::CORE_MINOR, self::CORE_SECURITY], true);
+        if ($mode === self::CORE_ALL) {
+            return true;
+        }
+
+        return (bool) $allow;
     }
 
-    public function filter_allow_dev_auto_core_updates(bool $allow): bool
+    public function filter_allow_dev_auto_core_updates(mixed $allow): bool
     {
-        $mode = $this->config()['core_mode'];
+        unset($allow);
 
-        return $mode === self::CORE_ALL;
+        return false;
     }
 
     /**
@@ -79,14 +90,6 @@ final class UpdateControlsModule implements ModuleInterface
             return false;
         }
 
-        if ($mode === self::CORE_ALL) {
-            return true;
-        }
-
-        if ($mode === self::CORE_MINOR || $mode === self::CORE_SECURITY) {
-            return true;
-        }
-
         return (bool) $update;
     }
 
@@ -96,9 +99,9 @@ final class UpdateControlsModule implements ModuleInterface
      */
     public function filter_auto_update_plugin($update, $item): bool
     {
-        unset($update, $item);
+        unset($item);
 
-        return $this->config()['plugins'];
+        return $this->config()['plugins'] && (bool) $update;
     }
 
     /**
@@ -107,9 +110,9 @@ final class UpdateControlsModule implements ModuleInterface
      */
     public function filter_auto_update_theme($update, $item): bool
     {
-        unset($update, $item);
+        unset($item);
 
-        return $this->config()['themes'];
+        return $this->config()['themes'] && (bool) $update;
     }
 
     /**
@@ -118,17 +121,19 @@ final class UpdateControlsModule implements ModuleInterface
      */
     public function filter_auto_update_translation($update, $item): bool
     {
-        unset($update, $item);
+        unset($item);
 
-        return $this->config()['translations'];
+        return $this->config()['translations'] && (bool) $update;
     }
 
     /**
      * @param mixed ...$args
      */
-    public function filter_send_email(bool $send, ...$args): bool
+    public function filter_send_email(mixed $send, ...$args): bool
     {
-        return $this->config()['email_notifications'];
+        unset($args);
+
+        return $this->config()['email_notifications'] && (bool) $send;
     }
 
     /**
@@ -136,6 +141,10 @@ final class UpdateControlsModule implements ModuleInterface
      */
     private function config(): array
     {
+        if ($this->cached_config !== null) {
+            return $this->cached_config;
+        }
+
         $settings = Settings::all();
         $update_controls = isset($settings['update_controls']) && is_array($settings['update_controls']) ? $settings['update_controls'] : [];
 
@@ -145,12 +154,14 @@ final class UpdateControlsModule implements ModuleInterface
             $core_mode = self::CORE_MINOR;
         }
 
-        return [
+        $this->cached_config = [
             'core_mode'           => $core_mode,
             'plugins'             => ! array_key_exists('plugins', $update_controls) || ! empty($update_controls['plugins']),
             'themes'              => ! array_key_exists('themes', $update_controls) || ! empty($update_controls['themes']),
             'translations'        => ! array_key_exists('translations', $update_controls) || ! empty($update_controls['translations']),
             'email_notifications' => ! array_key_exists('email_notifications', $update_controls) || ! empty($update_controls['email_notifications']),
         ];
+
+        return $this->cached_config;
     }
 }

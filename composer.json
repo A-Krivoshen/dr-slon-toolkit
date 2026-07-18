@@ -6,15 +6,33 @@
   "require": {
     "php": ">=8.1"
   },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "phpunit/phpunit": "^10.5",
+    "wp-coding-standards/wpcs": "^3.1"
+  },
   "autoload": {
     "psr-4": {
       "DrSlon\\Toolkit\\": "src/"
     }
   },
   "scripts": {
-    "build-release": "bash tools/build-release.sh"
+    "build-release": "bash tools/build-release.sh",
+    "check": [
+      "@lint",
+      "@cs",
+      "@test"
+    ],
+    "cs": "phpcs",
+    "cs-fix": "phpcbf",
+    "lint": "bash tools/lint-php.sh",
+    "test": "phpunit"
   },
   "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
     "sort-packages": true
   },
   "minimum-stability": "stable",

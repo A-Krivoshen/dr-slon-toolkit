@@ -3,17 +3,14 @@
  * Plugin Name: Dr.Slon Toolkit
  * Plugin URI: https://github.com/A-Krivoshen/dr-slon-toolkit
  * Description: Модульный плагин WordPress для задач клиентских сайтов.
-<<<<<<< codex/build-foundational-structure-for-dr.slon-toolkit-vsv7sz
- * Version: 0.8.3
-=======
- * Version: 0.8.2
->>>>>>> main
+ * Version: 0.9.0
  * Author: Dr.Slon
  * Author URI: https://krivoshein.site
  * Text Domain: dr-slon-toolkit
  * Domain Path: /languages
  * Requires at least: 6.6
  * Requires PHP: 8.1
+ * Update URI: https://github.com/A-Krivoshen/dr-slon-toolkit
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -24,11 +21,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-<<<<<<< codex/build-foundational-structure-for-dr.slon-toolkit-vsv7sz
-const DSTK_VERSION = '0.8.3';
-=======
-const DSTK_VERSION = '0.8.2';
->>>>>>> main
+const DSTK_VERSION = '0.9.0';
 const DSTK_PLUGIN_FILE = __FILE__;
 const DSTK_PLUGIN_DIR = __DIR__ . '/';
 
@@ -54,6 +47,7 @@ if (! is_readable($dstk_autoloader)) {
 require_once $dstk_autoloader;
 
 register_activation_hook(DSTK_PLUGIN_FILE, [\DrSlon\Toolkit\Core\Activator::class, 'activate']);
+register_deactivation_hook(DSTK_PLUGIN_FILE, [\DrSlon\Toolkit\Core\Deactivator::class, 'deactivate']);
 
 add_action('plugins_loaded', static function (): void {
     load_plugin_textdomain('dr-slon-toolkit', false, dirname(plugin_basename(DSTK_PLUGIN_FILE)) . '/languages');

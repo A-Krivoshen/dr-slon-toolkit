@@ -6,13 +6,13 @@
   - Минимальная точка запуска плагина.
   - Загружает автозагрузчик Composer, переводы, хук активации и запуск плагина.
 - `src/Core`
-  - Классы запуска и жизненного цикла (`Plugin`, `Activator`, `Settings`, `ModuleInterface`).
+  - Классы запуска и жизненного цикла (`Plugin`, `Activator`, `Deactivator`, `RewriteManager`, `Settings`, `ModuleInterface`).
 - `src/Admin`
   - Нативная страница в wp-admin, регистрация настроек через Settings API и переиспользуемые UI-блоки для страниц плагина.
 - `src/Modules`
   - Функциональные модули с чёткой зоной ответственности.
 - `src/Integrations`
-  - Классы совместимости со сторонними системами (сейчас — детектор The SEO Framework).
+  - Интеграция с The SEO Framework и обновлениями GitHub Releases.
 
 ## Основные классы
 
@@ -21,10 +21,14 @@
 - `DrSlon\Toolkit\Core\Settings`
   - Хранит значения по умолчанию, безопасно объединяет вложенные настройки и даёт доступ к опции `dstk_settings`.
 - `DrSlon\Toolkit\Core\Activator`
-  - Инициализирует базовые опции и версию при активации.
+  - Инициализирует базовые опции и версию, включая network activation.
+- `DrSlon\Toolkit\Core\RewriteManager`
+  - Выполняет отложенный flush только после регистрации актуальных правил и очищает их при деактивации.
+- `DrSlon\Toolkit\Integrations\GitHubReleaseUpdater`
+  - Проверяет GitHub Release API и устанавливает только ZIP-asset с совпадающими SHA-256, размером, версией и штатной структурой.
 - `DrSlon\Toolkit\Admin\InfoPanel`
-  - Единый переиспользуемый информационный блок с контактами и партнёрским баннером.
-  - Рендерится только на экранах Dr.Slon Toolkit через `in_admin_footer`, не вмешивается в чужие страницы wp-admin.
+  - Локальные карточки поддержки и ссылок без удалённого исполняемого кода.
+  - Рендерится внутри страниц Dr.Slon Toolkit и не вмешивается в чужие экраны wp-admin.
 
 ## Модули
 
@@ -44,17 +48,17 @@
   - Поддерживает режимы: открытый, только для авторизованных и whitelist.
   - Содержит встроенный базовый allowlist системных маршрутов; настройки в админке только расширяют этот список.
 - `IndexNowModule`
-  - Отправляет URL в IndexNow вручную и автоматически (publish/update/trash/delete).
+  - Отправляет URL вручную или через неблокирующую очередь WP-Cron.
   - Отдаёт проверочный ключ по `/<key>.txt` без записи файла на диск.
-  - Имеет встроенный whitelist endpoint и простой антидубль отправок URL.
+  - Учитывает Search Engine Visibility, noindex и canonical The SEO Framework.
 - `SitemapModule`
-  - Отдаёт безопасный MVP XML sitemap по маршрутам `/sitemap.xml`, `/sitemap-pt-{post_type}.xml`, `/sitemap-tax-{taxonomy}.xml`.
+  - Отдаёт пагинированный и кешируемый XML sitemap по собственным маршрутам.
   - Исключает записи не в статусе `publish` и записи с паролем; noindex-исключения доступны через фильтр `dstk_sitemap_is_noindex`.
   - Добавляет TSF-safe режим: при активном The SEO Framework runtime sitemap Dr.Slon Toolkit не обслуживается.
 - `UpdateControlsModule`
   - Управляет автообновлениями ядра, плагинов, тем и переводов через нативные фильтры WordPress.
   - Позволяет управлять e-mail уведомлениями об автообновлениях.
-  - Для режима security в MVP использует безопасное приближение через minor-канал без major/dev обновлений.
+  - Для режима security использует безопасное приближение через minor-канал без major/dev обновлений.
 
 ## Модель данных
 
