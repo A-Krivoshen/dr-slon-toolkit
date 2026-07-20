@@ -400,7 +400,8 @@ final class HideLoginModule implements ModuleInterface
     {
         $route = get_query_var(self::ROUTE_QUERY_VAR);
 
-        if (! is_scalar($route) || ! in_array((string) $route, [$this->slug, '1'], true)) {
+        // Only the configured secret slug is accepted — never a generic sentinel like "1".
+        if (! is_scalar($route) || (string) $route !== $this->slug) {
             return false;
         }
 

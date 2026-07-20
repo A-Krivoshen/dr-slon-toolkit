@@ -169,4 +169,19 @@ final class HideLoginModuleTest extends TestCase
         self::assertArrayHasKey('wp_after_insert_post', $GLOBALS['dstk_test_actions']);
         self::assertSame(4, $GLOBALS['dstk_test_actions']['wp_after_insert_post'][0][2]);
     }
+
+    public function test_generic_query_var_one_is_not_a_custom_login_route(): void
+    {
+        $GLOBALS['dstk_test_options']['permalink_structure'] = '';
+        $_SERVER['REQUEST_URI'] = '/';
+        $module = new HideLoginModule();
+        $method = new \ReflectionMethod(HideLoginModule::class, 'is_custom_route_request');
+        $method->setAccessible(true);
+
+        $GLOBALS['dstk_test_query_vars']['dstk_custom_login'] = '1';
+        self::assertFalse($method->invoke($module));
+
+        $GLOBALS['dstk_test_query_vars']['dstk_custom_login'] = 'private-login';
+        self::assertTrue($method->invoke($module));
+    }
 }
