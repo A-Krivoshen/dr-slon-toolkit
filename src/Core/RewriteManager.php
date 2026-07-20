@@ -24,9 +24,11 @@ final class RewriteManager
             return;
         }
 
+        // Flush first so a fatal/timeout during rewrite rebuild keeps the pending
+        // flag and retries on the next request.
+        flush_rewrite_rules();
         delete_option(Settings::REWRITE_FLUSH_PENDING_OPTION);
         delete_option(self::LEGACY_PENDING_OPTION);
-        flush_rewrite_rules();
     }
 
     public static function deactivate(): void
