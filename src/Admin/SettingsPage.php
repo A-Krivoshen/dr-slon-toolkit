@@ -426,14 +426,20 @@ final class SettingsPage
 
             <p>
                 <label for="dstk-rest-capability"><strong><?php echo esc_html__('Доверенная capability для обхода ограничений', 'dr-slon-toolkit'); ?></strong></label><br>
-                <input id="dstk-rest-capability" type="text" name="dstk_settings[rest_api][trusted_capability]" value="<?php echo esc_attr($trusted_capability); ?>" class="regular-text code">
-                <span class="description"><?php echo esc_html__('Пример: edit_posts. В режиме whitelist пользователи с этой capability получают полный доступ.', 'dr-slon-toolkit'); ?></span>
+                <select id="dstk-rest-capability" name="dstk_settings[rest_api][trusted_capability]">
+                    <?php foreach (Settings::trusted_capabilities() as $capability) : ?>
+                        <option value="<?php echo esc_attr($capability); ?>" <?php selected($trusted_capability, $capability); ?>>
+                            <?php echo esc_html($capability); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <span class="description"><?php echo esc_html__('Пользователи с этой capability обходят whitelist. Маршруты редактора (posts/pages/media) доступны только авторизованным.', 'dr-slon-toolkit'); ?></span>
             </p>
 
             <p>
-                <label for="dstk-rest-system-routes"><strong><?php echo esc_html__('Дополнительные безопасные маршруты (расширение встроенного allowlist)', 'dr-slon-toolkit'); ?></strong></label><br>
+                <label for="dstk-rest-system-routes"><strong><?php echo esc_html__('Дополнительные маршруты редактора (только для авторизованных)', 'dr-slon-toolkit'); ?></strong></label><br>
                 <textarea id="dstk-rest-system-routes" name="dstk_settings[rest_api][system_routes]" rows="5" class="large-text code"><?php echo esc_textarea($system_routes); ?></textarea>
-                <span class="description"><?php echo esc_html__('Встроенный базовый allowlist WordPress всегда активен и не зависит от этого поля. Здесь можно только добавить дополнительные маршруты.', 'dr-slon-toolkit'); ?></span>
+                <span class="description"><?php echo esc_html__('Публично остаются только oembed и корень API. Whitelist-маршруты ниже — явный публичный доступ. Это поле расширяет allowlist редактора (нужен вход).', 'dr-slon-toolkit'); ?></span>
             </p>
         </fieldset>
         <?php
@@ -577,7 +583,6 @@ final class SettingsPage
                 <select id="dstk-core-update-mode" name="dstk_settings[update_controls][core_mode]">
                     <option value="all" <?php selected($core_mode, 'all'); ?>><?php echo esc_html__('Все автообновления (major + minor)', 'dr-slon-toolkit'); ?></option>
                     <option value="minor" <?php selected($core_mode, 'minor'); ?>><?php echo esc_html__('Только minor (рекомендуется)', 'dr-slon-toolkit'); ?></option>
-                    <option value="security" <?php selected($core_mode, 'security'); ?>><?php echo esc_html__('Только security/критические (MVP-режим)', 'dr-slon-toolkit'); ?></option>
                     <option value="off" <?php selected($core_mode, 'off'); ?>><?php echo esc_html__('Полностью отключить автообновления ядра', 'dr-slon-toolkit'); ?></option>
                 </select>
             </p>
@@ -609,10 +614,7 @@ final class SettingsPage
             </p>
 
             <p class="description">
-                <?php echo esc_html__('Внимание: полное отключение автообновлений может увеличить риски безопасности. Используйте этот режим только при наличии собственного процесса ручных обновлений.', 'dr-slon-toolkit'); ?>
-            </p>
-            <p class="description">
-                <?php echo esc_html__('Примечание для режима «Только security/критические»: в WordPress MVP-реализация использует безопасное приближение через minor-канал без major/dev обновлений.', 'dr-slon-toolkit'); ?>
+                <?php echo esc_html__('Внимание: полное отключение автообновлений может увеличить риски безопасности. Используйте этот режим только при наличии собственного процесса ручных обновлений. Режим minor блокирует major и dev; legacy-значение «security» автоматически приводится к minor.', 'dr-slon-toolkit'); ?>
             </p>
         </fieldset>
         <?php
@@ -781,7 +783,7 @@ final class SettingsPage
                 <section class="dstk-help-card dstk-help-card--warning">
                     <span class="dashicons dashicons-rest-api" aria-hidden="true"></span>
                     <h2><?php echo esc_html__('REST API Control', 'dr-slon-toolkit'); ?></h2>
-                    <p><?php echo esc_html__('Строгий whitelist способен остановить редактор или интеграцию. Сначала используйте режим «Только авторизованным», затем проверяйте Gutenberg, формы и внешние сервисы.', 'dr-slon-toolkit'); ?></p>
+                    <p><?php echo esc_html__('В режиме whitelist публичный контент REST (posts/pages/media) закрыт для гостей; редактор работает после входа. Сначала проверьте Gutenberg и интеграции.', 'dr-slon-toolkit'); ?></p>
                 </section>
 
                 <section class="dstk-help-card">

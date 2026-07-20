@@ -153,8 +153,9 @@ final class Settings
             $mode = $defaults['rest_api']['mode'];
         }
 
-        $trusted_capability = isset($rest_api['trusted_capability']) ? sanitize_key((string) $rest_api['trusted_capability']) : $defaults['rest_api']['trusted_capability'];
-        $trusted_capability = $trusted_capability !== '' ? $trusted_capability : $defaults['rest_api']['trusted_capability'];
+        $trusted_capability = self::sanitize_trusted_capability(
+            isset($rest_api['trusted_capability']) ? (string) $rest_api['trusted_capability'] : $defaults['rest_api']['trusted_capability']
+        );
 
         $indexnow_key = isset($indexnow['key']) ? self::sanitize_indexnow_key((string) $indexnow['key']) : '';
         $indexnow_endpoint = isset($indexnow['endpoint']) ? esc_url_raw((string) $indexnow['endpoint']) : $defaults['indexnow']['endpoint'];
@@ -232,7 +233,12 @@ final class Settings
 
         $core_mode = isset($update_controls['core_mode']) ? sanitize_key((string) $update_controls['core_mode']) : $defaults['update_controls']['core_mode'];
 
-        if (! in_array($core_mode, ['all', 'minor', 'security', 'off'], true)) {
+        // Legacy "security" was only a minor-channel approximation — map to minor.
+        if ($core_mode === 'security') {
+            $core_mode = 'minor';
+        }
+
+        if (! in_array($core_mode, ['all', 'minor', 'off'], true)) {
             $core_mode = $defaults['update_controls']['core_mode'];
         }
 
@@ -360,5 +366,35 @@ final class Settings
         }
 
         return $key;
+    }
+
+    /**
+     * Capabilities that may fully bypass REST whitelist restrictions.
+     *
+     * @return list<string>
+     */
+    public static function trusted_capabilities(): array
+    {
+        return [
+            'edit_posts',
+            'edit_pages',
+            'publish_posts',
+            'publish_pages',
+            'edit_others_posts',
+            'upload_files',
+            'manage_options',
+        ];
+    }
+
+    public static function sanitize_trusted_capability(string $capability): string
+    {
+        $capability = sanitize_key($capability);
+        $default = (string) self::defaults()['rest_api']['trusted_capability'];
+
+        if ($capability === '' || ! in_array($capability, self::trusted_capabilities(), true)) {
+            return $default;
+        }
+
+        return $capability;
     }
 }

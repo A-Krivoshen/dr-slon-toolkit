@@ -13,15 +13,29 @@ use WP_REST_Server;
 final class RestApiControlModule implements ModuleInterface
 {
     /**
-     * Базовый встроенный allowlist, который нельзя случайно «сломать» правкой настроек.
-     *
-     * Суффикс * означает префиксное совпадение (без regex).
+     * Routes available without authentication (true public surface).
      *
      * @var array<int, string>
      */
-    private const CORE_ROUTE_ALLOWLIST = [
+    private const PUBLIC_ROUTE_ALLOWLIST = [
         '/',
         '/oembed/1.0/embed',
+    ];
+
+    /**
+     * @var array<int, string>
+     */
+    private const PUBLIC_NAMESPACE_ALLOWLIST = [
+        'oembed/1.0',
+    ];
+
+    /**
+     * Editor/system routes: allowed only for logged-in users (or trusted capability).
+     * Suffix * means prefix match (no regex).
+     *
+     * @var array<int, string>
+     */
+    private const EDITOR_ROUTE_ALLOWLIST = [
         '/wp/v2/types',
         '/wp/v2/taxonomies',
         '/wp/v2/statuses',
@@ -36,10 +50,18 @@ final class RestApiControlModule implements ModuleInterface
     ];
 
     /**
+     * Capabilities that may fully bypass whitelist restrictions.
+     *
      * @var array<int, string>
      */
-    private const CORE_NAMESPACE_ALLOWLIST = [
-        'oembed/1.0',
+    public const TRUSTED_CAPABILITIES = [
+        'edit_posts',
+        'edit_pages',
+        'publish_posts',
+        'publish_pages',
+        'edit_others_posts',
+        'upload_files',
+        'manage_options',
     ];
 
     public function register(): void
@@ -88,7 +110,21 @@ final class RestApiControlModule implements ModuleInterface
         }
 
         if ($config['mode'] === 'whitelist') {
-            if ($this->is_allowed_by_route($route, $config['allowlist_routes']) || $this->is_allowed_by_namespace($route, $config['allowlist_namespaces'])) {
+            if ($this->is_allowed_by_route($route, $config['public_routes']) || $this->is_allowed_by_namespace($route, $config['public_namespaces'])) {
+                return $result;
+            }
+
+            if ($this->is_allowed_by_route($route, $config['user_routes']) || $this->is_allowed_by_namespace($route, $config['user_namespaces'])) {
+                return $result;
+            }
+
+            if (
+                is_user_logged_in()
+                && (
+                    $this->is_allowed_by_route($route, $config['editor_routes'])
+                    || $this->is_allowed_by_namespace($route, $config['editor_namespaces'])
+                )
+            ) {
                 return $result;
             }
 
@@ -105,10 +141,12 @@ final class RestApiControlModule implements ModuleInterface
     /**
      * @return array{
      *   mode:string,
-     *   allowlist_routes:array<int,string>,
-     *   allowlist_namespaces:array<int,string>,
      *   public_routes:array<int,string>,
      *   public_namespaces:array<int,string>,
+     *   editor_routes:array<int,string>,
+     *   editor_namespaces:array<int,string>,
+     *   user_routes:array<int,string>,
+     *   user_namespaces:array<int,string>,
      *   trusted_capability:string
      * }
      */
@@ -118,28 +156,23 @@ final class RestApiControlModule implements ModuleInterface
         $rest_api = isset($settings['rest_api']) && is_array($settings['rest_api']) ? $settings['rest_api'] : [];
 
         $mode = isset($rest_api['mode']) ? (string) $rest_api['mode'] : 'allow_all';
-        $trusted_capability = isset($rest_api['trusted_capability']) ? sanitize_key((string) $rest_api['trusted_capability']) : 'edit_posts';
+        $trusted_capability = Settings::sanitize_trusted_capability(
+            isset($rest_api['trusted_capability']) ? (string) $rest_api['trusted_capability'] : 'edit_posts'
+        );
 
         $additional_system_routes = $this->parse_lines(isset($rest_api['system_routes']) ? (string) $rest_api['system_routes'] : '');
         $whitelist_routes = $this->parse_lines(isset($rest_api['whitelist_routes']) ? (string) $rest_api['whitelist_routes'] : '');
-
-        $core_routes = self::CORE_ROUTE_ALLOWLIST;
-        $core_namespaces = self::CORE_NAMESPACE_ALLOWLIST;
-
-        $public_routes = [
-            '/',
-            '/oembed/1.0/embed',
-        ];
-
         $whitelist_namespaces = $this->parse_lines(isset($rest_api['whitelist_namespaces']) ? (string) $rest_api['whitelist_namespaces'] : '', false);
 
         return [
             'mode'               => in_array($mode, ['allow_all', 'authenticated_only', 'whitelist'], true) ? $mode : 'allow_all',
-            'allowlist_routes'   => array_values(array_unique(array_merge($core_routes, $additional_system_routes, $whitelist_routes))),
-            'allowlist_namespaces' => array_values(array_unique(array_merge($core_namespaces, $whitelist_namespaces))),
-            'public_routes'      => array_values(array_unique($public_routes)),
-            'public_namespaces'  => $core_namespaces,
-            'trusted_capability' => $trusted_capability !== '' ? $trusted_capability : 'edit_posts',
+            'public_routes'      => self::PUBLIC_ROUTE_ALLOWLIST,
+            'public_namespaces'  => self::PUBLIC_NAMESPACE_ALLOWLIST,
+            'editor_routes'      => array_values(array_unique(array_merge(self::EDITOR_ROUTE_ALLOWLIST, $additional_system_routes))),
+            'editor_namespaces'  => [],
+            'user_routes'        => $whitelist_routes,
+            'user_namespaces'    => $whitelist_namespaces,
+            'trusted_capability' => $trusted_capability,
         ];
     }
 

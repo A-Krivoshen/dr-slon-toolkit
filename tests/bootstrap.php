@@ -557,8 +557,50 @@ if (! function_exists('esc_url')) {
 if (! function_exists('current_user_can')) {
     function current_user_can(string $capability): bool
     {
-        unset($capability);
+        $allowed = $GLOBALS['dstk_test_user_capabilities'] ?? null;
+
+        if (is_array($allowed)) {
+            return in_array($capability, $allowed, true);
+        }
+
         return true;
+    }
+}
+
+if (! function_exists('is_user_logged_in')) {
+    function is_user_logged_in(): bool
+    {
+        return ! empty($GLOBALS['dstk_test_user_logged_in']);
+    }
+}
+
+if (! class_exists('WP_REST_Request')) {
+    class WP_REST_Request
+    {
+        private string $method;
+        private string $route;
+
+        public function __construct(string $method = 'GET', string $route = '/')
+        {
+            $this->method = $method;
+            $this->route = $route;
+        }
+
+        public function get_method(): string
+        {
+            return $this->method;
+        }
+
+        public function get_route(): string
+        {
+            return $this->route;
+        }
+    }
+}
+
+if (! class_exists('WP_REST_Server')) {
+    class WP_REST_Server
+    {
     }
 }
 
@@ -616,6 +658,20 @@ if (! function_exists('wp_remote_post')) {
         $GLOBALS['dstk_test_remote_posts'][] = [$url, $args];
 
         return ['response' => ['code' => 202]];
+    }
+}
+
+if (! function_exists('wp_safe_remote_post')) {
+    function wp_safe_remote_post(string $url, array $args = []): array
+    {
+        return wp_remote_post($url, $args);
+    }
+}
+
+if (! function_exists('did_action')) {
+    function did_action(string $hook_name): int
+    {
+        return (int) ($GLOBALS['dstk_test_did_actions'][$hook_name] ?? 0);
     }
 }
 

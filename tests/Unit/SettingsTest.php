@@ -62,4 +62,11 @@ final class SettingsTest extends TestCase
         self::assertSame('login', Settings::sanitize_hide_login_slug('wp-json'));
         self::assertSame('login', Settings::sanitize_hide_login_slug('поиск'));
     }
+
+    public function test_trusted_capability_is_allowlisted(): void
+    {
+        self::assertSame('edit_posts', Settings::sanitize_trusted_capability('read'));
+        self::assertSame('edit_posts', Settings::sanitize_trusted_capability('exist'));
+        self::assertSame('manage_options', Settings::sanitize_trusted_capability('manage_options'));
+    }
 }
