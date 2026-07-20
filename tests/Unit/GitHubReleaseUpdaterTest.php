@@ -260,7 +260,7 @@ final class GitHubReleaseUpdaterTest extends TestCase
         $files = [
             $root . '/dr-slon-toolkit.php' => "<?php\n/**\n * Version: 0.9.0\n * Update URI: " . self::UPDATE_URI . "\n */\nconst DSTK_VERSION = '0.9.0';\n",
             $root . '/readme.txt' => "=== Dr.Slon Toolkit ===\nStable tag: 0.9.0\n",
-            $root . '/vendor/autoload.php' => '<?php',
+            $root . '/src/Core/Plugin.php' => '<?php',
         ];
         $filesystem = new class ($files) {
             /** @var array<string,string> */

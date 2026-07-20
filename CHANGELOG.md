@@ -9,6 +9,8 @@
 - Добавлены PHPUnit, security-focused WPCS/PHPCS, PHP compatibility, CI и верификация release ZIP.
 - Удалён удалённый JavaScript из wp-admin; блоки поддержки теперь полностью локальные.
 - Лицензия синхронизирована как GPL-2.0-or-later.
+- Runtime больше не требует Composer на клиенте: при отсутствии `vendor/` используется встроенный PSR-4 loader.
+- Уточнены установка и обновления: только ZIP-asset из GitHub Releases, не Code → Download ZIP.
 
 ## 0.8.3
 - Усилен MVP модуля «REST API Control»: улучшена нормализация whitelist-маршрутов через безопасный разбор пути URL.

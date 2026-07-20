@@ -25,9 +25,37 @@ const DSTK_VERSION = '0.9.0';
 const DSTK_PLUGIN_FILE = __FILE__;
 const DSTK_PLUGIN_DIR = __DIR__ . '/';
 
-$dstk_autoloader = DSTK_PLUGIN_DIR . 'vendor/autoload.php';
+/**
+ * Register class loading for the plugin.
+ *
+ * Production has no Composer runtime packages. Prefer vendor/autoload.php when
+ * present (release ZIP / local dev), otherwise use a built-in PSR-4 loader so a
+ * plain source tree still works without running Composer.
+ */
+$dstk_vendor_autoloader = DSTK_PLUGIN_DIR . 'vendor/autoload.php';
 
-if (! is_readable($dstk_autoloader)) {
+if (is_readable($dstk_vendor_autoloader)) {
+    require_once $dstk_vendor_autoloader;
+} else {
+    spl_autoload_register(
+        static function (string $class): void {
+            $prefix = 'DrSlon\\Toolkit\\';
+
+            if (! str_starts_with($class, $prefix)) {
+                return;
+            }
+
+            $relative = str_replace('\\', '/', substr($class, strlen($prefix)));
+            $file     = DSTK_PLUGIN_DIR . 'src/' . $relative . '.php';
+
+            if (is_readable($file)) {
+                require_once $file;
+            }
+        }
+    );
+}
+
+if (! is_readable(DSTK_PLUGIN_DIR . 'src/Core/Plugin.php')) {
     add_action(
         'admin_notices',
         static function (): void {
@@ -36,15 +64,16 @@ if (! is_readable($dstk_autoloader)) {
             }
 
             echo '<div class="notice notice-error"><p>';
-            echo esc_html__('Не удалось запустить Dr.Slon Toolkit: не найден автозагрузчик Composer. Выполните "composer install" в папке плагина.', 'dr-slon-toolkit');
+            echo esc_html__(
+                'Не удалось запустить Dr.Slon Toolkit: повреждена установка. Скачайте ZIP из GitHub Releases (не Code → Download ZIP) и установите заново.',
+                'dr-slon-toolkit'
+            );
             echo '</p></div>';
         }
     );
 
     return;
 }
-
-require_once $dstk_autoloader;
 
 register_activation_hook(DSTK_PLUGIN_FILE, [\DrSlon\Toolkit\Core\Activator::class, 'activate']);
 register_deactivation_hook(DSTK_PLUGIN_FILE, [\DrSlon\Toolkit\Core\Deactivator::class, 'deactivate']);

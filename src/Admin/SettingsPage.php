@@ -787,8 +787,8 @@ final class SettingsPage
                 <section class="dstk-help-card">
                     <span class="dashicons dashicons-update" aria-hidden="true"></span>
                     <h2><?php echo esc_html__('Обновления из GitHub', 'dr-slon-toolkit'); ?></h2>
-                    <p><?php echo esc_html__('WordPress проверяет официальный GitHub Release и устанавливает только готовый ZIP с vendor. Контрольная сумма и структура пакета проверяются до замены файлов.', 'dr-slon-toolkit'); ?></p>
-                    <p><?php echo esc_html__('Переход с версии 0.8.2 потребует одной ручной установки. Следующие выпуски будут появляться в стандартном разделе обновлений WordPress.', 'dr-slon-toolkit'); ?></p>
+                    <p><?php echo esc_html__('WordPress проверяет официальный GitHub Release и устанавливает только готовый ZIP-asset (dr-slon-toolkit-x.y.z.zip). Source archives с кнопки Code не используются. Контрольная сумма и структура пакета проверяются до замены файлов.', 'dr-slon-toolkit'); ?></p>
+                    <p><?php echo esc_html__('Переход с версии 0.8.2 потребует одной ручной установки. Следующие выпуски появляются в стандартном разделе обновлений WordPress.', 'dr-slon-toolkit'); ?></p>
                 </section>
             </main>
 

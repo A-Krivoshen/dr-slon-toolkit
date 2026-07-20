@@ -200,14 +200,16 @@ final class GitHubReleaseUpdater
         $root = untrailingslashit($source);
         $main_file = $root . '/dr-slon-toolkit.php';
         $readme_file = $root . '/readme.txt';
-        $autoloader = $root . '/vendor/autoload.php';
+        $plugin_class = $root . '/src/Core/Plugin.php';
         $root_name = basename(str_replace('\\', '/', $root));
 
+        // Accept either a release tree (with vendor/) or a source tree with the
+        // built-in PSR-4 loader; both must expose the core Plugin class file.
         if (
             $root_name !== self::SLUG
             || ! $filesystem->is_file($main_file)
             || ! $filesystem->is_file($readme_file)
-            || ! $filesystem->is_file($autoloader)
+            || ! $filesystem->is_file($plugin_class)
         ) {
             return new \WP_Error('dstk_update_structure', __('Архив обновления Dr.Slon Toolkit имеет неверную структуру.', 'dr-slon-toolkit'));
         }

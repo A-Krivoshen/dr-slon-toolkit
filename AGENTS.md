@@ -70,19 +70,14 @@ Build a production-oriented modular plugin with these planned modules:
 - Do not rename files unless necessary.
 
 ## Release build rules
-- Composer is a developer/build tool only.
-- Do not require Composer on client servers.
-- Client delivery format is a ready-to-install ZIP archive.
-- Use `tools/build-release.sh` (or `composer build-release`) to assemble release ZIP.
-- Release archive must include runtime files (`src/`, `vendor/`, main plugin file, uninstall, readme, license) and exclude development junk.
+- Composer is a developer/build-time tool only. Never require Composer on client servers.
+- Client delivery is a ready-to-install ZIP from **GitHub Releases** (`dr-slon-toolkit-<version>.zip`), not the Code → Download ZIP button.
+- Use `tools/build-release.sh` (or `composer build-release`) to assemble the release ZIP.
+- Release archive must include runtime files (`src/`, production `vendor/` autoload, main plugin file, uninstall, readme, license, assets) and exclude development junk.
+- Do not commit `vendor/` to git. Keep repository sources clean.
+- The main plugin file must boot without Composer: prefer `vendor/autoload.php` when present, otherwise a built-in PSR-4 loader for `src/`.
+- Publish by pushing a `vX.Y.Z` tag; `.github/workflows/release.yml` builds, verifies, and attaches the ZIP to the GitHub Release.
 
 ## When unsure
 - Choose the simpler implementation.
 - Leave a clear TODO in `TODO.md` instead of inventing unfinished behavior.
-
-## Release build rules
-- Composer is a developer/build-time dependency, not a runtime requirement for the client.
-- End users must install a ready-to-use ZIP release of the plugin.
-- Release ZIPs must include `vendor/` and all required runtime files.
-- Do not commit `vendor/` just to make GitHub source installs work.
-- Keep repository sources clean; package a complete installable artifact for releases.

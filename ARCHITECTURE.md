@@ -4,7 +4,7 @@
 
 - `dr-slon-toolkit.php`
   - Минимальная точка запуска плагина.
-  - Загружает автозагрузчик Composer, переводы, хук активации и запуск плагина.
+  - Подключает `vendor/autoload.php` (релиз/dev) или встроенный PSR-4 loader для `src/`, затем переводы, хуки активации и запуск.
 - `src/Core`
   - Классы запуска и жизненного цикла (`Plugin`, `Activator`, `Deactivator`, `RewriteManager`, `Settings`, `ModuleInterface`).
 - `src/Admin`
