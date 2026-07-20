@@ -11,7 +11,6 @@ final class UpdateControlsModule implements ModuleInterface
 {
     public const CORE_ALL = 'all';
     public const CORE_MINOR = 'minor';
-    public const CORE_SECURITY = 'security';
     public const CORE_OFF = 'off';
 
     /**
@@ -41,17 +40,7 @@ final class UpdateControlsModule implements ModuleInterface
     {
         unset($allow);
 
-        $mode = $this->config()['core_mode'];
-
-        if ($mode === self::CORE_ALL) {
-            return true;
-        }
-
-        if ($mode === self::CORE_OFF) {
-            return false;
-        }
-
-        return false;
+        return $this->config()['core_mode'] === self::CORE_ALL;
     }
 
     public function filter_allow_minor_auto_core_updates(mixed $allow): bool
@@ -150,7 +139,11 @@ final class UpdateControlsModule implements ModuleInterface
 
         $core_mode = isset($update_controls['core_mode']) ? sanitize_key((string) $update_controls['core_mode']) : self::CORE_MINOR;
 
-        if (! in_array($core_mode, [self::CORE_ALL, self::CORE_MINOR, self::CORE_SECURITY, self::CORE_OFF], true)) {
+        if ($core_mode === 'security') {
+            $core_mode = self::CORE_MINOR;
+        }
+
+        if (! in_array($core_mode, [self::CORE_ALL, self::CORE_MINOR, self::CORE_OFF], true)) {
             $core_mode = self::CORE_MINOR;
         }
 
