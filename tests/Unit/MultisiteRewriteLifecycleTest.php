@@ -37,6 +37,18 @@ final class MultisiteRewriteLifecycleTest extends TestCase
         self::assertSame([], $GLOBALS['dstk_test_blog_stack']);
     }
 
+    public function test_initialize_site_seeds_the_new_blog_only(): void
+    {
+        $site = (object) ['blog_id' => 33];
+        Activator::on_initialize_site($site);
+
+        self::assertSame(DSTK_VERSION, $GLOBALS['dstk_test_blog_options'][33]['dstk_version'] ?? null);
+        self::assertSame(1, $GLOBALS['dstk_test_blog_options'][33][Settings::REWRITE_FLUSH_PENDING_OPTION] ?? null);
+        self::assertIsArray($GLOBALS['dstk_test_blog_options'][33][Settings::OPTION_KEY] ?? null);
+        self::assertSame(1, $GLOBALS['dstk_test_current_blog_id']);
+        self::assertSame([], $GLOBALS['dstk_test_blog_stack']);
+    }
+
     public function test_network_deactivation_invalidates_local_rules_without_using_stale_rewrite_state(): void
     {
         foreach ([11, 12, 21] as $blog_id) {

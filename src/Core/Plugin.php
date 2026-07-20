@@ -28,6 +28,7 @@ final class Plugin
 
         $this->booted = true;
 
+        Activator::register_hooks();
         $this->maybe_upgrade();
 
         $rewrite_manager = new RewriteManager();

@@ -25,20 +25,8 @@ $dstk_cleanup_site = static function (): void {
         delete_option($option);
     }
 
-    $rewrite_rules = get_option('rewrite_rules', []);
-
-    if (is_array($rewrite_rules)) {
-        foreach ($rewrite_rules as $rule => $query) {
-            if (
-                is_string($query)
-                && (str_contains($query, 'dstk_custom_login=') || str_contains($query, 'dstk_sitemap='))
-            ) {
-                unset($rewrite_rules[$rule]);
-            }
-        }
-
-        update_option('rewrite_rules', $rewrite_rules, false);
-    }
+    // Drop rewrite cache so rules for hide-login/sitemap regenerate without residual entries.
+    delete_option('rewrite_rules');
 
     global $wpdb;
 
@@ -54,20 +42,29 @@ $dstk_cleanup_site = static function (): void {
 
 if (is_multisite()) {
     $offset = 0;
+    $network_id = function_exists('get_current_network_id') ? get_current_network_id() : 0;
 
     do {
-        $site_ids = get_sites(
-            [
-                'fields' => 'ids',
-                'number' => 100,
-                'offset' => $offset,
-            ]
-        );
+        $query = [
+            'fields' => 'ids',
+            'number' => 100,
+            'offset' => $offset,
+        ];
+
+        if ($network_id > 0) {
+            $query['network_id'] = $network_id;
+        }
+
+        $site_ids = get_sites($query);
 
         foreach ($site_ids as $site_id) {
             switch_to_blog((int) $site_id);
-            $dstk_cleanup_site();
-            restore_current_blog();
+
+            try {
+                $dstk_cleanup_site();
+            } finally {
+                restore_current_blog();
+            }
         }
 
         $offset += count($site_ids);
