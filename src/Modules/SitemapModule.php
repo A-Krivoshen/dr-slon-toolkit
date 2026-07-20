@@ -36,6 +36,7 @@ final class SitemapModule implements ModuleInterface
 
     private ?string $cache_version = null;
     private bool $cache_invalidated = false;
+    private bool $invalidate_scheduled = false;
     private ?bool $runtime_enabled = null;
 
     public function register(): void
@@ -48,14 +49,15 @@ final class SitemapModule implements ModuleInterface
         add_action('update_option_' . Settings::OPTION_KEY, [$this, 'invalidate_cache'], 10, 0);
 
         if ($this->is_runtime_enabled()) {
+            // Narrow content hooks — avoid per-meta write storms.
             foreach (
                 [
-                    'clean_post_cache',
-                    'clean_term_cache',
-                    'set_object_terms',
-                    'added_post_meta',
-                    'updated_post_meta',
-                    'deleted_post_meta',
+                    'save_post',
+                    'deleted_post',
+                    'transition_post_status',
+                    'created_term',
+                    'edited_term',
+                    'delete_term',
                 ] as $hook
             ) {
                 add_action($hook, [$this, 'invalidate_cache'], 10, 0);
@@ -212,6 +214,17 @@ final class SitemapModule implements ModuleInterface
         $this->taxonomy_page_counts = [];
         $this->filtered_post_entries = [];
 
+        if ($this->cache_invalidated || $this->invalidate_scheduled) {
+            return;
+        }
+
+        // Debounce: one version bump per request, after content mutations settle.
+        $this->invalidate_scheduled = true;
+        add_action('shutdown', [$this, 'commit_cache_invalidation'], 0);
+    }
+
+    public function commit_cache_invalidation(): void
+    {
         if ($this->cache_invalidated) {
             return;
         }
@@ -224,6 +237,7 @@ final class SitemapModule implements ModuleInterface
 
         $this->cache_version = $version;
         $this->cache_invalidated = true;
+        $this->invalidate_scheduled = false;
     }
 
     private function is_runtime_enabled(): bool
@@ -251,7 +265,8 @@ final class SitemapModule implements ModuleInterface
     {
         $detector = new SeoFrameworkDetector();
 
-        return $detector->is_active();
+        // Only stand down when TSF is actually serving a sitemap.
+        return $detector->is_sitemap_served();
     }
 
     /**

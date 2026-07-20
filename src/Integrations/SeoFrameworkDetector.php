@@ -26,9 +26,43 @@ final class SeoFrameworkDetector
         echo '</p></div>';
     }
 
+    /**
+     * Whether The SEO Framework is actively serving an XML sitemap.
+     * Fail closed (true) when TSF is present but its sitemap state cannot be determined.
+     */
     public function is_sitemap_served(): bool
     {
-        return $this->is_active();
+        if (! $this->is_active()) {
+            return false;
+        }
+
+        if (! did_action('the_seo_framework_loaded') || ! function_exists('tsf')) {
+            return true;
+        }
+
+        try {
+            $tsf = tsf();
+
+            if (method_exists($tsf, 'get_option')) {
+                $output = $tsf->get_option('sitemaps_output');
+
+                if (is_bool($output) || is_int($output) || is_string($output)) {
+                    return ! empty($output);
+                }
+            }
+
+            if (method_exists($tsf, 'sitemap')) {
+                $sitemap = $tsf->sitemap();
+
+                if (is_object($sitemap) && method_exists($sitemap, 'enabled')) {
+                    return (bool) $sitemap->enabled();
+                }
+            }
+        } catch (\Throwable) {
+            return true;
+        }
+
+        return true;
     }
 
     public function is_post_indexable(int $post_id, string $url): bool
