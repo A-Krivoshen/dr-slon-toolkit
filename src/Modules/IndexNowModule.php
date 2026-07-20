@@ -49,12 +49,7 @@ final class IndexNowModule implements ModuleInterface
         add_action('wp_after_insert_post', [$this, 'handle_post_saved'], 20, 4);
         add_action('before_delete_post', [$this, 'handle_post_deleted'], 10, 2);
         add_action(self::CRON_HOOK, [$this, 'process_queue']);
-
-        $queue = $this->queue();
-
-        if ($queue !== [] && ! wp_doing_cron()) {
-            $this->schedule_queue($queue);
-        }
+        // Queue scheduling happens only from enqueue / process_queue — not on every front request.
     }
 
     public function maybe_serve_key_file(): void
@@ -458,14 +453,15 @@ final class IndexNowModule implements ModuleInterface
             'urlList'     => [$url],
         ];
 
-        $response = wp_remote_post(
+        $response = wp_safe_remote_post(
             $config['endpoint'],
             [
-                'timeout' => 8,
-                'headers' => [
+                'timeout'     => 8,
+                'redirection' => 2,
+                'headers'     => [
                     'Content-Type' => 'application/json; charset=utf-8',
                 ],
-                'body'    => wp_json_encode($payload),
+                'body'        => wp_json_encode($payload),
             ]
         );
 
