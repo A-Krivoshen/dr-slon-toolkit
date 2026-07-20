@@ -2,7 +2,7 @@
 
 Модульный плагин WordPress для обслуживания и базового усиления клиентских сайтов.
 
-**Текущая версия:** [0.9.0](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/tag/v0.9.0)
+**Текущая версия:** [0.9.1](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/tag/v0.9.1)
 
 ## Скачать и установить (клиенту)
 
@@ -31,7 +31,7 @@ https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest
 - WordPress 6.6+
 - PHP 8.1+
 
-## Что входит в 0.9.0
+## Что входит в 0.9.x
 
 - Модульная архитектура и нативная страница настроек
 - Скрытый вход, REST API Control, IndexNow, Sitemap, Update Controls
@@ -120,8 +120,8 @@ bash tools/build-release.sh
 2. Пуш в `main`, затем тег:
 
 ```bash
-git tag v0.9.0
-git push origin v0.9.0
+git tag v0.9.1
+git push origin v0.9.1
 ```
 
 3. Workflow `.github/workflows/release.yml` соберёт ZIP, прогонит проверки и создаст GitHub Release с asset `dr-slon-toolkit-<version>.zip`.

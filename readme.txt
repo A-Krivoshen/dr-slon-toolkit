@@ -4,7 +4,7 @@ Tags: toolkit, maintenance, security, transliteration, indexnow
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.9.0
+Stable tag: 0.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,13 @@ Composer нужен только разработчику:
 - для публикации: push тега `vX.Y.Z` запускает workflow, который прикрепляет проверенный ZIP к GitHub Release.
 
 == Changelog ==
+
+= 0.9.1 =
+* Hide Login: закрыт обход slug через dstk_custom_login=1.
+* REST API Control: editor-маршруты только для авторизованных; allowlist capability.
+* Update Controls: legacy security → minor; режим security убран из UI.
+* Rewrite flush, IndexNow, Sitemap, Disable Comments, multisite seed/uninstall hardening.
+* Unit-тесты REST, Hide Login, security→minor.
 
 = 0.9.0 =
 * Исправлены критические сценарии настроек, транслитерации, Hide Login и Update Controls.

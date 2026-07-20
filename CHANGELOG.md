@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.1
+- Hide Login: закрыт обход секретного slug через `dstk_custom_login=1`.
+- REST API Control: маршруты редактора только для авторизованных; публично oembed/корень; whitelist capability из allowlist.
+- Update Controls: убран вводящий в заблуждение режим `security` (legacy → `minor`).
+- RewriteManager: flush rewrite до снятия pending-флага.
+- IndexNow: без schedule на каждом front-запросе; `wp_safe_remote_post`.
+- Sitemap: debounce инвалидации, узкие hooks; TSF conflict только если TSF реально отдаёт sitemap.
+- Disable Comments: блок POST/REST comments; seed новых сайтов сети; uninstall scoped по network_id.
+- Добавлены unit-тесты REST, Hide Login bypass, security→minor, initialize_site.
+
 ## 0.9.0
 - Исправлены блокирующие ошибки сохранения настроек, транслитерации, Hide Login и Update Controls.
 - IndexNow переведён на неблокирующую очередь WP-Cron с повторами, защитой от гонок и TSF-aware noindex/canonical правилами.
