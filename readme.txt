@@ -4,7 +4,7 @@ Tags: toolkit, maintenance, security, transliteration, indexnow
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.10.0
+Stable tag: 0.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,11 @@ Composer нужен только разработчику:
 - для публикации: push тега `vX.Y.Z` запускает workflow, который прикрепляет проверенный ZIP к GitHub Release.
 
 == Changelog ==
+
+= 0.11.0 =
+* Yandex SmartCaptcha на входе в админку.
+* Login Attempts — блокировка IP после неверных паролей.
+* Redirect Manager — точные 301/302 редиректы.
 
 = 0.10.0 =
 * Модуль AI Agents: UTF-8 документы для ИИ без файлов на диске, pulse по желанию.

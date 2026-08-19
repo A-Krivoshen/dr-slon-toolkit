@@ -15,6 +15,7 @@ Build a production-oriented modular plugin with these planned modules:
 - Hide Login
 - Redirect Manager
 - Login Attempts
+- Yandex SmartCaptcha
 - REST API Control
 - IndexNow
 - Sitemap

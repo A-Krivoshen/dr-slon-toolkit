@@ -59,6 +59,12 @@
   - Управляет автообновлениями ядра, плагинов, тем и переводов через нативные фильтры WordPress.
   - Позволяет управлять e-mail уведомлениями об автообновлениях.
   - Для режима security использует безопасное приближение через minor-канал без major/dev обновлений.
+- `YandexCaptchaModule`
+  - Виджет Yandex SmartCaptcha на `login_form` и проверка токена на `authenticate`.
+- `LoginAttemptsModule`
+  - Считает неудачные входы по хешу IP и временно блокирует адрес.
+- `RedirectManagerModule`
+  - Точные 301/302 редиректы по пути запроса, без rewrite flush.
 - `AiAgentsModule`
   - Отдаёт machine-readable документы `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md` и опциональный pulse.
   - Не пишет файлы на диск; кеш версионируется через `dstk_ai_cache_version`.
@@ -75,5 +81,8 @@
   - `sitemap` — флаг runtime sitemap и набор включённых типов записей/таксономий для XML-карт.
   - `update_controls` — режим обновлений ядра и переключатели автообновлений плагинов/тем/переводов и e-mail уведомлений.
   - `ai_agents` — переключатели endpoint, гибридные текстовые поля, типы записей и лимиты.
+  - `yandex_captcha` — клиентский/серверный ключи и язык виджета.
+  - `login_attempts` — порог, окно и длительность блокировки.
+  - `redirects.rules` — список from/to/status.
 - `src/Core/DiscoveryIndexability`, `UrlNormalizer`, `CacheVersion` — общая индексация, сравнение URL и bump кеша.
 - Опция версии: `dstk_version`

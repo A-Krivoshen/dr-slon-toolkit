@@ -1,139 +1,84 @@
-# Dr.Slon Toolkit
+<p align="center">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit — модульный плагин WordPress для клиентских сайтов. Ставится ZIP из GitHub Releases, без Composer.">
+</p>
 
-Модульный плагин WordPress для обслуживания и базового усиления клиентских сайтов.
+Модульный плагин WordPress для обслуживания клиентских сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация и AI-документы. На сервере клиента Composer не нужен.
 
-**Текущая версия:** [0.10.0](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/tag/v0.10.0)
+**[Скачать dr-slon-toolkit-0.11.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
-## Скачать и установить (клиенту)
-
-Composer **не нужен**. Не используйте кнопку **Code → Download ZIP** в репозитории: это исходники для разработки, не готовый пакет.
+## Установка
 
 1. Откройте [Releases](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest).
-2. Скачайте файл **`dr-slon-toolkit-x.y.z.zip`** (готовый asset релиза, не Source code).
+2. Скачайте **`dr-slon-toolkit-x.y.z.zip`** (asset релиза, не Source code).
 3. В WordPress: **Плагины → Добавить новый → Загрузить плагин**.
-4. Активируйте и настройте в меню **Dr.Slon Toolkit**.
+4. Активируйте и настройте меню **Dr.Slon Toolkit**.
 
-Прямая ссылка на последний релиз:  
-https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest
+WordPress 6.6+, PHP 8.1+.
 
-### Обновления
+С `0.9.0` обновления приходят из GitHub Releases: только ZIP-asset `dr-slon-toolkit-<version>.zip`, с проверкой SHA-256, размера, версии и структуры. Source archives GitHub не используются. Переход с `0.8.2` — один раз вручную этот ZIP.
 
-Начиная с `0.9.0` WordPress сам предлагает обновления из **GitHub Releases**:
+## Что умеет
 
-- берётся только asset с именем `dr-slon-toolkit-<version>.zip`;
-- source archives GitHub **не** используются;
-- перед установкой проверяются SHA-256, размер, версия и структура пакета.
+<p align="center">
+  <img src="./assets/readme/modules.svg" width="100%" alt="Девять модулей Dr.Slon Toolkit: доступ, индексация и обслуживание сайта. Каждый включается отдельно.">
+</p>
 
-Переход с `0.8.2` (или раньше) на `0.9.0` — **один раз вручную** через загрузку ZIP. Дальше обновления идут из админки.
+| Модуль | Что делает |
+| --- | --- |
+| **Скрытый вход** | 404 на прямой `wp-login.php` (кроме reset/recovery). Вход по slug, например `/my-login/`. Аварийно: `define('KRV_DSTK_DISABLE_HIDE_LOGIN', true);` в `wp-config.php`. |
+| **REST API Control** | Всем / только авторизованным / whitelist. Системный allowlist WordPress нельзя выключить. |
+| **IndexNow** | Ручная и автоматическая отправка URL через очередь WP-Cron. Ключ `/<key>.txt` без файла на диске. Учитывает noindex/canonical The SEO Framework. |
+| **Sitemap** | `/sitemap.xml` с пагинацией, кешем и `lastmod`. Если TSF отдаёт свою карту — toolkit не дублирует. |
+| **AI Agents** | `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`. Pulse выключен по умолчанию. |
+| **Update Controls** | Автообновления ядра, плагинов, тем, переводов и писем. |
+| **Транслитерация** | Русские slug и имена файлов. Уже опубликованные URL не переписывает. |
+| **Комментарии** | Глобально закрывает комментарии, пинги, REST и UI. |
+| **Очистка** | Emoji, wp-embed, XML-RPC, лишние теги `<head>`. |
+| **Yandex SmartCaptcha** | Капча на форме входа. Ключи из Yandex Cloud. Не трогает reset password и XML-RPC. |
+| **Login Attempts** | Блокирует IP после серии неверных паролей. В опции хранится хеш, не сырой адрес. |
+| **Redirect Manager** | Точные 301/302: `/staryj/ -> /novyj/`. Не перехватывает wp-admin, login и REST. |
 
-## Требования
+Страница настроек нативная. Карточки поддержки локальные, без удалённого JavaScript.
 
-- WordPress 6.6+
-- PHP 8.1+
+## AI Agents
 
-## Что входит в 0.10.x
+<p align="center">
+  <img src="./assets/readme/ai-surface.svg" width="100%" alt="Порядок документов для ИИ-агентов: /ai.txt, /llms.txt, /llms-full.txt, /agents.md. Pulse-лента выключена по умолчанию.">
+</p>
 
-- Модульная архитектура и нативная страница настроек
-- Скрытый вход, REST API Control, IndexNow, Sitemap, Update Controls
-- Транслитерация, отключение комментариев, очистка
-- AI Agents: `llms.txt` / `ai.txt` / `agents.md` без файлов на диске
-- Совместимость с The SEO Framework (Sitemap / IndexNow / AI)
-- Проверяемые обновления из GitHub Releases
-- Локальные карточки поддержки без удалённого JavaScript
+Модуль по умолчанию выключен. После включения:
 
-## Модули
+| URL | По умолчанию |
+| --- | --- |
+| `/ai.txt` | вкл |
+| `/llms.txt` | вкл |
+| `/llms-full.txt` | вкл |
+| `/agents.md` | вкл |
+| `/feed/ai-pulse.md` | выкл |
 
-### Скрытый вход
-- 404 для прямого `wp-login.php` (кроме reset/recovery).
-- Вход по slug, например `/my-login/`.
-- Аварийное отключение: `define('KRV_DSTK_DISABLE_HIDE_LOGIN', true);` в `wp-config.php`.
+Документы собираются на лету, UTF-8 без BOM. Можно оставить только llms без pulse. Гибрид: автоиз WordPress + ручные поля (кто/что, контакты, факты, политика). Вкладка **AI Agents**: статус, превью URL, сброс кеша.
 
-### REST API Control
-- Режимы: всем / только авторизованным / whitelist.
-- Whitelist маршрутов и namespace, capability для обхода.
-- Встроенный системный allowlist WordPress всегда активен.
-
-### IndexNow
-- Ключ, endpoint, ручная и автоматическая отправка URL.
-- Очередь WP-Cron, проверочный `/<key>.txt` без файлов на диске.
-- Учитывает noindex/canonical The SEO Framework.
-
-### Sitemap
-- `/sitemap.xml` и отдельные карты типов записей/таксономий.
-- Пагинация, кеш, `lastmod`.
-- При активном The SEO Framework — safe mode (без дублей).
-
-### Update Controls
-- Автообновления ядра (all / minor / security / off), плагинов, тем, переводов.
-- Управление e-mail уведомлениями.
-
-### Транслитерация
-- Русский URL-профиль, slug терминов, имена загружаемых файлов.
-- Не меняет уже опубликованные URL автоматически.
-
-### Отключение комментариев
-- Глобально закрывает комментарии и пинги, скрывает UI.
-
-### AI Agents
-- Публичные UTF-8 документы без записи файлов: `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`.
-- Pulse `/feed/ai-pulse.md` выключен по умолчанию — можно включить только ленту обновлений.
-- Гибрид: автоиз WordPress + ручные поля (кто/что, контакты, факты, политика).
-- Кодировка: UTF-8 без BOM, `Content-Type` с `charset=UTF-8`.
-- Вкладка **AI Agents** в админке: статус, endpoint-переключатели, сброс кеша.
-
-### Очистка
-- Emoji, wp-embed, XML-RPC, безопасные теги из `<head>`.
+Если активен The SEO Framework, sitemap toolkit не дублирует его карту. IndexNow и AI Agents учитывают noindex и внешний canonical.
 
 ## Разработка
+
+Composer нужен только разработчику.
 
 ```bash
 composer install
 composer check
 ```
 
-Composer нужен **только** разработчику (тесты, PHPCS, сборка). На сервере клиента его нет.
-
-Production-зависимостей у плагина нет: runtime либо использует `vendor/autoload.php` из релизного ZIP, либо встроенный PSR-4 loader для `src/`.
-
-## Сборка релизного ZIP
+Runtime-зависимостей нет: релизный ZIP несёт production `vendor/autoload.php`, исходное дерево — встроенный PSR-4 loader для `src/`.
 
 ```bash
 composer build-release
-# или
-bash tools/build-release.sh
 ```
 
-Скрипт:
+Скрипт собирает `dist/dr-slon-toolkit-<version>.zip` с корнем `dr-slon-toolkit/`. В архиве: `src/`, `assets/admin/`, production autoload, главный файл, uninstall, readme, license. Нет `.git`, тестов, `composer.json` и документации разработки.
 
-- собирает staging в `build/dr-slon-toolkit/`;
-- ставит production autoload (`composer install --no-dev`) в staging;
-- пишет `dist/dr-slon-toolkit-<version>.zip` с корнем `dr-slon-toolkit/`;
-- проверяет версии, структуру, размер и обязательные файлы.
-
-### Содержимое релизного архива
-
-- `dr-slon-toolkit.php`, `readme.txt`, `uninstall.php`, `LICENSE`
-- `src/`, `assets/`, `languages/` (если есть)
-- `vendor/` (autoload для production; на клиенте Composer не запускается)
-
-### Что не попадает в ZIP
-
-- `.git/`, `.github/`, `tests/`, `build/`, `dist/`
-- `composer.json` / `composer.lock` (после сборки удаляются из staging)
-- dev-документация и конфиги инструментов
-
-## Публикация релиза
-
-1. Версии в `dr-slon-toolkit.php` (`Version` + `DSTK_VERSION`) и `Stable tag` в `readme.txt` совпадают.
-2. Пуш в `main`, затем тег:
-
-```bash
-git tag v0.10.0
-git push origin v0.10.0
-```
-
-3. Workflow `.github/workflows/release.yml` соберёт ZIP, прогонит проверки и создаст GitHub Release с asset `dr-slon-toolkit-<version>.zip`.
+Публикация: версии в `dr-slon-toolkit.php` и `Stable tag` в `readme.txt` совпадают, пуш в `main`, тег `vX.Y.Z`. Workflow `.github/workflows/release.yml` собирает ZIP и создаёт GitHub Release.
 
 ## Лицензия
 
-GPL-2.0-or-later — см. [LICENSE](LICENSE).
+GPL-2.0-or-later — [LICENSE](LICENSE).

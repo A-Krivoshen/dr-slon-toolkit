@@ -8,6 +8,8 @@ use DrSlon\Toolkit\Core\RewriteManager;
 use DrSlon\Toolkit\Core\Settings;
 use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
 use DrSlon\Toolkit\Modules\IndexNowModule;
+use DrSlon\Toolkit\Modules\LoginAttemptsModule;
+use DrSlon\Toolkit\Modules\RedirectManagerModule;
 
 final class SettingsPage
 {
@@ -29,6 +31,7 @@ final class SettingsPage
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('admin_post_dstk_indexnow_manual_submit', [$this, 'handle_indexnow_manual_submit']);
+        add_action('admin_post_dstk_clear_login_lockouts', [$this, 'handle_clear_login_lockouts']);
         $this->info_panel->register();
     }
 
@@ -193,6 +196,51 @@ final class SettingsPage
             'dr-slon-toolkit',
             'dstk_update_controls_section'
         );
+
+        add_settings_section(
+            'dstk_yandex_captcha_section',
+            __('Параметры Yandex SmartCaptcha', 'dr-slon-toolkit'),
+            [$this, 'render_yandex_captcha_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_yandex_captcha',
+            __('Ключи капчи', 'dr-slon-toolkit'),
+            [$this, 'render_yandex_captcha_fields'],
+            'dr-slon-toolkit',
+            'dstk_yandex_captcha_section'
+        );
+
+        add_settings_section(
+            'dstk_login_attempts_section',
+            __('Параметры Login Attempts', 'dr-slon-toolkit'),
+            [$this, 'render_login_attempts_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_login_attempts',
+            __('Блокировка входа', 'dr-slon-toolkit'),
+            [$this, 'render_login_attempts_fields'],
+            'dr-slon-toolkit',
+            'dstk_login_attempts_section'
+        );
+
+        add_settings_section(
+            'dstk_redirects_section',
+            __('Параметры Redirect Manager', 'dr-slon-toolkit'),
+            [$this, 'render_redirects_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_redirects',
+            __('Правила редиректов', 'dr-slon-toolkit'),
+            [$this, 'render_redirects_fields'],
+            'dr-slon-toolkit',
+            'dstk_redirects_section'
+        );
     }
 
     /**
@@ -294,6 +342,21 @@ final class SettingsPage
                 'title'       => __('AI Agents', 'dr-slon-toolkit'),
                 'description' => __('Отдаёт llms.txt, ai.txt и инструкции для ИИ-агентов без файлов на диске.', 'dr-slon-toolkit'),
                 'icon'        => 'dashicons-format-aside',
+            ],
+            'yandex_captcha' => [
+                'title'       => __('Yandex SmartCaptcha', 'dr-slon-toolkit'),
+                'description' => __('Капча Яндекса на форме входа в админку. Нужны клиентский и серверный ключи.', 'dr-slon-toolkit'),
+                'icon'        => 'dashicons-yes-alt',
+            ],
+            'login_attempts' => [
+                'title'       => __('Login Attempts', 'dr-slon-toolkit'),
+                'description' => __('Блокирует IP после серии неверных паролей.', 'dr-slon-toolkit'),
+                'icon'        => 'dashicons-shield',
+            ],
+            'redirects' => [
+                'title'       => __('Redirect Manager', 'dr-slon-toolkit'),
+                'description' => __('Точные 301/302 редиректы со старых адресов на новые.', 'dr-slon-toolkit'),
+                'icon'        => 'dashicons-randomize',
             ],
         ];
         ?>
@@ -629,6 +692,151 @@ final class SettingsPage
         <?php
     }
 
+    public function render_yandex_captcha_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('Капча показывается на форме входа (в том числе на скрытом URL). Ключи создаются в Yandex Cloud SmartCaptcha. Восстановление пароля капчей не закрывается.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_yandex_captcha_fields(): void
+    {
+        $settings = Settings::all();
+        $captcha = isset($settings['yandex_captcha']) && is_array($settings['yandex_captcha']) ? $settings['yandex_captcha'] : [];
+        $client_key = (string) ($captcha['client_key'] ?? '');
+        $has_server = (string) ($captcha['server_key'] ?? '') !== '';
+        $language = (string) ($captcha['language'] ?? 'ru');
+        ?>
+        <fieldset>
+            <p>
+                <label for="dstk-yandex-client"><strong><?php echo esc_html__('Клиентский ключ', 'dr-slon-toolkit'); ?></strong></label><br>
+                <input id="dstk-yandex-client" class="regular-text" type="text" name="dstk_settings[yandex_captcha][client_key]" value="<?php echo esc_attr($client_key); ?>" autocomplete="off">
+            </p>
+            <p>
+                <label for="dstk-yandex-server"><strong><?php echo esc_html__('Серверный ключ', 'dr-slon-toolkit'); ?></strong></label><br>
+                <input id="dstk-yandex-server" class="regular-text" type="password" name="dstk_settings[yandex_captcha][server_key]" value="" autocomplete="new-password">
+                <br>
+                <span class="description"><?php echo esc_html($has_server ? __('Ключ сохранён. Оставьте поле пустым, чтобы не менять его.', 'dr-slon-toolkit') : __('Вставьте серверный ключ из консоли Yandex Cloud.', 'dr-slon-toolkit')); ?></span>
+            </p>
+            <p>
+                <label for="dstk-yandex-hl"><strong><?php echo esc_html__('Язык виджета', 'dr-slon-toolkit'); ?></strong></label><br>
+                <select id="dstk-yandex-hl" name="dstk_settings[yandex_captcha][language]">
+                    <option value="ru" <?php selected($language, 'ru'); ?>><?php echo esc_html__('Русский', 'dr-slon-toolkit'); ?></option>
+                    <option value="en" <?php selected($language, 'en'); ?>><?php echo esc_html__('English', 'dr-slon-toolkit'); ?></option>
+                </select>
+            </p>
+        </fieldset>
+        <?php
+    }
+
+    public function render_login_attempts_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('Счётчик ведётся по IP (в хранилище кладётся хеш, не сырой адрес). После блокировки вход с этого IP отклоняется до истечения таймера.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_login_attempts_fields(): void
+    {
+        $settings = Settings::all();
+        $attempts = isset($settings['login_attempts']) && is_array($settings['login_attempts']) ? $settings['login_attempts'] : [];
+        $store = get_option(LoginAttemptsModule::STORE_OPTION, []);
+        $locked = 0;
+
+        if (is_array($store)) {
+            $now = time();
+
+            foreach ($store as $entry) {
+                if (is_array($entry) && (int) ($entry['locked_until'] ?? 0) > $now) {
+                    ++$locked;
+                }
+            }
+        }
+        ?>
+        <fieldset>
+            <p>
+                <label>
+                    <?php echo esc_html__('Неудачных попыток до блокировки', 'dr-slon-toolkit'); ?>
+                    <input type="number" min="1" max="20" name="dstk_settings[login_attempts][max_attempts]" value="<?php echo esc_attr((string) (int) ($attempts['max_attempts'] ?? 5)); ?>">
+                </label>
+            </p>
+            <p>
+                <label>
+                    <?php echo esc_html__('Окно подсчёта, минут', 'dr-slon-toolkit'); ?>
+                    <input type="number" min="1" max="1440" name="dstk_settings[login_attempts][window_minutes]" value="<?php echo esc_attr((string) (int) ($attempts['window_minutes'] ?? 15)); ?>">
+                </label>
+            </p>
+            <p>
+                <label>
+                    <?php echo esc_html__('Длительность блокировки, минут', 'dr-slon-toolkit'); ?>
+                    <input type="number" min="1" max="1440" name="dstk_settings[login_attempts][lockout_minutes]" value="<?php echo esc_attr((string) (int) ($attempts['lockout_minutes'] ?? 15)); ?>">
+                </label>
+            </p>
+            <p class="description">
+                <?php
+                echo esc_html(
+                    sprintf(
+                        /* translators: %d: number of locked IPs */
+                        __('Сейчас заблокировано адресов: %d. Сброс — кнопкой под формой настроек.', 'dr-slon-toolkit'),
+                        $locked
+                    )
+                );
+                ?>
+            </p>
+        </fieldset>
+        <?php
+    }
+
+    public function render_redirects_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('Одно правило на строку: /staryj/ -> /novyj/ или /staryj/ -> /novyj/ | 302. Срабатывает точное совпадение пути. wp-admin, wp-login.php и REST не перехватываются.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_redirects_fields(): void
+    {
+        $settings = Settings::all();
+        $redirects = isset($settings['redirects']) && is_array($settings['redirects']) ? $settings['redirects'] : [];
+        $rules = isset($redirects['rules']) && is_array($redirects['rules']) ? $redirects['rules'] : [];
+        ?>
+        <fieldset>
+            <input type="hidden" name="dstk_settings[redirects][_submitted]" value="1">
+            <textarea class="large-text code" rows="10" name="dstk_settings[redirects][rules_text]"><?php echo esc_textarea(RedirectManagerModule::rules_to_text($rules)); ?></textarea>
+            <p class="description"><?php echo esc_html__('Максимум 100 правил. Комментарии начинайте с #.', 'dr-slon-toolkit'); ?></p>
+        </fieldset>
+        <?php
+    }
+
+    public function handle_clear_login_lockouts(): void
+    {
+        if (! current_user_can('manage_options')) {
+            wp_die(esc_html__('Недостаточно прав для выполнения действия.', 'dr-slon-toolkit'));
+        }
+
+        check_admin_referer('dstk_clear_login_lockouts', 'dstk_clear_login_lockouts_nonce');
+        delete_option(LoginAttemptsModule::STORE_OPTION);
+
+        wp_safe_redirect(admin_url('admin.php?page=' . self::PAGE_SLUG));
+        exit;
+    }
+
+    private function render_lockout_clear_form(): void
+    {
+        if (! Settings::module_enabled('login_attempts')) {
+            return;
+        }
+        ?>
+        <hr>
+        <h2><?php echo esc_html__('Сброс блокировок входа', 'dr-slon-toolkit'); ?></h2>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <?php wp_nonce_field('dstk_clear_login_lockouts', 'dstk_clear_login_lockouts_nonce'); ?>
+            <input type="hidden" name="action" value="dstk_clear_login_lockouts">
+            <?php submit_button(__('Снять все блокировки IP', 'dr-slon-toolkit'), 'secondary', 'submit', false); ?>
+        </form>
+        <?php
+    }
+
     private function render_indexnow_manual_form(): void
     {
         if (! Settings::module_enabled('indexnow')) {
@@ -727,6 +935,7 @@ final class SettingsPage
                 </form>
 
                 <?php $this->render_indexnow_manual_form(); ?>
+                <?php $this->render_lockout_clear_form(); ?>
             </main>
 
             <?php $this->info_panel->render(); ?>
@@ -800,6 +1009,24 @@ final class SettingsPage
                     <h2><?php echo esc_html__('AI Agents', 'dr-slon-toolkit'); ?></h2>
                     <p><?php echo esc_html__('Модуль отдаёт UTF-8 документы /ai.txt, /llms.txt, /llms-full.txt и /agents.md. Pulse-лента /feed/ai-pulse.md выключена по умолчанию. Если другой плагин уже занял llms.txt, побеждает последнее зарегистрированное правило — после включения сбросьте постоянные ссылки.', 'dr-slon-toolkit'); ?></p>
                     <code><?php echo esc_html(home_url('/llms.txt')); ?></code>
+                </section>
+
+                <section class="dstk-help-card">
+                    <span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
+                    <h2><?php echo esc_html__('Yandex SmartCaptcha', 'dr-slon-toolkit'); ?></h2>
+                    <p><?php echo esc_html__('Работает на форме входа, в том числе на скрытом slug. Ключи из Yandex Cloud. Если сервис Яндекса недоступен, вход не блокируется (fail-open). XML-RPC и восстановление пароля капчей не закрываются.', 'dr-slon-toolkit'); ?></p>
+                </section>
+
+                <section class="dstk-help-card dstk-help-card--warning">
+                    <span class="dashicons dashicons-shield" aria-hidden="true"></span>
+                    <h2><?php echo esc_html__('Login Attempts', 'dr-slon-toolkit'); ?></h2>
+                    <p><?php echo esc_html__('После серии неверных паролей IP блокируется на заданное время. Хранится хеш адреса. Снять блокировки можно кнопкой на странице настроек.', 'dr-slon-toolkit'); ?></p>
+                </section>
+
+                <section class="dstk-help-card">
+                    <span class="dashicons dashicons-randomize" aria-hidden="true"></span>
+                    <h2><?php echo esc_html__('Redirect Manager', 'dr-slon-toolkit'); ?></h2>
+                    <p><?php echo esc_html__('Точное совпадение пути, 301 по умолчанию. Не трогает wp-admin, login и REST. Пример: /staryj/ -> /novyj/', 'dr-slon-toolkit'); ?></p>
                 </section>
 
                 <section class="dstk-help-card">

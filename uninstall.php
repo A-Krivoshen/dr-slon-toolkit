@@ -19,6 +19,7 @@ $dstk_cleanup_site = static function (): void {
             'dstk_indexnow_queue_lock',
             'dstk_sitemap_cache_version',
             'dstk_ai_cache_version',
+            'dstk_login_lockouts',
             'dstk_rewrite_flush_pending',
             'dstk_hide_login_rewrite_flush_pending',
         ] as $option

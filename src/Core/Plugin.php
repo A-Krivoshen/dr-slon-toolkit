@@ -13,10 +13,13 @@ use DrSlon\Toolkit\Modules\CleanupModule;
 use DrSlon\Toolkit\Modules\DisableCommentsModule;
 use DrSlon\Toolkit\Modules\HideLoginModule;
 use DrSlon\Toolkit\Modules\IndexNowModule;
+use DrSlon\Toolkit\Modules\LoginAttemptsModule;
+use DrSlon\Toolkit\Modules\RedirectManagerModule;
 use DrSlon\Toolkit\Modules\RestApiControlModule;
 use DrSlon\Toolkit\Modules\SitemapModule;
 use DrSlon\Toolkit\Modules\TransliterationModule;
 use DrSlon\Toolkit\Modules\UpdateControlsModule;
+use DrSlon\Toolkit\Modules\YandexCaptchaModule;
 
 final class Plugin
 {
@@ -72,6 +75,9 @@ final class Plugin
             'sitemap'          => new SitemapModule(),
             'update_controls'  => new UpdateControlsModule(),
             'ai_agents'        => new AiAgentsModule(),
+            'yandex_captcha'   => new YandexCaptchaModule(),
+            'login_attempts'   => new LoginAttemptsModule(),
+            'redirects'        => new RedirectManagerModule(),
         ];
 
         foreach ($modules as $slug => $module) {

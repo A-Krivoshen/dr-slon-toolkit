@@ -657,16 +657,63 @@ if (! function_exists('wp_generate_uuid4')) {
 }
 
 if (! function_exists('wp_remote_post')) {
-    function wp_remote_post(string $url, array $args = []): array
+    function wp_remote_post(string $url, array $args = []): mixed
     {
         $GLOBALS['dstk_test_remote_posts'][] = [$url, $args];
+
+        if (array_key_exists('dstk_test_remote_post_response', $GLOBALS)) {
+            return $GLOBALS['dstk_test_remote_post_response'];
+        }
 
         return ['response' => ['code' => 202]];
     }
 }
 
+if (! function_exists('wp_salt')) {
+    function wp_salt(string $scheme = 'auth'): string
+    {
+        unset($scheme);
+
+        return 'dstk-test-salt';
+    }
+}
+
+if (! function_exists('wp_doing_ajax')) {
+    function wp_doing_ajax(): bool
+    {
+        return ! empty($GLOBALS['dstk_test_doing_ajax']);
+    }
+}
+
+if (! function_exists('wp_doing_cron')) {
+    function wp_doing_cron(): bool
+    {
+        return ! empty($GLOBALS['dstk_test_doing_cron']);
+    }
+}
+
+if (! function_exists('selected')) {
+    function selected(mixed $selected, mixed $current = true, bool $display = true): string
+    {
+        $result = (string) $selected === (string) $current ? ' selected="selected"' : '';
+
+        if ($display) {
+            echo $result;
+        }
+
+        return $result;
+    }
+}
+
+if (! function_exists('wp_enqueue_script')) {
+    function wp_enqueue_script(string $handle, string $src = '', array $deps = [], mixed $ver = false, bool $in_footer = false): void
+    {
+        $GLOBALS['dstk_test_scripts'][] = compact('handle', 'src', 'deps', 'ver', 'in_footer');
+    }
+}
+
 if (! function_exists('wp_safe_remote_post')) {
-    function wp_safe_remote_post(string $url, array $args = []): array
+    function wp_safe_remote_post(string $url, array $args = []): mixed
     {
         return wp_remote_post($url, $args);
     }

@@ -25,6 +25,9 @@ final class Settings
                 'sitemap'          => false,
                 'update_controls'  => false,
                 'ai_agents'        => false,
+                'yandex_captcha'   => false,
+                'login_attempts'   => false,
+                'redirects'        => false,
             ],
             'cleanup' => [
                 'disable_emojis'   => true,
@@ -76,6 +79,19 @@ final class Settings
                 'pulse_limit'      => 20,
                 'full_posts_limit' => 30,
                 'exclude_noindex'  => true,
+            ],
+            'yandex_captcha' => [
+                'client_key' => '',
+                'server_key' => '',
+                'language'   => 'ru',
+            ],
+            'login_attempts' => [
+                'max_attempts'    => 5,
+                'window_minutes'  => 15,
+                'lockout_minutes' => 15,
+            ],
+            'redirects' => [
+                'rules' => [],
             ],
         ];
     }
@@ -164,19 +180,41 @@ final class Settings
         $sitemap = isset($input['sitemap']) && is_array($input['sitemap']) ? $input['sitemap'] : [];
         $update_controls = isset($input['update_controls']) && is_array($input['update_controls']) ? $input['update_controls'] : [];
         $ai_agents = isset($input['ai_agents']) && is_array($input['ai_agents']) ? $input['ai_agents'] : [];
+        $yandex_captcha = isset($input['yandex_captcha']) && is_array($input['yandex_captcha']) ? $input['yandex_captcha'] : [];
+        $login_attempts = isset($input['login_attempts']) && is_array($input['login_attempts']) ? $input['login_attempts'] : [];
+        $redirects = isset($input['redirects']) && is_array($input['redirects']) ? $input['redirects'] : [];
         $cleanup_submitted = ! empty($cleanup['_submitted']);
         $indexnow_submitted = ! empty($indexnow['_submitted']);
         $sitemap_submitted = ! empty($sitemap['_submitted']);
         $update_controls_submitted = ! empty($update_controls['_submitted']);
         $ai_submitted = ! empty($ai_agents['_submitted']);
+        $redirects_submitted = ! empty($redirects['_submitted']);
+
+        $saved_settings = get_option(self::OPTION_KEY, []);
+        $saved_settings = is_array($saved_settings) ? $saved_settings : [];
 
         if ($ai_agents === [] && ! $ai_submitted) {
-            $saved = get_option(self::OPTION_KEY, []);
-            if (is_array($saved) && isset($saved['ai_agents']) && is_array($saved['ai_agents'])) {
-                $ai_agents = $saved['ai_agents'];
-            } else {
-                $ai_agents = $defaults['ai_agents'];
-            }
+            $ai_agents = isset($saved_settings['ai_agents']) && is_array($saved_settings['ai_agents'])
+                ? $saved_settings['ai_agents']
+                : $defaults['ai_agents'];
+        }
+
+        if ($yandex_captcha === []) {
+            $yandex_captcha = isset($saved_settings['yandex_captcha']) && is_array($saved_settings['yandex_captcha'])
+                ? $saved_settings['yandex_captcha']
+                : $defaults['yandex_captcha'];
+        }
+
+        if ($login_attempts === []) {
+            $login_attempts = isset($saved_settings['login_attempts']) && is_array($saved_settings['login_attempts'])
+                ? $saved_settings['login_attempts']
+                : $defaults['login_attempts'];
+        }
+
+        if ($redirects === [] && ! $redirects_submitted) {
+            $redirects = isset($saved_settings['redirects']) && is_array($saved_settings['redirects'])
+                ? $saved_settings['redirects']
+                : $defaults['redirects'];
         }
 
         $slug = self::sanitize_hide_login_slug(isset($hide_login['slug']) ? (string) $hide_login['slug'] : '');
@@ -296,6 +334,45 @@ final class Settings
         $pulse_limit = max(1, min(50, $pulse_limit));
         $full_posts_limit = max(1, min(100, $full_posts_limit));
 
+        $client_key = self::sanitize_captcha_key(isset($yandex_captcha['client_key']) ? (string) $yandex_captcha['client_key'] : '');
+        $server_key = self::sanitize_captcha_key(isset($yandex_captcha['server_key']) ? (string) $yandex_captcha['server_key'] : '');
+
+        if ($server_key === '' && isset($saved_settings['yandex_captcha']) && is_array($saved_settings['yandex_captcha'])) {
+            $server_key = self::sanitize_captcha_key((string) ($saved_settings['yandex_captcha']['server_key'] ?? ''));
+        }
+
+        $captcha_language = isset($yandex_captcha['language']) ? sanitize_key((string) $yandex_captcha['language']) : 'ru';
+
+        if (! in_array($captcha_language, ['ru', 'en'], true)) {
+            $captcha_language = 'ru';
+        }
+
+        $max_attempts = isset($login_attempts['max_attempts']) ? (int) $login_attempts['max_attempts'] : (int) $defaults['login_attempts']['max_attempts'];
+        $window_minutes = isset($login_attempts['window_minutes']) ? (int) $login_attempts['window_minutes'] : (int) $defaults['login_attempts']['window_minutes'];
+        $lockout_minutes = isset($login_attempts['lockout_minutes']) ? (int) $login_attempts['lockout_minutes'] : (int) $defaults['login_attempts']['lockout_minutes'];
+
+        $redirect_rules = [];
+
+        if (isset($redirects['rules_text'])) {
+            $redirect_rules = \DrSlon\Toolkit\Modules\RedirectManagerModule::parse_rules_text((string) $redirects['rules_text']);
+        } elseif (isset($redirects['rules']) && is_array($redirects['rules'])) {
+            foreach ($redirects['rules'] as $rule) {
+                if (! is_array($rule)) {
+                    continue;
+                }
+
+                $parsed = \DrSlon\Toolkit\Modules\RedirectManagerModule::sanitize_rule(
+                    (string) ($rule['from'] ?? ''),
+                    (string) ($rule['to'] ?? ''),
+                    (int) ($rule['status'] ?? 301)
+                );
+
+                if ($parsed !== null) {
+                    $redirect_rules[] = $parsed;
+                }
+            }
+        }
+
         return [
             'modules' => [
                 'transliteration'  => ! empty($modules['transliteration']),
@@ -307,6 +384,9 @@ final class Settings
                 'sitemap'          => ! empty($modules['sitemap']),
                 'update_controls'  => ! empty($modules['update_controls']),
                 'ai_agents'        => ! empty($modules['ai_agents']),
+                'yandex_captcha'   => ! empty($modules['yandex_captcha']),
+                'login_attempts'   => ! empty($modules['login_attempts']),
+                'redirects'        => ! empty($modules['redirects']),
             ],
             'cleanup' => [
                 'disable_emojis'   => array_key_exists('disable_emojis', $cleanup) ? ! empty($cleanup['disable_emojis']) : ($cleanup_submitted ? false : $defaults['cleanup']['disable_emojis']),
@@ -359,7 +439,37 @@ final class Settings
                 'full_posts_limit' => $full_posts_limit,
                 'exclude_noindex'  => array_key_exists('exclude_noindex', $ai_agents) ? ! empty($ai_agents['exclude_noindex']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['exclude_noindex']),
             ],
+            'yandex_captcha' => [
+                'client_key' => $client_key,
+                'server_key' => $server_key,
+                'language'   => $captcha_language,
+            ],
+            'login_attempts' => [
+                'max_attempts'    => max(1, min(20, $max_attempts)),
+                'window_minutes'  => max(1, min(1440, $window_minutes)),
+                'lockout_minutes' => max(1, min(1440, $lockout_minutes)),
+            ],
+            'redirects' => [
+                'rules' => $redirect_rules,
+            ],
         ];
+    }
+
+    public static function sanitize_captcha_key(string $key): string
+    {
+        $key = trim($key);
+
+        if ($key === '') {
+            return '';
+        }
+
+        $key = preg_replace('/[^A-Za-z0-9_-]/', '', $key);
+
+        if (! is_string($key) || strlen($key) < 8 || strlen($key) > 200) {
+            return '';
+        }
+
+        return $key;
     }
 
     private static function sanitize_plain_textarea(string $value): string

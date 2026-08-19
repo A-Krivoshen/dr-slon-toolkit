@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+  <title id="title">Dr.Slon Toolkit</title>
+  <desc id="desc">Модульный плагин WordPress для клиентских сайтов: скрытый вход, REST, IndexNow, sitemap и AI-документы. Ставится ZIP-ом из GitHub Releases, без Composer.</desc>
+
+  <defs>
+    <pattern id="dstk-hatch" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="24" height="24" fill="#111827"/>
+      <rect width="1" height="24" fill="#ffffff" fill-opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="400" rx="12" fill="#111827"/>
+  <rect x="780" width="420" height="400" fill="url(#dstk-hatch)"/>
+  <rect x="780" width="1" height="400" fill="#ffffff" fill-opacity="0.08"/>
+
+  <text x="56" y="72" fill="#7dd3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" letter-spacing="2.4">WORDPRESS OPERATIONS TOOLKIT</text>
+  <text x="56" y="132" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="52" font-weight="700" letter-spacing="-1.6">Dr.Slon Toolkit</text>
+  <text x="56" y="178" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21">Плагин обслуживания клиентских</text>
+  <text x="56" y="208" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21">WordPress-сайтов. Ставится ZIP</text>
+  <text x="56" y="238" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21">из GitHub Releases, без Composer.</text>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="600">
+    <rect x="56" y="286" width="108" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="110" y="310" text-anchor="middle" fill="#ffffff">v0.11.0</text>
+    <rect x="176" y="286" width="118" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="235" y="310" text-anchor="middle" fill="#cbd5e1">WP 6.6+</text>
+    <rect x="306" y="286" width="118" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="365" y="310" text-anchor="middle" fill="#cbd5e1">PHP 8.1+</text>
+    <rect x="436" y="286" width="128" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="500" y="310" text-anchor="middle" fill="#cbd5e1">GPL-2.0</text>
+  </g>
+
+  <g transform="translate(820 48)">
+    <rect width="324" height="304" rx="10" fill="#1b2436" stroke="#25324a"/>
+    <rect width="324" height="52" rx="10" fill="#161e2e"/>
+    <rect y="42" width="324" height="10" fill="#161e2e"/>
+    <text x="18" y="32" fill="#7dd3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" letter-spacing="1.4">WP-ADMIN</text>
+    <text x="18" y="78" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600">Настройки</text>
+    <text x="128" y="78" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">AI Agents</text>
+    <rect x="128" y="86" width="82" height="3" fill="#41b894"/>
+    <text x="230" y="78" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600">Помощь</text>
+
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18">
+      <circle cx="28" cy="128" r="4" fill="#41b894"/>
+      <text x="44" y="134" fill="#e2e8f0">/llms.txt</text>
+      <circle cx="28" cy="164" r="4" fill="#41b894"/>
+      <text x="44" y="170" fill="#e2e8f0">/ai.txt</text>
+      <circle cx="28" cy="200" r="4" fill="#41b894"/>
+      <text x="44" y="206" fill="#e2e8f0">/agents.md</text>
+      <circle cx="28" cy="236" r="4" fill="#41b894"/>
+      <text x="44" y="242" fill="#e2e8f0">/sitemap.xml</text>
+      <circle cx="28" cy="272" r="4" fill="#cbd5e1"/>
+      <text x="44" y="278" fill="#94a3b8">/my-login/</text>
+    </g>
+  </g>
+</svg>

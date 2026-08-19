@@ -2,8 +2,7 @@
 
 ## Следующие модули
 
-- Redirect Manager — управление перенаправлениями.
-- Login Attempts — защита от перебора паролей.
+- (пусто) Redirect Manager, Login Attempts и Yandex SmartCaptcha вошли в 0.11.0.
 
 ## Инженерные задачи
 

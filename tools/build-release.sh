@@ -38,6 +38,7 @@ fi
 
 if [[ -d "$ROOT_DIR/assets" ]]; then
   cp -R "$ROOT_DIR/assets" "$STAGE_DIR/assets"
+  rm -rf "$STAGE_DIR/assets/readme"
 fi
 
 echo "==> Установка production-зависимостей в staging"
