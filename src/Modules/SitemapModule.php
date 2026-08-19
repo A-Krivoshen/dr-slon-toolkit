@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrSlon\Toolkit\Modules;
 
+use DrSlon\Toolkit\Core\CacheVersion;
+use DrSlon\Toolkit\Core\DiscoveryIndexability;
 use DrSlon\Toolkit\Core\ModuleInterface;
 use DrSlon\Toolkit\Core\Settings;
 use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
@@ -17,7 +19,7 @@ final class SitemapModule implements ModuleInterface
     private const MAX_FILTERED_SOURCE_PAGES = 10;
     private const CACHE_TTL = 600;
     private const CLIENT_CACHE_TTL = 300;
-    private const CACHE_VERSION_OPTION = 'dstk_sitemap_cache_version';
+    private const CACHE_VERSION_OPTION = CacheVersion::SITEMAP;
     private const QUERY_KIND = 'dstk_sitemap';
     private const QUERY_NAME = 'dstk_sitemap_name';
     private const QUERY_PAGE = 'dstk_sitemap_page';
@@ -229,13 +231,7 @@ final class SitemapModule implements ModuleInterface
             return;
         }
 
-        $version = wp_generate_uuid4();
-
-        if (! add_option(self::CACHE_VERSION_OPTION, $version, '', false)) {
-            update_option(self::CACHE_VERSION_OPTION, $version, false);
-        }
-
-        $this->cache_version = $version;
+        $this->cache_version = CacheVersion::bump(self::CACHE_VERSION_OPTION);
         $this->cache_invalidated = true;
         $this->invalidate_scheduled = false;
     }
@@ -531,7 +527,7 @@ final class SitemapModule implements ModuleInterface
             return '';
         }
 
-        if (has_filter('dstk_sitemap_is_noindex')) {
+        if ($this->uses_noindex_filter()) {
             $entries = array_slice(
                 $this->get_filtered_post_entries($post_type),
                 ($page - 1) * self::MAX_URLS_PER_ENTITY,
@@ -552,7 +548,7 @@ final class SitemapModule implements ModuleInterface
                 'has_password'           => false,
                 'no_found_rows'          => true,
                 'ignore_sticky_posts'    => true,
-                'update_post_meta_cache' => has_filter('dstk_sitemap_is_noindex'),
+                'update_post_meta_cache' => $this->uses_noindex_filter(),
                 'update_post_term_cache' => false,
             ]
         );
@@ -629,7 +625,7 @@ final class SitemapModule implements ModuleInterface
             return $this->post_type_page_counts[$post_type];
         }
 
-        if (has_filter('dstk_sitemap_is_noindex')) {
+        if ($this->uses_noindex_filter()) {
             $total = count($this->get_filtered_post_entries($post_type));
             $this->post_type_page_counts[$post_type] = (int) ceil($total / self::MAX_URLS_PER_ENTITY);
 
@@ -811,21 +807,13 @@ final class SitemapModule implements ModuleInterface
 
     private function is_post_allowed(WP_Post $post): bool
     {
-        if ($post->post_status !== 'publish') {
-            return false;
-        }
+        return DiscoveryIndexability::is_post_indexable($post);
+    }
 
-        if ((string) $post->post_password !== '') {
-            return false;
-        }
-
-        /**
-         * Позволяет внешнему коду исключить noindex-записи из sitemap.
-         *
-         * @param bool    $is_noindex Текущее состояние исключения.
-         * @param WP_Post $post       Текущая запись.
-         */
-        return ! (bool) apply_filters('dstk_sitemap_is_noindex', false, $post);
+    private function uses_noindex_filter(): bool
+    {
+        return has_filter('dstk_sitemap_is_noindex')
+            || (new SeoFrameworkDetector())->is_active();
     }
 
     private function format_lastmod(string $datetime): string
@@ -922,8 +910,7 @@ final class SitemapModule implements ModuleInterface
             return $this->cache_version;
         }
 
-        $version = get_option(self::CACHE_VERSION_OPTION, '1');
-        $this->cache_version = is_scalar($version) && (string) $version !== '' ? (string) $version : '1';
+        $this->cache_version = CacheVersion::get(self::CACHE_VERSION_OPTION);
 
         return $this->cache_version;
     }

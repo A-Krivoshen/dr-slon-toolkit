@@ -2,7 +2,7 @@
 
 Модульный плагин WordPress для обслуживания и базового усиления клиентских сайтов.
 
-**Текущая версия:** [0.9.1](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/tag/v0.9.1)
+**Текущая версия:** [0.10.0](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/tag/v0.10.0)
 
 ## Скачать и установить (клиенту)
 
@@ -31,12 +31,13 @@ https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest
 - WordPress 6.6+
 - PHP 8.1+
 
-## Что входит в 0.9.x
+## Что входит в 0.10.x
 
 - Модульная архитектура и нативная страница настроек
 - Скрытый вход, REST API Control, IndexNow, Sitemap, Update Controls
 - Транслитерация, отключение комментариев, очистка
-- Совместимость с The SEO Framework (Sitemap / IndexNow)
+- AI Agents: `llms.txt` / `ai.txt` / `agents.md` без файлов на диске
+- Совместимость с The SEO Framework (Sitemap / IndexNow / AI)
 - Проверяемые обновления из GitHub Releases
 - Локальные карточки поддержки без удалённого JavaScript
 
@@ -72,6 +73,13 @@ https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest
 
 ### Отключение комментариев
 - Глобально закрывает комментарии и пинги, скрывает UI.
+
+### AI Agents
+- Публичные UTF-8 документы без записи файлов: `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`.
+- Pulse `/feed/ai-pulse.md` выключен по умолчанию — можно включить только ленту обновлений.
+- Гибрид: автоиз WordPress + ручные поля (кто/что, контакты, факты, политика).
+- Кодировка: UTF-8 без BOM, `Content-Type` с `charset=UTF-8`.
+- Вкладка **AI Agents** в админке: статус, endpoint-переключатели, сброс кеша.
 
 ### Очистка
 - Emoji, wp-embed, XML-RPC, безопасные теги из `<head>`.
@@ -120,8 +128,8 @@ bash tools/build-release.sh
 2. Пуш в `main`, затем тег:
 
 ```bash
-git tag v0.9.1
-git push origin v0.9.1
+git tag v0.10.0
+git push origin v0.10.0
 ```
 
 3. Workflow `.github/workflows/release.yml` соберёт ZIP, прогонит проверки и создаст GitHub Release с asset `dr-slon-toolkit-<version>.zip`.

@@ -28,6 +28,10 @@ if (! class_exists('WP_Post')) {
         public string $post_type = 'post';
         public string $post_status = 'publish';
         public string $post_password = '';
+        public string $post_title = '';
+        public string $post_content = '';
+        public string $post_excerpt = '';
+        public string $post_date_gmt = '0000-00-00 00:00:00';
         public string $post_modified_gmt = '0000-00-00 00:00:00';
 
         /** @param array<string,mixed>|object $data */
@@ -734,6 +738,128 @@ if (! function_exists('is_taxonomy_viewable')) {
     function is_taxonomy_viewable(object $object): bool
     {
         return ! empty($object->publicly_queryable);
+    }
+}
+
+if (! function_exists('sanitize_textarea_field')) {
+    function sanitize_textarea_field(string $value): string
+    {
+        return trim(strip_tags($value));
+    }
+}
+
+if (! function_exists('wp_strip_all_tags')) {
+    function wp_strip_all_tags(string $value, bool $remove_breaks = false): string
+    {
+        $value = preg_replace('@<(script|style)[^>]*?>.*?</\\1>@si', '', $value) ?? $value;
+        $value = strip_tags($value);
+
+        if ($remove_breaks) {
+            $value = preg_replace('/[\r\n\t ]+/', ' ', $value) ?? $value;
+        }
+
+        return trim($value);
+    }
+}
+
+if (! function_exists('wp_check_invalid_utf8')) {
+    function wp_check_invalid_utf8(string $text, bool $strip = false): string
+    {
+        if (mb_check_encoding($text, 'UTF-8')) {
+            return $text;
+        }
+
+        return $strip ? (string) iconv('UTF-8', 'UTF-8//IGNORE', $text) : '';
+    }
+}
+
+if (! function_exists('get_bloginfo')) {
+    function get_bloginfo(string $show = '', string $filter = 'raw'): string
+    {
+        unset($filter);
+        $values = $GLOBALS['dstk_test_bloginfo'] ?? [
+            'name'        => 'Example',
+            'description' => 'Test site',
+            'language'    => 'ru-RU',
+        ];
+
+        return (string) ($values[$show] ?? '');
+    }
+}
+
+if (! function_exists('get_current_blog_id')) {
+    function get_current_blog_id(): int
+    {
+        return (int) ($GLOBALS['dstk_test_current_blog_id'] ?? 1);
+    }
+}
+
+if (! function_exists('is_admin')) {
+    function is_admin(): bool
+    {
+        return ! empty($GLOBALS['dstk_test_is_admin']);
+    }
+}
+
+if (! function_exists('add_rewrite_rule')) {
+    function add_rewrite_rule(string $regex, string $query, string $after = 'bottom'): void
+    {
+        $GLOBALS['dstk_test_rewrite_rules'][] = [
+            'regex' => $regex,
+            'query' => $query,
+            'after' => $after,
+        ];
+    }
+}
+
+if (! function_exists('get_transient')) {
+    function get_transient(string $name): mixed
+    {
+        return $GLOBALS['dstk_test_transients'][$name] ?? false;
+    }
+}
+
+if (! function_exists('set_transient')) {
+    function set_transient(string $name, mixed $value, int $expiration = 0): bool
+    {
+        $GLOBALS['dstk_test_transients'][$name] = $value;
+        unset($expiration);
+
+        return true;
+    }
+}
+
+if (! function_exists('checked')) {
+    function checked(mixed $checked, mixed $current = true, bool $display = true): string
+    {
+        $result = (string) $checked === (string) $current ? ' checked="checked"' : '';
+
+        if ($display) {
+            echo $result;
+        }
+
+        return $result;
+    }
+}
+
+if (! function_exists('esc_textarea')) {
+    function esc_textarea(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (! function_exists('wp_nonce_field')) {
+    function wp_nonce_field(string $action = '', string $name = '_wpnonce', bool $referer = true, bool $echo = true): string
+    {
+        unset($action, $referer);
+        $field = '<input type="hidden" name="' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '" value="test">';
+
+        if ($echo) {
+            echo $field;
+        }
+
+        return $field;
     }
 }
 

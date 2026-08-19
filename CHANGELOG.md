@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.0
+- Добавлен модуль AI Agents: `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md` и опциональный `/feed/ai-pulse.md`.
+- Документы собираются без записи файлов на диск, в UTF-8 без BOM, с гибридными полями и переключателями endpoint.
+- Общая индексация для Sitemap, IndexNow и AI Agents: TSF fail-open, если API недоступен; отсекаются noindex и внешний canonical.
+- Flush rewrite завязан на fingerprint настроек (включая AI endpoints).
+- Общее версионирование кеша; uninstall чистит `dstk_ai_cache_version` и transients AI.
+- Отдельная вкладка AI Agents, карточка модуля и раздел в справке.
+
 ## 0.9.1
 - Hide Login: закрыт обход секретного slug через `dstk_custom_login=1`.
 - REST API Control: маршруты редактора только для авторизованных; публично oembed/корень; whitelist capability из allowlist.

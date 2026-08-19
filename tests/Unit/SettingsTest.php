@@ -9,6 +9,12 @@ use PHPUnit\Framework\TestCase;
 
 final class SettingsTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        $GLOBALS['dstk_test_options'] = [];
+        $GLOBALS['dstk_test_filters'] = [];
+    }
+
     public function test_submitted_false_and_empty_values_are_preserved(): void
     {
         $settings = Settings::merge_with_defaults(
@@ -68,5 +74,51 @@ final class SettingsTest extends TestCase
         self::assertSame('edit_posts', Settings::sanitize_trusted_capability('read'));
         self::assertSame('edit_posts', Settings::sanitize_trusted_capability('exist'));
         self::assertSame('manage_options', Settings::sanitize_trusted_capability('manage_options'));
+    }
+
+    public function test_ai_agents_limits_are_clamped_and_post_types_filtered(): void
+    {
+        $settings = Settings::merge_with_defaults(
+            [
+                'ai_agents' => [
+                    '_submitted'       => '1',
+                    'pulse_md'         => '1',
+                    'pulse_limit'      => 999,
+                    'full_posts_limit' => 0,
+                    'post_types'       => ['page', 'attachment', 'nope'],
+                    'site_blurb'       => '<strong>Клиника</strong>',
+                ],
+            ],
+            true
+        );
+
+        self::assertTrue($settings['ai_agents']['pulse_md']);
+        self::assertSame(50, $settings['ai_agents']['pulse_limit']);
+        self::assertSame(1, $settings['ai_agents']['full_posts_limit']);
+        self::assertSame(['page'], $settings['ai_agents']['post_types']);
+        self::assertSame('Клиника', $settings['ai_agents']['site_blurb']);
+        self::assertFalse($settings['ai_agents']['ai_txt']);
+    }
+
+    public function test_main_form_without_ai_block_keeps_saved_ai_settings(): void
+    {
+        $GLOBALS['dstk_test_options'][Settings::OPTION_KEY] = [
+            'ai_agents' => [
+                'site_blurb' => 'Сохранённый текст',
+                'pulse_md'   => true,
+                'pulse_limit' => 7,
+            ],
+        ];
+
+        $settings = Settings::merge_with_defaults(
+            [
+                'modules' => ['cleanup' => '1'],
+            ],
+            true
+        );
+
+        self::assertSame('Сохранённый текст', $settings['ai_agents']['site_blurb']);
+        self::assertTrue($settings['ai_agents']['pulse_md']);
+        self::assertSame(7, $settings['ai_agents']['pulse_limit']);
     }
 }

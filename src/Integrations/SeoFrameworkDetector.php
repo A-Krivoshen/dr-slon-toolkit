@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrSlon\Toolkit\Integrations;
 
+use DrSlon\Toolkit\Core\UrlNormalizer;
+
 final class SeoFrameworkDetector
 {
     public function is_active(): bool
@@ -22,7 +24,14 @@ final class SeoFrameworkDetector
         }
 
         echo '<div class="notice notice-info"><p>';
-        echo esc_html__('Обнаружен The SEO Framework: Sitemap Dr.Slon Toolkit отключён во избежание дублей, а IndexNow учитывает noindex и canonical.', 'dr-slon-toolkit');
+        $status = $this->indexability_source();
+        $message = __('Обнаружен The SEO Framework: Sitemap Dr.Slon Toolkit не дублирует карту TSF, а IndexNow и AI Agents учитывают noindex и внешний canonical.', 'dr-slon-toolkit');
+
+        if ($status === 'unavailable') {
+            $message = __('The SEO Framework установлен, но API ещё не готов: IndexNow, Sitemap и AI Agents работают в fail-open режиме до загрузки TSF.', 'dr-slon-toolkit');
+        }
+
+        echo esc_html($message);
         echo '</p></div>';
     }
 
@@ -65,18 +74,39 @@ final class SeoFrameworkDetector
         return true;
     }
 
+    public function is_api_ready(): bool
+    {
+        return $this->is_active()
+            && did_action('the_seo_framework_loaded') > 0
+            && function_exists('tsf');
+    }
+
+    /**
+     * @return 'none'|'unavailable'|'tsf'
+     */
+    public function indexability_source(): string
+    {
+        if (! $this->is_active()) {
+            return 'none';
+        }
+
+        return $this->is_api_ready() ? 'tsf' : 'unavailable';
+    }
+
     public function is_post_indexable(int $post_id, string $url): bool
     {
+        unset($url);
+
         if (! $this->is_active()) {
             return true;
         }
 
-        if (
-            (int) get_option('blog_public', 1) !== 1
-            || ! did_action('the_seo_framework_loaded')
-            || ! function_exists('tsf')
-        ) {
+        if ((int) get_option('blog_public', 1) !== 1) {
             return false;
+        }
+
+        if (! $this->is_api_ready()) {
+            return true;
         }
 
         try {
@@ -87,7 +117,7 @@ final class SeoFrameworkDetector
                 $uri_api = $tsf->uri();
 
                 if (! method_exists($robots_api, 'get_generated_meta') || ! method_exists($uri_api, 'get_canonical_url')) {
-                    return false;
+                    return true;
                 }
 
                 $robots = $robots_api->get_generated_meta(['id' => $post_id], ['noindex']);
@@ -101,102 +131,28 @@ final class SeoFrameworkDetector
                     ]
                 );
             } else {
-                return false;
+                return true;
             }
         } catch (\Throwable) {
-            return false;
+            return true;
         }
 
         if (! is_array($robots) || ! empty($robots['noindex'])) {
             return false;
         }
 
-        $canonical = is_string($canonical) ? $this->normalize_comparable_url($canonical) : '';
-        $url = $this->normalize_comparable_url($url);
+        if (is_string($canonical) && $canonical !== '' && UrlNormalizer::is_external_canonical($canonical)) {
+            return false;
+        }
 
-        return $canonical !== '' && $url !== '' && hash_equals($url, $canonical);
+        return true;
     }
 
+    /**
+     * @deprecated 0.10.0 Use UrlNormalizer::comparable().
+     */
     private function normalize_comparable_url(string $url): string
     {
-        $url = esc_url_raw(trim($url), ['http', 'https']);
-        $parts = wp_parse_url($url);
-
-        if ($url === '' || ! is_array($parts) || isset($parts['user']) || isset($parts['pass'])) {
-            return '';
-        }
-
-        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
-        $host = strtolower((string) ($parts['host'] ?? ''));
-
-        if (! in_array($scheme, ['http', 'https'], true) || $host === '') {
-            return '';
-        }
-
-        $has_port = isset($parts['port']);
-        $port = $has_port ? (int) $parts['port'] : 0;
-
-        if ($has_port && ($port < 1 || $port > 65535)) {
-            return '';
-        }
-
-        $path = $this->normalize_percent_encoded_component((string) ($parts['path'] ?? '/'));
-
-        if ($path === null) {
-            return '';
-        }
-
-        $origin_host = str_contains($host, ':') && ! str_starts_with($host, '[')
-            ? '[' . $host . ']'
-            : $host;
-        $normalized = $scheme . '://' . $origin_host;
-        $default_port = $scheme === 'https' ? 443 : 80;
-
-        if ($port > 0 && $port !== $default_port) {
-            $normalized .= ':' . $port;
-        }
-
-        $normalized .= $path === '' ? '/' : $path;
-
-        if (isset($parts['query']) && (string) $parts['query'] !== '') {
-            $query = $this->normalize_percent_encoded_component((string) $parts['query']);
-
-            if ($query === null) {
-                return '';
-            }
-
-            $normalized .= '?' . $query;
-        }
-
-        return $normalized;
-    }
-
-    private function normalize_percent_encoded_component(string $component): ?string
-    {
-        $normalized = '';
-        $length = strlen($component);
-
-        for ($index = 0; $index < $length; ++$index) {
-            $character = $component[$index];
-
-            if ($character === '%') {
-                if ($index + 2 >= $length || ctype_xdigit($component[$index + 1] . $component[$index + 2]) === false) {
-                    return null;
-                }
-
-                $byte = (int) hexdec($component[$index + 1] . $component[$index + 2]);
-                $decoded = chr($byte);
-                $normalized .= preg_match('/[A-Za-z0-9._~-]/', $decoded) === 1
-                    ? $decoded
-                    : '%' . strtoupper($component[$index + 1] . $component[$index + 2]);
-                $index += 2;
-                continue;
-            }
-
-            $byte = ord($character);
-            $normalized .= $byte > 127 ? sprintf('%%%02X', $byte) : $character;
-        }
-
-        return $normalized;
+        return UrlNormalizer::comparable($url);
     }
 }

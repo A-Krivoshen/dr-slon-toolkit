@@ -18,6 +18,7 @@ $dstk_cleanup_site = static function (): void {
             'dstk_indexnow_queue_status',
             'dstk_indexnow_queue_lock',
             'dstk_sitemap_cache_version',
+            'dstk_ai_cache_version',
             'dstk_rewrite_flush_pending',
             'dstk_hide_login_rewrite_flush_pending',
         ] as $option
@@ -33,6 +34,8 @@ $dstk_cleanup_site = static function (): void {
     $patterns = [
         $wpdb->esc_like('_transient_dstk_sitemap_') . '%',
         $wpdb->esc_like('_transient_timeout_dstk_sitemap_') . '%',
+        $wpdb->esc_like('_transient_dstk_ai_doc_') . '%',
+        $wpdb->esc_like('_transient_timeout_dstk_ai_doc_') . '%',
     ];
 
     foreach ($patterns as $pattern) {

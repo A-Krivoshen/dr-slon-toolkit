@@ -4,7 +4,7 @@ Tags: toolkit, maintenance, security, transliteration, indexnow
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.9.1
+Stable tag: 0.10.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,7 +27,8 @@ Dr.Slon Toolkit — модульный плагин, созданный с ну�
 - модуль «Транслитерация»
 - модуль «Отключение комментариев»
 - модуль «Очистка»
-- интеграцию с The SEO Framework для Sitemap и IndexNow
+- модуль «AI Agents» (`/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`)
+- интеграцию с The SEO Framework для Sitemap, IndexNow и AI Agents
 - безопасные обновления из GitHub Releases
 
 Для модуля «Скрытый вход»:
@@ -56,6 +57,11 @@ Composer нужен только разработчику:
 - для публикации: push тега `vX.Y.Z` запускает workflow, который прикрепляет проверенный ZIP к GitHub Release.
 
 == Changelog ==
+
+= 0.10.0 =
+* Модуль AI Agents: UTF-8 документы для ИИ без файлов на диске, pulse по желанию.
+* Общая индексация Sitemap/IndexNow/AI, fail-open TSF, fingerprint rewrite.
+* Вкладка AI Agents в админке.
 
 = 0.9.1 =
 * Hide Login: закрыт обход slug через dstk_custom_login=1.

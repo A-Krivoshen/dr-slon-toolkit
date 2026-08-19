@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrSlon\Toolkit\Admin;
 
+use DrSlon\Toolkit\Core\RewriteManager;
 use DrSlon\Toolkit\Core\Settings;
 use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
 use DrSlon\Toolkit\Modules\IndexNowModule;
@@ -11,8 +12,9 @@ use DrSlon\Toolkit\Modules\IndexNowModule;
 final class SettingsPage
 {
     private const UPDATE_CONTROLS_CAPABILITY = 'update_core';
-    private const PAGE_SLUG = 'dr-slon-toolkit';
-    private const HELP_PAGE_SLUG = 'dr-slon-toolkit-help';
+    public const PAGE_SLUG = 'dr-slon-toolkit';
+    public const HELP_PAGE_SLUG = 'dr-slon-toolkit-help';
+    public const AI_PAGE_SLUG = 'dr-slon-toolkit-ai';
 
     private InfoPanel $info_panel;
 
@@ -223,19 +225,21 @@ final class SettingsPage
             $sanitized['update_controls'] = $previous['update_controls'];
         }
 
-        $rewrite_settings_changed = (
-            ! empty($previous['modules']['hide_login']) !== ! empty($sanitized['modules']['hide_login'])
-        ) || (
-            (string) ($previous['hide_login']['slug'] ?? '') !== (string) ($sanitized['hide_login']['slug'] ?? '')
-        ) || (
-            ! empty($previous['modules']['sitemap']) !== ! empty($sanitized['modules']['sitemap'])
-        ) || (
-            ! empty($previous['sitemap']['enabled']) !== ! empty($sanitized['sitemap']['enabled'])
-        );
+        $form = isset($input['_form']) ? sanitize_key((string) $input['_form']) : 'main';
 
-        if ($rewrite_settings_changed) {
-            update_option(Settings::REWRITE_FLUSH_PENDING_OPTION, 1, false);
+        if ($form === 'ai_agents') {
+            $overlay = $previous;
+            $overlay['modules']['ai_agents'] = ! empty($input['modules']['ai_agents']);
+            $overlay['ai_agents'] = isset($input['ai_agents']) && is_array($input['ai_agents']) ? $input['ai_agents'] : [];
+            $sanitized = Settings::merge_with_defaults($overlay, true);
+
+            if (! $this->can_manage_update_controls()) {
+                $sanitized['modules']['update_controls'] = ! empty($previous['modules']['update_controls']);
+                $sanitized['update_controls'] = $previous['update_controls'];
+            }
         }
+
+        RewriteManager::schedule_if_changed($previous, $sanitized);
 
         return $sanitized;
     }
@@ -285,6 +289,11 @@ final class SettingsPage
                 'title'       => __('Update Controls', 'dr-slon-toolkit'),
                 'description' => __('Управляет политикой автообновлений, не отменяя защитные решения WordPress.', 'dr-slon-toolkit'),
                 'icon'        => 'dashicons-update',
+            ],
+            'ai_agents' => [
+                'title'       => __('AI Agents', 'dr-slon-toolkit'),
+                'description' => __('Отдаёт llms.txt, ai.txt и инструкции для ИИ-агентов без файлов на диске.', 'dr-slon-toolkit'),
+                'icon'        => 'dashicons-format-aside',
             ],
         ];
         ?>
@@ -787,6 +796,13 @@ final class SettingsPage
                 </section>
 
                 <section class="dstk-help-card">
+                    <span class="dashicons dashicons-format-aside" aria-hidden="true"></span>
+                    <h2><?php echo esc_html__('AI Agents', 'dr-slon-toolkit'); ?></h2>
+                    <p><?php echo esc_html__('Модуль отдаёт UTF-8 документы /ai.txt, /llms.txt, /llms-full.txt и /agents.md. Pulse-лента /feed/ai-pulse.md выключена по умолчанию. Если другой плагин уже занял llms.txt, побеждает последнее зарегистрированное правило — после включения сбросьте постоянные ссылки.', 'dr-slon-toolkit'); ?></p>
+                    <code><?php echo esc_html(home_url('/llms.txt')); ?></code>
+                </section>
+
+                <section class="dstk-help-card">
                     <span class="dashicons dashicons-update" aria-hidden="true"></span>
                     <h2><?php echo esc_html__('Обновления из GitHub', 'dr-slon-toolkit'); ?></h2>
                     <p><?php echo esc_html__('WordPress проверяет официальный GitHub Release и устанавливает только готовый ZIP-asset (dr-slon-toolkit-x.y.z.zip). Source archives с кнопки Code не используются. Контрольная сумма и структура пакета проверяются до замены файлов.', 'dr-slon-toolkit'); ?></p>
@@ -799,7 +815,7 @@ final class SettingsPage
         <?php
     }
 
-    private function render_admin_header(string $current): void
+    public function render_admin_header(string $current): void
     {
         $settings = Settings::all();
         $modules = isset($settings['modules']) && is_array($settings['modules']) ? $settings['modules'] : [];
@@ -819,6 +835,7 @@ final class SettingsPage
             </div>
             <nav class="dstk-tabs" aria-label="<?php echo esc_attr__('Разделы Dr.Slon Toolkit', 'dr-slon-toolkit'); ?>">
                 <a class="<?php echo $current === 'settings' ? 'is-current' : ''; ?>" href="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_SLUG)); ?>"><?php echo esc_html__('Настройки', 'dr-slon-toolkit'); ?></a>
+                <a class="<?php echo $current === 'ai' ? 'is-current' : ''; ?>" href="<?php echo esc_url(admin_url('admin.php?page=' . self::AI_PAGE_SLUG)); ?>"><?php echo esc_html__('AI Agents', 'dr-slon-toolkit'); ?></a>
                 <a class="<?php echo $current === 'help' ? 'is-current' : ''; ?>" href="<?php echo esc_url(admin_url('admin.php?page=' . self::HELP_PAGE_SLUG)); ?>"><?php echo esc_html__('Помощь', 'dr-slon-toolkit'); ?></a>
             </nav>
         </header>

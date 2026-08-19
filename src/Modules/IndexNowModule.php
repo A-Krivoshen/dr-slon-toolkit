@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DrSlon\Toolkit\Modules;
 
+use DrSlon\Toolkit\Core\DiscoveryIndexability;
 use DrSlon\Toolkit\Core\ModuleInterface;
 use DrSlon\Toolkit\Core\Settings;
-use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
 use WP_Post;
 
 final class IndexNowModule implements ModuleInterface
@@ -689,8 +689,7 @@ final class IndexNowModule implements ModuleInterface
             }
 
             if ($eligible) {
-                $eligible = ! (bool) apply_filters('dstk_sitemap_is_noindex', false, $post)
-                    && (new SeoFrameworkDetector())->is_post_indexable($post_id, $url);
+                $eligible = DiscoveryIndexability::is_post_indexable($post, $url);
             }
         } elseif ($post instanceof WP_Post && $this->is_supported_post($post, (string) $post->post_status)) {
             $current_url = $this->post_url($post);

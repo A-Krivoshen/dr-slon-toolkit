@@ -24,6 +24,7 @@ final class Settings
                 'indexnow'         => false,
                 'sitemap'          => false,
                 'update_controls'  => false,
+                'ai_agents'        => false,
             ],
             'cleanup' => [
                 'disable_emojis'   => true,
@@ -57,6 +58,24 @@ final class Settings
                 'themes'              => true,
                 'translations'        => true,
                 'email_notifications' => true,
+            ],
+            'ai_agents' => [
+                'ai_txt'           => true,
+                'llms_txt'         => true,
+                'llms_full'        => true,
+                'agents_md'        => true,
+                'pulse_md'         => false,
+                'html_links'       => true,
+                'robots'           => true,
+                'site_blurb'       => '',
+                'contacts'         => '',
+                'facts'            => '',
+                'ai_policy'        => '',
+                'do_not_invent'    => '',
+                'post_types'       => ['post', 'page'],
+                'pulse_limit'      => 20,
+                'full_posts_limit' => 30,
+                'exclude_noindex'  => true,
             ],
         ];
     }
@@ -102,6 +121,10 @@ final class Settings
             'sitemap-xml',
             'tag',
             'trackback',
+            'ai',
+            'llms',
+            'llms-full',
+            'agents',
             'well-known',
             'wp',
             'wp-admin',
@@ -140,10 +163,21 @@ final class Settings
         $indexnow = isset($input['indexnow']) && is_array($input['indexnow']) ? $input['indexnow'] : [];
         $sitemap = isset($input['sitemap']) && is_array($input['sitemap']) ? $input['sitemap'] : [];
         $update_controls = isset($input['update_controls']) && is_array($input['update_controls']) ? $input['update_controls'] : [];
+        $ai_agents = isset($input['ai_agents']) && is_array($input['ai_agents']) ? $input['ai_agents'] : [];
         $cleanup_submitted = ! empty($cleanup['_submitted']);
         $indexnow_submitted = ! empty($indexnow['_submitted']);
         $sitemap_submitted = ! empty($sitemap['_submitted']);
         $update_controls_submitted = ! empty($update_controls['_submitted']);
+        $ai_submitted = ! empty($ai_agents['_submitted']);
+
+        if ($ai_agents === [] && ! $ai_submitted) {
+            $saved = get_option(self::OPTION_KEY, []);
+            if (is_array($saved) && isset($saved['ai_agents']) && is_array($saved['ai_agents'])) {
+                $ai_agents = $saved['ai_agents'];
+            } else {
+                $ai_agents = $defaults['ai_agents'];
+            }
+        }
 
         $slug = self::sanitize_hide_login_slug(isset($hide_login['slug']) ? (string) $hide_login['slug'] : '');
 
@@ -242,6 +276,26 @@ final class Settings
             $core_mode = $defaults['update_controls']['core_mode'];
         }
 
+        $selected_ai_post_types = isset($ai_agents['post_types']) && is_array($ai_agents['post_types'])
+            ? $ai_agents['post_types']
+            : ($ai_submitted ? [] : $defaults['ai_agents']['post_types']);
+        $sanitized_ai_post_types = [];
+
+        foreach ($selected_ai_post_types as $post_type) {
+            $post_type = sanitize_key((string) $post_type);
+
+            if ($post_type === '' || ($validate_entities && ! in_array($post_type, $viewable_post_types, true))) {
+                continue;
+            }
+
+            $sanitized_ai_post_types[] = $post_type;
+        }
+
+        $pulse_limit = isset($ai_agents['pulse_limit']) ? (int) $ai_agents['pulse_limit'] : (int) $defaults['ai_agents']['pulse_limit'];
+        $full_posts_limit = isset($ai_agents['full_posts_limit']) ? (int) $ai_agents['full_posts_limit'] : (int) $defaults['ai_agents']['full_posts_limit'];
+        $pulse_limit = max(1, min(50, $pulse_limit));
+        $full_posts_limit = max(1, min(100, $full_posts_limit));
+
         return [
             'modules' => [
                 'transliteration'  => ! empty($modules['transliteration']),
@@ -252,6 +306,7 @@ final class Settings
                 'indexnow'         => ! empty($modules['indexnow']),
                 'sitemap'          => ! empty($modules['sitemap']),
                 'update_controls'  => ! empty($modules['update_controls']),
+                'ai_agents'        => ! empty($modules['ai_agents']),
             ],
             'cleanup' => [
                 'disable_emojis'   => array_key_exists('disable_emojis', $cleanup) ? ! empty($cleanup['disable_emojis']) : ($cleanup_submitted ? false : $defaults['cleanup']['disable_emojis']),
@@ -286,7 +341,38 @@ final class Settings
                 'translations'        => array_key_exists('translations', $update_controls) ? ! empty($update_controls['translations']) : ($update_controls_submitted ? false : $defaults['update_controls']['translations']),
                 'email_notifications' => array_key_exists('email_notifications', $update_controls) ? ! empty($update_controls['email_notifications']) : ($update_controls_submitted ? false : $defaults['update_controls']['email_notifications']),
             ],
+            'ai_agents' => [
+                'ai_txt'           => array_key_exists('ai_txt', $ai_agents) ? ! empty($ai_agents['ai_txt']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['ai_txt']),
+                'llms_txt'         => array_key_exists('llms_txt', $ai_agents) ? ! empty($ai_agents['llms_txt']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['llms_txt']),
+                'llms_full'        => array_key_exists('llms_full', $ai_agents) ? ! empty($ai_agents['llms_full']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['llms_full']),
+                'agents_md'        => array_key_exists('agents_md', $ai_agents) ? ! empty($ai_agents['agents_md']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['agents_md']),
+                'pulse_md'         => array_key_exists('pulse_md', $ai_agents) ? ! empty($ai_agents['pulse_md']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['pulse_md']),
+                'html_links'       => array_key_exists('html_links', $ai_agents) ? ! empty($ai_agents['html_links']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['html_links']),
+                'robots'           => array_key_exists('robots', $ai_agents) ? ! empty($ai_agents['robots']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['robots']),
+                'site_blurb'       => self::sanitize_plain_textarea(isset($ai_agents['site_blurb']) ? (string) $ai_agents['site_blurb'] : ''),
+                'contacts'         => self::sanitize_plain_textarea(isset($ai_agents['contacts']) ? (string) $ai_agents['contacts'] : ''),
+                'facts'            => self::sanitize_plain_textarea(isset($ai_agents['facts']) ? (string) $ai_agents['facts'] : ''),
+                'ai_policy'        => self::sanitize_plain_textarea(isset($ai_agents['ai_policy']) ? (string) $ai_agents['ai_policy'] : ''),
+                'do_not_invent'    => self::sanitize_plain_textarea(isset($ai_agents['do_not_invent']) ? (string) $ai_agents['do_not_invent'] : ''),
+                'post_types'       => array_values(array_unique($sanitized_ai_post_types)),
+                'pulse_limit'      => $pulse_limit,
+                'full_posts_limit' => $full_posts_limit,
+                'exclude_noindex'  => array_key_exists('exclude_noindex', $ai_agents) ? ! empty($ai_agents['exclude_noindex']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['exclude_noindex']),
+            ],
         ];
+    }
+
+    private static function sanitize_plain_textarea(string $value): string
+    {
+        $value = function_exists('sanitize_textarea_field')
+            ? sanitize_textarea_field($value)
+            : trim(strip_tags($value));
+
+        if (strlen($value) > 8000) {
+            $value = substr($value, 0, 8000);
+        }
+
+        return $value;
     }
 
     private static function sanitize_multiline_routes(string $raw): string

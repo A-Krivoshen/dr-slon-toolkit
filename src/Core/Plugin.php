@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace DrSlon\Toolkit\Core;
 
+use DrSlon\Toolkit\Admin\AiAgentsPage;
 use DrSlon\Toolkit\Admin\SettingsPage;
 use DrSlon\Toolkit\Integrations\GitHubReleaseUpdater;
 use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
+use DrSlon\Toolkit\Modules\AiAgentsModule;
 use DrSlon\Toolkit\Modules\CleanupModule;
 use DrSlon\Toolkit\Modules\DisableCommentsModule;
 use DrSlon\Toolkit\Modules\HideLoginModule;
@@ -40,6 +42,7 @@ final class Plugin
         if (is_admin()) {
             $settings_page = new SettingsPage();
             $settings_page->register();
+            (new AiAgentsPage($settings_page))->register();
         }
 
         $this->register_modules();
@@ -68,6 +71,7 @@ final class Plugin
             'indexnow'         => new IndexNowModule(),
             'sitemap'          => new SitemapModule(),
             'update_controls'  => new UpdateControlsModule(),
+            'ai_agents'        => new AiAgentsModule(),
         ];
 
         foreach ($modules as $slug => $module) {
