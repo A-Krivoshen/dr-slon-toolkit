@@ -8,34 +8,34 @@
 
   <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace">
     <rect x="48" y="118" width="196" height="112" rx="8" fill="#1b2436" stroke="#25324a"/>
-    <text x="68" y="156" fill="#7dd3b8" font-size="14" font-weight="700">1</text>
+    <text x="68" y="154" fill="#7dd3b8" font-size="18" font-weight="700">1</text>
     <text x="68" y="184" fill="#ffffff" font-size="20">/ai.txt</text>
-    <text x="68" y="208" fill="#94a3b8" font-size="16">короткий индекс</text>
+    <text x="68" y="212" fill="#94a3b8" font-size="18">короткий индекс</text>
 
     <path d="M256 174 H276" stroke="#41b894" stroke-width="2"/>
 
     <rect x="276" y="118" width="196" height="112" rx="8" fill="#1b2436" stroke="#25324a"/>
-    <text x="296" y="156" fill="#7dd3b8" font-size="14" font-weight="700">2</text>
+    <text x="296" y="154" fill="#7dd3b8" font-size="18" font-weight="700">2</text>
     <text x="296" y="184" fill="#ffffff" font-size="20">/llms.txt</text>
-    <text x="296" y="208" fill="#94a3b8" font-size="16">факты сайта</text>
+    <text x="296" y="212" fill="#94a3b8" font-size="18">факты сайта</text>
 
     <path d="M484 174 H504" stroke="#41b894" stroke-width="2"/>
 
     <rect x="504" y="118" width="220" height="112" rx="8" fill="#1b2436" stroke="#25324a"/>
-    <text x="524" y="156" fill="#7dd3b8" font-size="14" font-weight="700">3</text>
+    <text x="524" y="154" fill="#7dd3b8" font-size="18" font-weight="700">3</text>
     <text x="524" y="184" fill="#ffffff" font-size="20">/llms-full.txt</text>
-    <text x="524" y="208" fill="#94a3b8" font-size="16">расширенный дамп</text>
+    <text x="524" y="212" fill="#94a3b8" font-size="18">расширенный дамп</text>
 
     <path d="M736 174 H756" stroke="#41b894" stroke-width="2"/>
 
     <rect x="756" y="118" width="196" height="112" rx="8" fill="#1b2436" stroke="#25324a"/>
-    <text x="776" y="156" fill="#7dd3b8" font-size="14" font-weight="700">4</text>
+    <text x="776" y="154" fill="#7dd3b8" font-size="18" font-weight="700">4</text>
     <text x="776" y="184" fill="#ffffff" font-size="20">/agents.md</text>
-    <text x="776" y="208" fill="#94a3b8" font-size="16">инструкции</text>
+    <text x="776" y="212" fill="#94a3b8" font-size="18">инструкции</text>
 
     <rect x="972" y="118" width="180" height="112" rx="8" fill="#161e2e" stroke="#25324a" stroke-dasharray="5 4"/>
-    <text x="992" y="156" fill="#667085" font-size="14" font-weight="700">OPT-IN</text>
-    <text x="992" y="184" fill="#94a3b8" font-size="18">/feed/ai-pulse.md</text>
-    <text x="992" y="208" fill="#667085" font-size="16">выкл. по умолчанию</text>
+    <text x="992" y="154" fill="#667085" font-size="16" font-weight="700">OPT-IN</text>
+    <text x="992" y="184" fill="#94a3b8" font-size="16">/feed/ai-pulse.md</text>
+    <text x="992" y="212" fill="#667085" font-size="16">выкл. по умолчанию</text>
   </g>
 </svg>

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit — модульный плагин WordPress для клиентских сайтов. Ставится ZIP из GitHub Releases, без Composer.">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.12.0 — модульный плагин WordPress: капча влезает в форму входа, кириллические URL переводятся в латиницу со 301. ZIP из GitHub Releases, без Composer.">
 </p>
 
-Модульный плагин WordPress для обслуживания клиентских сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация и AI-документы. На сервере клиента Composer не нужен.
+Модульный плагин для клиентских WordPress-сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация уже существующих URL, капча Яндекса. На сервере клиента Composer не нужен.
 
 **[Скачать dr-slon-toolkit-0.12.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
@@ -20,23 +20,23 @@ WordPress 6.6+, PHP 8.1+.
 ## Что умеет
 
 <p align="center">
-  <img src="./assets/readme/modules.svg" width="100%" alt="Девять модулей Dr.Slon Toolkit: доступ, индексация и обслуживание сайта. Каждый включается отдельно.">
+  <img src="./assets/readme/modules.svg" width="100%" alt="Двенадцать модулей Dr.Slon Toolkit: доступ, индексация и обслуживание сайта. Каждый включается отдельно.">
 </p>
 
 | Модуль | Что делает |
 | --- | --- |
 | **Скрытый вход** | 404 на прямой `wp-login.php` (кроме reset/recovery). Вход по slug, например `/my-login/`. Аварийно: `define('KRV_DSTK_DISABLE_HIDE_LOGIN', true);` в `wp-config.php`. |
+| **Yandex SmartCaptcha** | Капча на форме входа, в том числе на скрытом slug. Виджет вписан в ширину wp-login. Ключи из Yandex Cloud. Не трогает reset password и XML-RPC. |
+| **Login Attempts** | Блокирует IP после серии неверных паролей. В опции хранится хеш, не сырой адрес. |
 | **REST API Control** | Всем / только авторизованным / whitelist. Системный allowlist WordPress нельзя выключить. |
 | **IndexNow** | Ручная и автоматическая отправка URL через очередь WP-Cron. Ключ `/<key>.txt` без файла на диске. Учитывает noindex/canonical The SEO Framework. |
 | **Sitemap** | `/sitemap.xml` с пагинацией, кешем и `lastmod`. Если TSF отдаёт свою карту — toolkit не дублирует. |
 | **AI Agents** | `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`. Pulse выключен по умолчанию. |
-| **Update Controls** | Автообновления ядра, плагинов, тем, переводов и писем. |
-| **Транслитерация** | Русские slug и имена файлов. Уже опубликованные кириллические URL можно перевести кнопкой, со 301. |
+| **Redirect Manager** | Точные 301/302: `/staryj/ -> /novyj/`. Не перехватывает wp-admin, login и REST. |
+| **Транслитерация** | Русские slug и имена новых файлов. Уже опубликованные кириллические URL можно перевести кнопкой, со 301. |
 | **Комментарии** | Глобально закрывает комментарии, пинги, REST и UI. |
 | **Очистка** | Emoji, wp-embed, XML-RPC, лишние теги `<head>`. |
-| **Yandex SmartCaptcha** | Капча на форме входа. Ключи из Yandex Cloud. Не трогает reset password и XML-RPC. |
-| **Login Attempts** | Блокирует IP после серии неверных паролей. В опции хранится хеш, не сырой адрес. |
-| **Redirect Manager** | Точные 301/302: `/staryj/ -> /novyj/`. Не перехватывает wp-admin, login и REST. |
+| **Update Controls** | Автообновления ядра, плагинов, тем, переводов и писем. |
 
 Страница настроек нативная. Карточки поддержки локальные, без удалённого JavaScript.
 

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
-  <title id="title">Dr.Slon Toolkit</title>
-  <desc id="desc">Модульный плагин WordPress для клиентских сайтов: скрытый вход, REST, IndexNow, sitemap и AI-документы. Ставится ZIP-ом из GitHub Releases, без Composer.</desc>
+  <title id="title">Dr.Slon Toolkit 0.12.0</title>
+  <desc id="desc">Модульный плагин WordPress для клиентских сайтов. Капча Яндекса вписывается в форму входа, кириллические URL переводятся в латиницу со 301. Ставится ZIP из GitHub Releases, без Composer.</desc>
 
   <defs>
     <pattern id="dstk-hatch" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -12,45 +12,47 @@
   <rect width="1200" height="400" rx="12" fill="#111827"/>
   <rect x="780" width="420" height="400" fill="url(#dstk-hatch)"/>
   <rect x="780" width="1" height="400" fill="#ffffff" fill-opacity="0.08"/>
+  <rect x="0" y="0" width="8" height="400" fill="#41b894"/>
 
-  <text x="56" y="72" fill="#7dd3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" letter-spacing="2.4">WORDPRESS OPERATIONS TOOLKIT</text>
-  <text x="56" y="132" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="52" font-weight="700" letter-spacing="-1.6">Dr.Slon Toolkit</text>
-  <text x="56" y="178" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21">Плагин обслуживания клиентских</text>
-  <text x="56" y="208" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21">WordPress-сайтов. Ставится ZIP</text>
-  <text x="56" y="238" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21">из GitHub Releases, без Composer.</text>
+  <text x="56" y="64" fill="#7dd3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" letter-spacing="2.4">WORDPRESS OPERATIONS TOOLKIT</text>
+  <text x="56" y="124" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="52" font-weight="700" letter-spacing="-1.6">Dr.Slon Toolkit</text>
+  <text x="56" y="172" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21">Скрытый вход, капча на wp-login,</text>
+  <text x="56" y="202" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21">латинские URL вместо кириллицы.</text>
+  <text x="56" y="232" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20">ZIP из GitHub Releases, без Composer.</text>
 
   <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="600">
-    <rect x="56" y="286" width="108" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
-    <text x="110" y="310" text-anchor="middle" fill="#ffffff">v0.11.0</text>
-    <rect x="176" y="286" width="118" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
-    <text x="235" y="310" text-anchor="middle" fill="#cbd5e1">WP 6.6+</text>
-    <rect x="306" y="286" width="118" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
-    <text x="365" y="310" text-anchor="middle" fill="#cbd5e1">PHP 8.1+</text>
-    <rect x="436" y="286" width="128" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
-    <text x="500" y="310" text-anchor="middle" fill="#cbd5e1">GPL-2.0</text>
+    <rect x="56" y="286" width="118" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#41b894" stroke-opacity="0.55"/>
+    <text x="115" y="310" text-anchor="middle" fill="#7dd3b8">v0.12.0</text>
+    <rect x="186" y="286" width="118" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="245" y="310" text-anchor="middle" fill="#cbd5e1">WP 6.6+</text>
+    <rect x="316" y="286" width="118" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="375" y="310" text-anchor="middle" fill="#cbd5e1">PHP 8.1+</text>
+    <rect x="446" y="286" width="128" height="36" rx="18" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="510" y="310" text-anchor="middle" fill="#cbd5e1">GPL-2.0</text>
   </g>
 
-  <g transform="translate(820 48)">
-    <rect width="324" height="304" rx="10" fill="#1b2436" stroke="#25324a"/>
-    <rect width="324" height="52" rx="10" fill="#161e2e"/>
-    <rect y="42" width="324" height="10" fill="#161e2e"/>
-    <text x="18" y="32" fill="#7dd3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" letter-spacing="1.4">WP-ADMIN</text>
-    <text x="18" y="78" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600">Настройки</text>
-    <text x="128" y="78" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">AI Agents</text>
-    <rect x="128" y="86" width="82" height="3" fill="#41b894"/>
-    <text x="230" y="78" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600">Помощь</text>
+  <g transform="translate(820 36)">
+    <rect width="324" height="328" rx="10" fill="#1b2436" stroke="#25324a"/>
+    <rect width="324" height="44" rx="10" fill="#161e2e"/>
+    <rect y="34" width="324" height="10" fill="#161e2e"/>
+    <text x="18" y="28" fill="#7dd3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" letter-spacing="1.4">WP-LOGIN · SMARTCAPTCHA</text>
 
-    <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18">
-      <circle cx="28" cy="128" r="4" fill="#41b894"/>
-      <text x="44" y="134" fill="#e2e8f0">/llms.txt</text>
-      <circle cx="28" cy="164" r="4" fill="#41b894"/>
-      <text x="44" y="170" fill="#e2e8f0">/ai.txt</text>
-      <circle cx="28" cy="200" r="4" fill="#41b894"/>
-      <text x="44" y="206" fill="#e2e8f0">/agents.md</text>
-      <circle cx="28" cy="236" r="4" fill="#41b894"/>
-      <text x="44" y="242" fill="#e2e8f0">/sitemap.xml</text>
-      <circle cx="28" cy="272" r="4" fill="#cbd5e1"/>
-      <text x="44" y="278" fill="#94a3b8">/my-login/</text>
-    </g>
+    <rect x="18" y="62" width="288" height="32" rx="6" fill="#111827" stroke="#25324a"/>
+    <text x="30" y="83" fill="#667085" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">admin</text>
+    <rect x="18" y="102" width="288" height="32" rx="6" fill="#111827" stroke="#25324a"/>
+    <text x="30" y="123" fill="#667085" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">••••••••</text>
+
+    <rect x="18" y="146" width="288" height="56" rx="6" fill="#0f1724" stroke="#41b894"/>
+    <rect x="34" y="162" width="22" height="22" rx="4" fill="#111827" stroke="#7dd3b8"/>
+    <path d="M40 173 l5 5 9-10" fill="none" stroke="#7dd3b8" stroke-width="2"/>
+    <text x="66" y="179" fill="#e2e8f0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16">Я не робот</text>
+
+    <rect x="18" y="214" width="288" height="36" rx="6" fill="#167d63"/>
+    <text x="162" y="238" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="700">Войти</text>
+
+    <text x="18" y="276" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">/о-компании</text>
+    <text x="162" y="276" text-anchor="middle" fill="#41b894" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">301</text>
+    <text x="306" y="276" text-anchor="end" fill="#e2e8f0" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">/o-kompanii</text>
+    <text x="18" y="304" fill="#667085" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14">старые кириллические slug → латиница</text>
   </g>
 </svg>
