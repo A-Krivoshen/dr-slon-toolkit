@@ -7,6 +7,7 @@ namespace DrSlon\Toolkit\Admin;
 use DrSlon\Toolkit\Core\RewriteManager;
 use DrSlon\Toolkit\Core\Settings;
 use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
+use DrSlon\Toolkit\Modules\ExistingSlugRewriter;
 use DrSlon\Toolkit\Modules\IndexNowModule;
 use DrSlon\Toolkit\Modules\LoginAttemptsModule;
 use DrSlon\Toolkit\Modules\RedirectManagerModule;
@@ -32,6 +33,7 @@ final class SettingsPage
         add_action('admin_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('admin_post_dstk_indexnow_manual_submit', [$this, 'handle_indexnow_manual_submit']);
         add_action('admin_post_dstk_clear_login_lockouts', [$this, 'handle_clear_login_lockouts']);
+        add_action('admin_post_dstk_transliterate_existing', [$this, 'handle_transliterate_existing']);
         $this->info_panel->register();
     }
 
@@ -300,7 +302,7 @@ final class SettingsPage
         $definitions = [
             'transliteration' => [
                 'title'       => __('Транслитерация URL', 'dr-slon-toolkit'),
-                'description' => __('Русские заголовки превращаются в понятные латинские slug и имена файлов.', 'dr-slon-toolkit'),
+                'description' => __('Русские заголовки становятся латинскими slug. Ниже можно перевести уже опубликованные ссылки.', 'dr-slon-toolkit'),
                 'icon'        => 'dashicons-editor-spellcheck',
             ],
             'disable_comments' => [
@@ -905,6 +907,12 @@ final class SettingsPage
         $notice_message = isset($_GET['dstk_indexnow_message']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             ? sanitize_text_field((string) wp_unslash($_GET['dstk_indexnow_message'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             : '';
+        $translit_type = isset($_GET['dstk_translit_notice']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            ? sanitize_key((string) wp_unslash($_GET['dstk_translit_notice'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            : '';
+        $translit_message = isset($_GET['dstk_translit_message']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            ? sanitize_text_field((string) wp_unslash($_GET['dstk_translit_message'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            : '';
         ?>
         <div class="wrap dstk-admin">
             <?php $this->render_admin_header('settings'); ?>
@@ -912,6 +920,10 @@ final class SettingsPage
 
             <?php if ($notice_message !== '' && in_array($notice_type, ['success', 'error'], true)) : ?>
                 <div class="notice notice-<?php echo esc_attr($notice_type === 'success' ? 'success' : 'error'); ?>"><p><?php echo esc_html($notice_message); ?></p></div>
+            <?php endif; ?>
+
+            <?php if ($translit_message !== '' && in_array($translit_type, ['success', 'error'], true)) : ?>
+                <div class="notice notice-<?php echo esc_attr($translit_type === 'success' ? 'success' : 'error'); ?>"><p><?php echo esc_html($translit_message); ?></p></div>
             <?php endif; ?>
 
             <main class="dstk-main-card">
@@ -934,6 +946,7 @@ final class SettingsPage
                     </div>
                 </form>
 
+                <?php $this->render_transliteration_tool(); ?>
                 <?php $this->render_indexnow_manual_form(); ?>
                 <?php $this->render_lockout_clear_form(); ?>
             </main>
@@ -969,7 +982,7 @@ final class SettingsPage
                 <section class="dstk-help-card">
                     <span class="dashicons dashicons-editor-spellcheck" aria-hidden="true"></span>
                     <h2><?php echo esc_html__('Транслитерация URL', 'dr-slon-toolkit'); ?></h2>
-                    <p><?php echo esc_html__('Работает при создании новых slug и имён файлов. Уже опубликованные URL автоматически не меняются, поэтому внешние ссылки и SEO не ломаются.', 'dr-slon-toolkit'); ?></p>
+                    <p><?php echo esc_html__('Новые slug и имена файлов транслитерируются сразу. Уже опубликованные кириллические URL можно перевести кнопкой на странице настроек — со 301 со старых адресов.', 'dr-slon-toolkit'); ?></p>
                     <code>Главная страница → glavnaya-stranitsa</code>
                 </section>
 
@@ -1014,7 +1027,7 @@ final class SettingsPage
                 <section class="dstk-help-card">
                     <span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
                     <h2><?php echo esc_html__('Yandex SmartCaptcha', 'dr-slon-toolkit'); ?></h2>
-                    <p><?php echo esc_html__('Работает на форме входа, в том числе на скрытом slug. Ключи из Yandex Cloud. Если сервис Яндекса недоступен, вход не блокируется (fail-open). XML-RPC и восстановление пароля капчей не закрываются.', 'dr-slon-toolkit'); ?></p>
+                    <p><?php echo esc_html__('Работает на форме входа, в том числе на скрытом slug. Виджет вписан в стандартную ширину wp-login. Ключи из Yandex Cloud. Если сервис Яндекса недоступен, вход не блокируется (fail-open). XML-RPC и восстановление пароля капчей не закрываются.', 'dr-slon-toolkit'); ?></p>
                 </section>
 
                 <section class="dstk-help-card dstk-help-card--warning">
@@ -1067,6 +1080,166 @@ final class SettingsPage
             </nav>
         </header>
         <?php
+    }
+
+    private function render_transliteration_tool(): void
+    {
+        $preview = (new ExistingSlugRewriter())->preview(12);
+        $items = $preview['items'];
+        $batch = (int) $preview['batch'];
+        $has_more = ! empty($preview['has_more']);
+        $module_on = Settings::module_enabled('transliteration');
+        $redirects = (new ExistingSlugRewriter())->saved_redirects();
+        ?>
+        <section class="dstk-tool-block">
+            <hr>
+            <h2><?php echo esc_html__('Существующие кириллические URL', 'dr-slon-toolkit'); ?></h2>
+            <p class="description">
+                <?php echo esc_html__('Модуль сам переводит только новые slug. Эта кнопка проходит записи, страницы и рубрики, которые появились до включения плагина, и делает латинские постоянные ссылки.', 'dr-slon-toolkit'); ?>
+            </p>
+
+            <?php if (! $module_on) : ?>
+                <p class="description"><?php echo esc_html__('Сейчас модуль «Транслитерация» выключен: новые материалы снова могут получить кириллические URL. Включите его, если хотите закрыть тему полностью.', 'dr-slon-toolkit'); ?></p>
+            <?php endif; ?>
+
+            <?php if ($batch === 0) : ?>
+                <p class="dstk-tool-empty"><?php echo esc_html__('Кириллических slug не осталось. Новые заголовки будут латиницей, пока модуль включён.', 'dr-slon-toolkit'); ?></p>
+                <?php if ($redirects !== []) : ?>
+                    <p class="description">
+                        <?php
+                        echo esc_html(
+                            sprintf(
+                                /* translators: %d: number of stored 301 redirects */
+                                __('Сохранено редиректов со старых адресов: %d.', 'dr-slon-toolkit'),
+                                count($redirects)
+                            )
+                        );
+                        ?>
+                    </p>
+                <?php endif; ?>
+            <?php else : ?>
+                <p>
+                    <strong>
+                        <?php
+                        echo esc_html(
+                            sprintf(
+                                /* translators: %d: number of slugs in this batch */
+                                __('К переводу в этой порции: %d.', 'dr-slon-toolkit'),
+                                $batch
+                            )
+                        );
+                        ?>
+                    </strong>
+                    <?php if ($has_more) : ?>
+                        <?php echo esc_html__('Есть ещё — после этой порции запустите перевод снова.', 'dr-slon-toolkit'); ?>
+                    <?php endif; ?>
+                </p>
+                <table class="widefat striped dstk-translit-table">
+                    <thead>
+                        <tr>
+                            <th><?php echo esc_html__('Тип', 'dr-slon-toolkit'); ?></th>
+                            <th><?php echo esc_html__('Название', 'dr-slon-toolkit'); ?></th>
+                            <th><?php echo esc_html__('Сейчас', 'dr-slon-toolkit'); ?></th>
+                            <th><?php echo esc_html__('Станет', 'dr-slon-toolkit'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($items as $item) : ?>
+                            <tr>
+                                <td><?php echo esc_html(($item['kind'] ?? '') === 'term' ? (string) ($item['taxonomy'] ?? 'term') : (string) ($item['type'] ?? 'post')); ?></td>
+                                <td><?php echo esc_html((string) ($item['title'] ?? '')); ?></td>
+                                <td><code><?php echo esc_html((string) ($item['old_slug'] ?? '')); ?></code></td>
+                                <td><code><?php echo esc_html((string) ($item['new_slug'] ?? '')); ?></code></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php if ($batch > count($items)) : ?>
+                    <p class="description">
+                        <?php
+                        echo esc_html(
+                            sprintf(
+                                /* translators: %d: remaining items not shown in the table */
+                                __('В таблице первые записи, в порции ещё %d.', 'dr-slon-toolkit'),
+                                $batch - count($items)
+                            )
+                        );
+                        ?>
+                    </p>
+                <?php endif; ?>
+
+                <form class="dstk-tool-actions" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <?php wp_nonce_field('dstk_transliterate_existing', 'dstk_transliterate_existing_nonce'); ?>
+                    <input type="hidden" name="action" value="dstk_transliterate_existing">
+                    <label>
+                        <input type="checkbox" name="dstk_translit_redirects" value="1" checked>
+                        <?php echo esc_html__('Поставить 301 со старых адресов на новые', 'dr-slon-toolkit'); ?>
+                    </label>
+                    <label>
+                        <input type="checkbox" name="dstk_translit_confirm" value="1">
+                        <?php echo esc_html__('Понимаю, что постоянные ссылки изменятся', 'dr-slon-toolkit'); ?>
+                    </label>
+                    <?php submit_button(__('Перевести существующие URL', 'dr-slon-toolkit'), 'secondary', 'submit', false); ?>
+                </form>
+            <?php endif; ?>
+        </section>
+        <?php
+    }
+
+    public function handle_transliterate_existing(): void
+    {
+        if (! current_user_can('manage_options')) {
+            wp_die(esc_html__('Недостаточно прав для выполнения действия.', 'dr-slon-toolkit'));
+        }
+
+        check_admin_referer('dstk_transliterate_existing', 'dstk_transliterate_existing_nonce');
+
+        $confirmed = isset($_POST['dstk_translit_confirm']) && (string) wp_unslash($_POST['dstk_translit_confirm']) === '1'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- compared to literal "1".
+
+        if (! $confirmed) {
+            $this->redirect_transliteration_notice(
+                'error',
+                __('Отметьте подтверждение, прежде чем менять постоянные ссылки.', 'dr-slon-toolkit')
+            );
+        }
+
+        $add_redirects = isset($_POST['dstk_translit_redirects']) && (string) wp_unslash($_POST['dstk_translit_redirects']) === '1'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- compared to literal "1".
+        $result = (new ExistingSlugRewriter())->apply($add_redirects);
+
+        if ((int) $result['updated'] === 0) {
+            $this->redirect_transliteration_notice(
+                'success',
+                __('Кириллических slug не найдено — переводить нечего.', 'dr-slon-toolkit')
+            );
+        }
+
+        $message = sprintf(
+            /* translators: 1: updated slugs, 2: stored redirects */
+            __('Переведено slug: %1$d. Редиректов добавлено: %2$d.', 'dr-slon-toolkit'),
+            (int) $result['updated'],
+            (int) $result['redirects_added']
+        );
+
+        if (! empty($result['has_more'])) {
+            $message .= ' ' . __('Остались ещё записи — запустите перевод снова.', 'dr-slon-toolkit');
+        }
+
+        $this->redirect_transliteration_notice('success', $message);
+    }
+
+    private function redirect_transliteration_notice(string $type, string $message): void
+    {
+        $redirect = add_query_arg(
+            [
+                'page'                   => self::PAGE_SLUG,
+                'dstk_translit_notice'   => $type,
+                'dstk_translit_message'  => $message,
+            ],
+            admin_url('admin.php')
+        );
+
+        wp_safe_redirect($redirect);
+        exit;
     }
 
     private function can_manage_update_controls(): bool

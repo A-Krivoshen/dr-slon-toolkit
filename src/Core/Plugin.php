@@ -11,6 +11,7 @@ use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
 use DrSlon\Toolkit\Modules\AiAgentsModule;
 use DrSlon\Toolkit\Modules\CleanupModule;
 use DrSlon\Toolkit\Modules\DisableCommentsModule;
+use DrSlon\Toolkit\Modules\ExistingSlugRewriter;
 use DrSlon\Toolkit\Modules\HideLoginModule;
 use DrSlon\Toolkit\Modules\IndexNowModule;
 use DrSlon\Toolkit\Modules\LoginAttemptsModule;
@@ -38,6 +39,8 @@ final class Plugin
 
         $rewrite_manager = new RewriteManager();
         $rewrite_manager->register();
+
+        (new ExistingSlugRewriter())->register();
 
         $updater = new GitHubReleaseUpdater(DSTK_PLUGIN_FILE, DSTK_VERSION);
         $updater->register();

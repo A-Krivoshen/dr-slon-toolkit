@@ -1,0 +1,55 @@
+/**
+ * Yandex SmartCaptcha checkbox is ~300×100px. Default wp-login #login is 320px
+ * with 24px form padding and overflow:hidden, so the widget is clipped.
+ */
+
+body.login.dstk-has-yandex-captcha #login {
+    width: 360px;
+}
+
+body.login.dstk-has-yandex-captcha #loginform,
+body.login.dstk-has-yandex-captcha form {
+    overflow: visible;
+}
+
+body.login .dstk-login-captcha {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 4px 0 18px;
+    padding: 2px 0 0;
+    min-height: 102px;
+}
+
+body.login .dstk-login-captcha .smart-captcha {
+    width: 100% !important;
+    max-width: 100%;
+    min-height: 102px;
+}
+
+body.login .dstk-login-captcha iframe {
+    max-width: 100%;
+}
+
+@media screen and (max-width: 380px) {
+    body.login.dstk-has-yandex-captcha #login {
+        width: auto;
+        margin-right: 12px;
+        margin-left: 12px;
+    }
+
+    body.login .dstk-login-captcha {
+        height: 92px;
+        transform: scale(0.9);
+        transform-origin: top left;
+        width: 111.12%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.login .dstk-login-captcha {
+        transform: none;
+        width: 100%;
+        height: auto;
+    }
+}

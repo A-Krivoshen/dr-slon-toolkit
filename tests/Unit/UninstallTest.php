@@ -14,6 +14,7 @@ final class UninstallTest extends TestCase
 
         self::assertStringContainsString("'dstk_ai_cache_version'", $source);
         self::assertStringContainsString("'dstk_login_lockouts'", $source);
+        self::assertStringContainsString("'dstk_translit_redirects'", $source);
         self::assertStringContainsString("'dstk_sitemap_cache_version'", $source);
         self::assertStringContainsString('_transient_dstk_ai_doc_', $source);
         self::assertStringContainsString('_transient_dstk_sitemap_', $source);

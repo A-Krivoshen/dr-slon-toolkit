@@ -35,7 +35,9 @@
 Каждый модуль реализует `ModuleInterface` и регистрирует только свои WordPress hooks.
 
 - `TransliterationModule`
-  - Транслитерация slug записей, терминов и имён загружаемых файлов.
+  - Транслитерация slug записей, терминов и имён загружаемых файлов через `Core\Transliterator`.
+- `ExistingSlugRewriter`
+  - Разово переводит уже существующие кириллические slug и пишет 301 в `dstk_translit_redirects`.
 - `DisableCommentsModule`
   - Глобальное отключение комментариев и связанных элементов интерфейса.
 - `CleanupModule`
@@ -61,6 +63,7 @@
   - Для режима security использует безопасное приближение через minor-канал без major/dev обновлений.
 - `YandexCaptchaModule`
   - Виджет Yandex SmartCaptcha на `login_form` и проверка токена на `authenticate`.
+  - Отдельный CSS, чтобы чекбокс Яндекса помещался в форму wp-login.
 - `LoginAttemptsModule`
   - Считает неудачные входы по хешу IP и временно блокирует адрес.
 - `RedirectManagerModule`
@@ -84,5 +87,6 @@
   - `yandex_captcha` — клиентский/серверный ключи и язык виджета.
   - `login_attempts` — порог, окно и длительность блокировки.
   - `redirects.rules` — список from/to/status.
-- `src/Core/DiscoveryIndexability`, `UrlNormalizer`, `CacheVersion` — общая индексация, сравнение URL и bump кеша.
+- `src/Core/DiscoveryIndexability`, `UrlNormalizer`, `CacheVersion`, `Transliterator` — индексация, URL, кеш и кириллица→латиница.
 - Опция версии: `dstk_version`
+- `dstk_translit_redirects` — 301 со старых кириллических путей после массового перевода slug.

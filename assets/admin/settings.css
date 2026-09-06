@@ -415,6 +415,68 @@
     border-top: 1px solid var(--dstk-line);
 }
 
+.dstk-tool-block {
+    margin: 4px 0 0;
+    padding: 0 0 8px;
+}
+
+.dstk-tool-block h2 {
+    margin: 18px 0 8px;
+    color: var(--dstk-ink);
+    font-size: 17px;
+}
+
+.dstk-tool-block .description {
+    max-width: 720px;
+    color: var(--dstk-muted);
+}
+
+.dstk-tool-empty {
+    margin: 12px 0 8px;
+    padding: 12px 14px;
+    border: 1px dashed #b8e0d3;
+    border-radius: 8px;
+    background: #f4fbf8;
+    color: var(--dstk-accent-dark);
+}
+
+.dstk-translit-table {
+    margin: 12px 0;
+    border: 1px solid var(--dstk-line) !important;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.dstk-translit-table th,
+.dstk-translit-table td {
+    padding: 10px 12px;
+}
+
+.dstk-translit-table code {
+    overflow-wrap: anywhere;
+    color: #26334a;
+}
+
+.dstk-tool-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 18px;
+    margin: 12px 0 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--dstk-line);
+    border-radius: 8px;
+    background: var(--dstk-soft);
+}
+
+.dstk-tool-actions label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #344054;
+    font-size: 13px;
+}
+
 @media (max-width: 960px) {
     .dstk-module-grid,
     .dstk-help-layout {

@@ -4,7 +4,7 @@
 
 Модульный плагин WordPress для обслуживания клиентских сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация и AI-документы. На сервере клиента Composer не нужен.
 
-**[Скачать dr-slon-toolkit-0.11.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
+**[Скачать dr-slon-toolkit-0.12.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
 ## Установка
 
@@ -31,7 +31,7 @@ WordPress 6.6+, PHP 8.1+.
 | **Sitemap** | `/sitemap.xml` с пагинацией, кешем и `lastmod`. Если TSF отдаёт свою карту — toolkit не дублирует. |
 | **AI Agents** | `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`. Pulse выключен по умолчанию. |
 | **Update Controls** | Автообновления ядра, плагинов, тем, переводов и писем. |
-| **Транслитерация** | Русские slug и имена файлов. Уже опубликованные URL не переписывает. |
+| **Транслитерация** | Русские slug и имена файлов. Уже опубликованные кириллические URL можно перевести кнопкой, со 301. |
 | **Комментарии** | Глобально закрывает комментарии, пинги, REST и UI. |
 | **Очистка** | Emoji, wp-embed, XML-RPC, лишние теги `<head>`. |
 | **Yandex SmartCaptcha** | Капча на форме входа. Ключи из Yandex Cloud. Не трогает reset password и XML-RPC. |

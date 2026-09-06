@@ -10,6 +10,10 @@ if (! defined('DSTK_VERSION')) {
     define('DSTK_VERSION', 'test');
 }
 
+if (! defined('DSTK_PLUGIN_FILE')) {
+    define('DSTK_PLUGIN_FILE', dirname(__DIR__) . '/dr-slon-toolkit.php');
+}
+
 $GLOBALS['dstk_test_options'] = [];
 $GLOBALS['dstk_test_query_vars'] = [];
 $GLOBALS['dstk_test_filters'] = [];
@@ -33,6 +37,8 @@ if (! class_exists('WP_Post')) {
         public string $post_excerpt = '';
         public string $post_date_gmt = '0000-00-00 00:00:00';
         public string $post_modified_gmt = '0000-00-00 00:00:00';
+        public string $post_name = '';
+        public int $post_parent = 0;
 
         /** @param array<string,mixed>|object $data */
         public function __construct(array|object $data = [])
@@ -382,6 +388,15 @@ if (! function_exists('add_filter')) {
         $GLOBALS['dstk_test_filters'][$hook][$priority][] = [$callback, $accepted_args];
 
         return true;
+    }
+}
+
+if (! function_exists('add_action')) {
+    function add_action(string $hook, callable $callback, int $priority = 10, int $accepted_args = 1): bool
+    {
+        $GLOBALS['dstk_test_actions'][$hook][] = [$callback, $priority, $accepted_args];
+
+        return add_filter($hook, $callback, $priority, $accepted_args);
     }
 }
 
@@ -907,6 +922,144 @@ if (! function_exists('wp_nonce_field')) {
         }
 
         return $field;
+    }
+}
+
+if (! function_exists('plugins_url')) {
+    function plugins_url(string $path = '', string $plugin = ''): string
+    {
+        unset($plugin);
+
+        return 'https://example.test/wp-content/plugins/dr-slon-toolkit/' . ltrim($path, '/');
+    }
+}
+
+if (! function_exists('wp_enqueue_style')) {
+    function wp_enqueue_style(string $handle, string $src = '', array $deps = [], mixed $ver = false, string $media = 'all'): void
+    {
+        $GLOBALS['dstk_test_styles'][] = compact('handle', 'src', 'deps', 'ver', 'media');
+    }
+}
+
+if (! function_exists('get_posts')) {
+    function get_posts(array $args = []): array
+    {
+        $all = $GLOBALS['dstk_test_slug_posts'] ?? [];
+        $parent = $args['post_parent'] ?? null;
+
+        if ($parent !== null) {
+            $all = array_values(
+                array_filter(
+                    $all,
+                    static fn ($post): bool => $post instanceof WP_Post && (int) $post->post_parent === (int) $parent
+                )
+            );
+        }
+
+        $offset = (int) ($args['offset'] ?? 0);
+        $number = (int) ($args['numberposts'] ?? $args['posts_per_page'] ?? -1);
+
+        if ($number < 0) {
+            return array_slice($all, $offset);
+        }
+
+        return array_slice($all, $offset, $number);
+    }
+}
+
+if (! function_exists('get_terms')) {
+    function get_terms(array $args = []): array
+    {
+        unset($args);
+
+        return $GLOBALS['dstk_test_terms'] ?? [];
+    }
+}
+
+if (! function_exists('get_term')) {
+    function get_term(int $term_id, string $taxonomy = ''): object|false
+    {
+        unset($taxonomy);
+
+        foreach ($GLOBALS['dstk_test_terms'] ?? [] as $term) {
+            if (is_object($term) && (int) ($term->term_id ?? 0) === $term_id) {
+                return $term;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (! function_exists('get_term_link')) {
+    function get_term_link(int|object $term, string $taxonomy = ''): string
+    {
+        unset($taxonomy);
+        $term_id = is_object($term) ? (int) ($term->term_id ?? 0) : (int) $term;
+
+        return (string) ($GLOBALS['dstk_test_term_urls'][$term_id] ?? home_url('/term-' . $term_id . '/'));
+    }
+}
+
+if (! function_exists('wp_unique_post_slug')) {
+    function wp_unique_post_slug(string $slug, int $post_id, string $status, string $type, int $parent): string
+    {
+        unset($post_id, $status, $type, $parent);
+
+        return $slug;
+    }
+}
+
+if (! function_exists('wp_unique_term_slug')) {
+    function wp_unique_term_slug(string $slug, object $term): string
+    {
+        unset($term);
+
+        return $slug;
+    }
+}
+
+if (! function_exists('wp_update_post')) {
+    function wp_update_post(array $data, bool $wp_error = false): int
+    {
+        unset($wp_error);
+        $id = (int) ($data['ID'] ?? 0);
+        $GLOBALS['dstk_test_updated_posts'][] = $data;
+
+        if ($id > 0 && isset($GLOBALS['dstk_test_posts'][$id]) && $GLOBALS['dstk_test_posts'][$id] instanceof WP_Post) {
+            if (isset($data['post_name'])) {
+                $GLOBALS['dstk_test_posts'][$id]->post_name = (string) $data['post_name'];
+                $GLOBALS['dstk_test_post_urls'][$id] = home_url('/' . $data['post_name'] . '/');
+            }
+        }
+
+        foreach ($GLOBALS['dstk_test_slug_posts'] ?? [] as $post) {
+            if ($post instanceof WP_Post && $post->ID === $id && isset($data['post_name'])) {
+                $post->post_name = (string) $data['post_name'];
+                $GLOBALS['dstk_test_post_urls'][$id] = home_url('/' . $data['post_name'] . '/');
+            }
+        }
+
+        return $id;
+    }
+}
+
+if (! function_exists('wp_update_term')) {
+    function wp_update_term(int $term_id, string $taxonomy, array $args = []): array
+    {
+        unset($taxonomy);
+        $GLOBALS['dstk_test_updated_terms'][] = ['id' => $term_id, 'args' => $args];
+
+        foreach ($GLOBALS['dstk_test_terms'] ?? [] as $term) {
+            if (is_object($term) && (int) ($term->term_id ?? 0) === $term_id) {
+                if (isset($args['slug'])) {
+                    $term->slug = (string) $args['slug'];
+                    $GLOBALS['dstk_test_term_urls'][$term_id] = home_url('/category/' . $args['slug'] . '/');
+                }
+            }
+        }
+
+        return ['term_id' => $term_id];
     }
 }
 

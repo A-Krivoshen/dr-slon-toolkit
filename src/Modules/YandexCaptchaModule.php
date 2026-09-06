@@ -29,13 +29,20 @@ final class YandexCaptchaModule implements ModuleInterface
             return;
         }
 
-        add_action('login_enqueue_scripts', [$this, 'enqueue_script']);
+        add_action('login_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('login_form', [$this, 'render_widget']);
+        add_filter('login_body_class', [$this, 'body_class']);
         add_filter('authenticate', [$this, 'block_without_captcha'], 5, 3);
     }
 
-    public function enqueue_script(): void
+    public function enqueue_assets(): void
     {
+        wp_enqueue_style(
+            'dstk-yandex-smartcaptcha',
+            plugins_url('assets/admin/login-captcha.css', DSTK_PLUGIN_FILE),
+            [],
+            DSTK_VERSION
+        );
         wp_enqueue_script(
             'dstk-yandex-smartcaptcha',
             YandexSmartCaptcha::SCRIPT_URL,
@@ -44,6 +51,17 @@ final class YandexCaptchaModule implements ModuleInterface
             true
         );
         add_filter('script_loader_tag', [$this, 'defer_script'], 10, 2);
+    }
+
+    /**
+     * @param list<string> $classes
+     * @return list<string>
+     */
+    public function body_class(array $classes): array
+    {
+        $classes[] = 'dstk-has-yandex-captcha';
+
+        return $classes;
     }
 
     public function defer_script(string $tag, string $handle): string
@@ -60,7 +78,9 @@ final class YandexCaptchaModule implements ModuleInterface
         $key = $this->client_key();
         $language = $this->language();
 
-        echo '<div class="smart-captcha" data-sitekey="' . esc_attr($key) . '" data-hl="' . esc_attr($language) . '" style="height:100px;margin:12px 0;"></div>';
+        echo '<div class="dstk-login-captcha">';
+        echo '<div class="smart-captcha" data-sitekey="' . esc_attr($key) . '" data-hl="' . esc_attr($language) . '"></div>';
+        echo '</div>';
     }
 
     /**

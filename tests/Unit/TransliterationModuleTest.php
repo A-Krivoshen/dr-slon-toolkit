@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrSlon\Toolkit\Tests\Unit;
 
+use DrSlon\Toolkit\Core\Transliterator;
 use DrSlon\Toolkit\Modules\TransliterationModule;
 use PHPUnit\Framework\TestCase;
 
@@ -40,5 +41,15 @@ final class TransliterationModuleTest extends TestCase
         self::assertSame('foto-leta.jpg', $module->filter_file_name('Фото Лета.JPG', 'Фото Лета.JPG'));
         self::assertSame('file.jpg', $module->filter_file_name('😀.JPG', '😀.JPG'));
         self::assertSame('Annual.Report-2026.JPG', $module->filter_file_name('Annual.Report-2026.JPG', 'Annual.Report-2026.JPG'));
+    }
+
+    public function test_transliterator_detects_cyrillic_in_slugs(): void
+    {
+        $transliterator = new Transliterator();
+
+        self::assertTrue($transliterator->slug_has_cyrillic('главная'));
+        self::assertTrue($transliterator->slug_has_cyrillic(rawurlencode('услуги')));
+        self::assertFalse($transliterator->slug_has_cyrillic('about-us'));
+        self::assertFalse($transliterator->has_cyrillic('東京'));
     }
 }

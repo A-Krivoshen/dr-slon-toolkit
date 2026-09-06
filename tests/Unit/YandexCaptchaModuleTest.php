@@ -29,6 +29,29 @@ final class YandexCaptchaModuleTest extends TestCase
         $_POST = ['log' => 'admin', 'pwd' => 'secret'];
         $_REQUEST = ['action' => 'login'];
         $_SERVER['REMOTE_ADDR'] = '203.0.113.10';
+        $GLOBALS['dstk_test_styles'] = [];
+        $GLOBALS['dstk_test_scripts'] = [];
+    }
+
+    public function test_widget_fits_login_form_wrapper(): void
+    {
+        ob_start();
+        (new YandexCaptchaModule())->render_widget();
+        $html = (string) ob_get_clean();
+
+        self::assertStringContainsString('dstk-login-captcha', $html);
+        self::assertStringContainsString('smart-captcha', $html);
+        self::assertStringNotContainsString('height:100px', $html);
+    }
+
+    public function test_login_assets_include_layout_css(): void
+    {
+        (new YandexCaptchaModule())->enqueue_assets();
+
+        $handles = array_column($GLOBALS['dstk_test_styles'], 'handle');
+        self::assertContains('dstk-yandex-smartcaptcha', $handles);
+        self::assertStringContainsString('login-captcha.css', (string) $GLOBALS['dstk_test_styles'][0]['src']);
+        self::assertSame(['dstk-has-yandex-captcha'], (new YandexCaptchaModule())->body_class([]));
     }
 
     public function test_login_without_token_is_rejected(): void
