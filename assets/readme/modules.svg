@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
   <title id="title">Модули Dr.Slon Toolkit</title>
-  <desc id="desc">Двенадцать независимых модулей: доступ, индексация и обслуживание сайта. Каждый включается отдельно. В 0.12.0 капча вписывается в wp-login, старые кириллические URL можно перевести со 301.</desc>
+  <desc id="desc">Двенадцать независимых модулей: доступ, индексация и обслуживание сайта. Каждый включается отдельно. Капча и кнопка входа вписываются в wp-login, старые кириллические URL можно перевести со 301.</desc>
 
   <rect width="1200" height="520" rx="12" fill="#f6f8fb" stroke="#d7dde7"/>
   <text x="48" y="44" fill="#167d63" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" letter-spacing="1.8">МОДУЛИ · ВКЛЮЧАЮТСЯ ПО ОДНОМУ</text>

@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.12.0 — модульный плагин WordPress: капча влезает в форму входа, кириллические URL переводятся в латиницу со 301. ZIP из GitHub Releases, без Composer.">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.12.1 — модульный плагин WordPress: капча и кнопка входа влезают в форму, кириллические URL переводятся в латиницу со 301. ZIP из GitHub Releases, без Composer.">
 </p>
 
 Модульный плагин для клиентских WordPress-сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация уже существующих URL, капча Яндекса. На сервере клиента Composer не нужен.
 
-**[Скачать dr-slon-toolkit-0.12.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
+**[Скачать dr-slon-toolkit-0.12.1.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
 ## Установка
 
@@ -26,7 +26,7 @@ WordPress 6.6+, PHP 8.1+.
 | Модуль | Что делает |
 | --- | --- |
 | **Скрытый вход** | 404 на прямой `wp-login.php` (кроме reset/recovery). Вход по slug, например `/my-login/`. Аварийно: `define('KRV_DSTK_DISABLE_HIDE_LOGIN', true);` в `wp-config.php`. |
-| **Yandex SmartCaptcha** | Капча на форме входа, в том числе на скрытом slug. Виджет вписан в ширину wp-login. Ключи из Yandex Cloud. Не трогает reset password и XML-RPC. |
+| **Yandex SmartCaptcha** | Капча на форме входа, в том числе на скрытом slug. Виджет и кнопка «Войти» вписаны в форму wp-login. Ключи из Yandex Cloud. Не трогает reset password и XML-RPC. |
 | **Login Attempts** | Блокирует IP после серии неверных паролей. В опции хранится хеш, не сырой адрес. |
 | **REST API Control** | Всем / только авторизованным / whitelist. Системный allowlist WordPress нельзя выключить. |
 | **IndexNow** | Ручная и автоматическая отправка URL через очередь WP-Cron. Ключ `/<key>.txt` без файла на диске. Учитывает noindex/canonical The SEO Framework. |

@@ -63,7 +63,7 @@
   - Для режима security использует безопасное приближение через minor-канал без major/dev обновлений.
 - `YandexCaptchaModule`
   - Виджет Yandex SmartCaptcha на `login_form` и проверка токена на `authenticate`.
-  - Отдельный CSS, чтобы чекбокс Яндекса помещался в форму wp-login.
+  - Отдельный CSS: форма чуть шире, чекбокс помещается, кнопка «Войти» не выпадает из блока.
 - `LoginAttemptsModule`
   - Считает неудачные входы по хешу IP и временно блокирует адрес.
 - `RedirectManagerModule`

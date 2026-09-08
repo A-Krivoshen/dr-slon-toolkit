@@ -88,6 +88,20 @@ final class ReleaseVerifierTest extends TestCase
         }
     }
 
+    public function test_archive_without_login_captcha_css_is_rejected(): void
+    {
+        $archive_path = $this->create_archive();
+        $archive = new \ZipArchive();
+        self::assertTrue($archive->open($archive_path));
+        self::assertTrue($archive->deleteName('dr-slon-toolkit/assets/admin/login-captcha.css'));
+        self::assertTrue($archive->close());
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('login-captcha.css');
+
+        \dstk_verify_release_archive($archive_path, self::VERSION);
+    }
+
     public function test_archive_symlink_is_rejected(): void
     {
         $archive_path = $this->create_archive(['linked-file' => 'target']);
@@ -146,6 +160,7 @@ final class ReleaseVerifierTest extends TestCase
             [
                 'LICENSE' => 'GPL-2.0-or-later',
                 'assets/admin/info-panel.css' => '.info {}',
+                'assets/admin/login-captcha.css' => 'body.login {}',
                 'assets/admin/settings.css' => '.settings {}',
                 'dr-slon-toolkit.php' => $this->main_file(self::VERSION),
                 'readme.txt' => "=== Dr.Slon Toolkit ===\nStable tag: " . self::VERSION . "\n",

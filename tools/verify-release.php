@@ -191,6 +191,7 @@ function dstk_verify_release_archive(string $archive_path, string $version): voi
         $required = [
             'LICENSE',
             'assets/admin/info-panel.css',
+            'assets/admin/login-captcha.css',
             'assets/admin/settings.css',
             'dr-slon-toolkit.php',
             'readme.txt',

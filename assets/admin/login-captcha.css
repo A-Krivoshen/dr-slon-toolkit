@@ -1,28 +1,40 @@
 /**
- * Yandex SmartCaptcha checkbox is ~300×100px. Default wp-login #login is 320px
- * with 24px form padding and overflow:hidden, so the widget is clipped.
+ * Yandex checkbox is ~300×100px; wp-login #login is 320px with 24px padding.
+ * Widen #login so the widget fits. Do not use overflow:hidden here: it clips
+ * the challenge, and overflow:visible alone drops the floated Log In button
+ * out of the white box. flow-root keeps the floats inside.
  */
 
 body.login.dstk-has-yandex-captcha #login {
     width: 360px;
 }
 
-body.login.dstk-has-yandex-captcha #loginform,
-body.login.dstk-has-yandex-captcha form {
+body.login.dstk-has-yandex-captcha #loginform {
+    display: flow-root;
     overflow: visible;
+}
+
+body.login.dstk-has-yandex-captcha #loginform::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+body.login.dstk-has-yandex-captcha #loginform p.submit {
+    min-height: 36px;
 }
 
 body.login .dstk-login-captcha {
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
-    margin: 4px 0 18px;
-    padding: 2px 0 0;
+    margin: 8px 0 16px;
+    padding: 0;
     min-height: 102px;
 }
 
 body.login .dstk-login-captcha .smart-captcha {
-    width: 100% !important;
+    width: 300px;
     max-width: 100%;
     min-height: 102px;
 }

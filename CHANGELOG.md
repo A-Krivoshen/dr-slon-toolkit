@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.1
+- Форма входа: кнопка «Войти» остаётся внутри белого блока при включённой Yandex SmartCaptcha (flow-root вместо overflow:visible на всей форме).
+- Релизный ZIP обязан содержать `login-captcha.css`.
+
 ## 0.12.0
 - Yandex SmartCaptcha на wp-login: виджет вписан в форму (шире login, overflow visible, отдельный CSS).
 - Массовый перевод уже существующих кириллических slug записей, страниц и рубрик.
