@@ -6,6 +6,8 @@
 
 **[Скачать dr-slon-toolkit-0.12.1.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
+Новости: [0.12.1](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/tag/v0.12.1) · [0.12.0 в блоге](https://krivoshein.site/dr-slon-toolkit-0-12-0-kapcha-yandeksa-na-vhode-i-perevod-staryh-kirillicheskih-url/)
+
 ## Установка
 
 1. Откройте [Releases](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest).
