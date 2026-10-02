@@ -17,7 +17,9 @@ final class LoginAttemptsModule implements ModuleInterface
 
     public function register(): void
     {
-        add_filter('authenticate', [$this, 'block_if_locked'], 4, 3);
+        // Same reason as the captcha gate: priority 20 replaces an earlier WP_Error
+        // with WP_User when the password is correct.
+        add_filter('authenticate', [$this, 'block_if_locked'], 110, 3);
         add_action('wp_login_failed', [$this, 'record_failure']);
         add_action('wp_login', [$this, 'clear_current']);
     }

@@ -4,7 +4,7 @@ Tags: toolkit, maintenance, security, transliteration, indexnow
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.12.1
+Stable tag: 0.12.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,10 @@ Composer нужен только разработчику:
 - для публикации: push тега `vX.Y.Z` запускает workflow, который прикрепляет проверенный ZIP к GitHub Release.
 
 == Changelog ==
+
+= 0.12.2 =
+* Капча на входе больше не пропускает верный пароль: отказ остаётся после проверки WordPress.
+* Блокировка IP тоже не снимается успешным паролем.
 
 = 0.12.1 =
 * Кнопка «Войти» не выпадает из формы, когда включена Yandex SmartCaptcha.

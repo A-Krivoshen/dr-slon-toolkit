@@ -32,7 +32,9 @@ final class YandexCaptchaModule implements ModuleInterface
         add_action('login_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('login_form', [$this, 'render_widget']);
         add_filter('login_body_class', [$this, 'body_class']);
-        add_filter('authenticate', [$this, 'block_without_captcha'], 5, 3);
+        // Core password checks run at 20 and drop an earlier WP_Error when
+        // both fields are filled, so a priority-5 captcha rejection never sticks.
+        add_filter('authenticate', [$this, 'block_without_captcha'], 100, 3);
     }
 
     public function enqueue_assets(): void

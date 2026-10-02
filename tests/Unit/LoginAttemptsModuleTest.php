@@ -41,6 +41,36 @@ final class LoginAttemptsModuleTest extends TestCase
         self::assertSame('dstk_login_locked', $result->get_error_code());
     }
 
+    public function test_lockout_survives_core_password_check(): void
+    {
+        $GLOBALS['dstk_test_filters'] = [];
+        $module = new LoginAttemptsModule();
+        $module->record_failure();
+        $module->record_failure();
+        $module->record_failure();
+
+        add_filter(
+            'authenticate',
+            static function ($user, string $username, string $password) {
+                if ($username !== '' && $password !== '') {
+                    return 'authenticated-user';
+                }
+
+                return $user;
+            },
+            20,
+            3
+        );
+        $module->register();
+
+        self::assertArrayHasKey(110, $GLOBALS['dstk_test_filters']['authenticate']);
+
+        $result = apply_filters('authenticate', null, 'admin', 'secret');
+
+        self::assertInstanceOf(WP_Error::class, $result);
+        self::assertSame('dstk_login_locked', $result->get_error_code());
+    }
+
     public function test_success_clears_failures(): void
     {
         $module = new LoginAttemptsModule();

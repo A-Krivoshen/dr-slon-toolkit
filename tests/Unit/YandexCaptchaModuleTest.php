@@ -148,6 +148,57 @@ final class YandexCaptchaModuleTest extends TestCase
         self::assertSame('dstk_yandex_captcha', $result->get_error_code());
     }
 
+    public function test_captcha_rejection_survives_core_password_check(): void
+    {
+        remove_all_filters('authenticate');
+        add_filter(
+            'authenticate',
+            static function ($user, string $username, string $password) {
+                if ($username !== '' && $password !== '') {
+                    return 'authenticated-user';
+                }
+
+                return $user;
+            },
+            20,
+            3
+        );
+
+        (new YandexCaptchaModule())->register();
+
+        self::assertArrayHasKey(100, $GLOBALS['dstk_test_filters']['authenticate']);
+
+        $result = apply_filters('authenticate', null, 'admin', 'secret');
+
+        self::assertInstanceOf(WP_Error::class, $result);
+        self::assertSame('dstk_yandex_captcha', $result->get_error_code());
+    }
+
+    public function test_valid_token_still_allows_core_user(): void
+    {
+        $_POST[YandexSmartCaptcha::TOKEN_FIELD] = 'token-value';
+        $GLOBALS['dstk_test_remote_post_response'] = [
+            'response' => ['code' => 200],
+            'body'     => '{"status":"ok"}',
+        ];
+
+        remove_all_filters('authenticate');
+        add_filter(
+            'authenticate',
+            static function ($user, string $username, string $password) {
+                unset($user);
+
+                return ($username !== '' && $password !== '') ? 'authenticated-user' : null;
+            },
+            20,
+            3
+        );
+
+        (new YandexCaptchaModule())->register();
+
+        self::assertSame('authenticated-user', apply_filters('authenticate', null, 'admin', 'secret'));
+    }
+
     public function test_valid_yandex_status_allows_login(): void
     {
         $_POST[YandexSmartCaptcha::TOKEN_FIELD] = 'token-value';
