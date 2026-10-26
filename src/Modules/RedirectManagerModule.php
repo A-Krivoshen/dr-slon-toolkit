@@ -35,7 +35,7 @@ final class RedirectManagerModule implements ModuleInterface
         }
 
         $request_uri = isset($_SERVER['REQUEST_URI'])
-            ? (string) wp_unslash($_SERVER['REQUEST_URI'])
+            ? esc_url_raw(wp_unslash((string) $_SERVER['REQUEST_URI']))
             : '';
         $match = $this->match($this->request_path(), $request_uri);
 
