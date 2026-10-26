@@ -52,7 +52,7 @@ final class LoginAttemptsModule implements ModuleInterface
 
         $ip = $this->request_ip();
 
-        if ($ip === '') {
+        if ($ip === '' || $this->is_whitelisted($ip)) {
             return;
         }
 
@@ -106,7 +106,7 @@ final class LoginAttemptsModule implements ModuleInterface
     {
         $ip = $ip ?? $this->request_ip();
 
-        if ($ip === '') {
+        if ($ip === '' || $this->is_whitelisted($ip)) {
             return false;
         }
 
@@ -129,6 +129,34 @@ final class LoginAttemptsModule implements ModuleInterface
         $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash((string) $_SERVER['REMOTE_ADDR'])) : '';
 
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '';
+    }
+
+    public function is_whitelisted(?string $ip = null): bool
+    {
+        $ip = $ip ?? $this->request_ip();
+
+        if ($ip === '') {
+            return false;
+        }
+
+        return in_array($ip, $this->whitelist(), true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function whitelist(): array
+    {
+        $settings = Settings::all();
+        $attempts = isset($settings['login_attempts']) && is_array($settings['login_attempts'])
+            ? $settings['login_attempts']
+            : [];
+        $raw = isset($attempts['whitelist']) ? (string) $attempts['whitelist'] : '';
+        $ips = $raw === '' ? [] : (preg_split('/\R/', $raw) ?: []);
+
+        return array_values(array_filter($ips, static function (string $item): bool {
+            return $item !== '';
+        }));
     }
 
     /**

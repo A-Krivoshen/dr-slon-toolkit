@@ -109,5 +109,52 @@ final class LoginAttemptsModuleTest extends TestCase
         self::assertSame(20, $settings['login_attempts']['max_attempts']);
         self::assertSame(1, $settings['login_attempts']['window_minutes']);
         self::assertSame(1440, $settings['login_attempts']['lockout_minutes']);
+        self::assertSame('', $settings['login_attempts']['whitelist']);
+    }
+
+    public function test_whitelisted_ip_is_not_counted_or_locked(): void
+    {
+        $GLOBALS['dstk_test_options']['dstk_settings']['login_attempts']['whitelist'] = '198.51.100.20';
+        $module = new LoginAttemptsModule();
+
+        $module->record_failure();
+        $module->record_failure();
+        $module->record_failure();
+
+        self::assertTrue($module->is_whitelisted());
+        self::assertFalse($module->is_locked());
+        self::assertSame([], $module->store());
+    }
+
+    public function test_settings_keep_whitelist_when_the_form_omits_it(): void
+    {
+        $GLOBALS['dstk_test_options']['dstk_settings']['login_attempts']['whitelist'] = "192.0.2.10\n198.51.100.20";
+
+        $settings = \DrSlon\Toolkit\Core\Settings::merge_with_defaults(
+            [
+                'login_attempts' => [
+                    'max_attempts'    => 5,
+                    'window_minutes'  => 15,
+                    'lockout_minutes' => 15,
+                ],
+            ],
+            true
+        );
+
+        self::assertSame("192.0.2.10\n198.51.100.20", $settings['login_attempts']['whitelist']);
+    }
+
+    public function test_settings_sanitize_whitelist(): void
+    {
+        $settings = \DrSlon\Toolkit\Core\Settings::merge_with_defaults(
+            [
+                'login_attempts' => [
+                    'whitelist' => "192.0.2.10\nbogus\n198.51.100.20\n192.0.2.10",
+                ],
+            ],
+            true
+        );
+
+        self::assertSame("192.0.2.10\n198.51.100.20", $settings['login_attempts']['whitelist']);
     }
 }

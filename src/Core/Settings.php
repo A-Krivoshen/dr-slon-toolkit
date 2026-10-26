@@ -89,6 +89,7 @@ final class Settings
                 'max_attempts'    => 5,
                 'window_minutes'  => 15,
                 'lockout_minutes' => 15,
+                'whitelist'       => '',
             ],
             'redirects' => [
                 'rules' => [],
@@ -351,6 +352,18 @@ final class Settings
         $window_minutes = isset($login_attempts['window_minutes']) ? (int) $login_attempts['window_minutes'] : (int) $defaults['login_attempts']['window_minutes'];
         $lockout_minutes = isset($login_attempts['lockout_minutes']) ? (int) $login_attempts['lockout_minutes'] : (int) $defaults['login_attempts']['lockout_minutes'];
 
+        if (array_key_exists('whitelist', $login_attempts)) {
+            $login_whitelist = self::sanitize_ip_list((string) $login_attempts['whitelist']);
+        } else {
+            $saved_whitelist = '';
+
+            if (isset($saved_settings['login_attempts']) && is_array($saved_settings['login_attempts'])) {
+                $saved_whitelist = (string) ($saved_settings['login_attempts']['whitelist'] ?? '');
+            }
+
+            $login_whitelist = self::sanitize_ip_list($saved_whitelist);
+        }
+
         $redirect_rules = \DrSlon\Toolkit\Modules\RedirectManagerModule::rules_from_input($redirects);
 
         return [
@@ -428,11 +441,34 @@ final class Settings
                 'max_attempts'    => max(1, min(20, $max_attempts)),
                 'window_minutes'  => max(1, min(1440, $window_minutes)),
                 'lockout_minutes' => max(1, min(1440, $lockout_minutes)),
+                'whitelist'       => $login_whitelist,
             ],
             'redirects' => [
                 'rules' => $redirect_rules,
             ],
         ];
+    }
+
+    public static function sanitize_ip_list(string $raw): string
+    {
+        $parts = preg_split('/[\s,;]+/', $raw) ?: [];
+        $ips = [];
+
+        foreach ($parts as $part) {
+            $ip = trim((string) $part);
+
+            if ($ip === '' || filter_var($ip, FILTER_VALIDATE_IP) === false) {
+                continue;
+            }
+
+            $ips[$ip] = $ip;
+
+            if (count($ips) >= 50) {
+                break;
+            }
+        }
+
+        return implode("\n", array_values($ips));
     }
 
     public static function sanitize_captcha_key(string $key): string

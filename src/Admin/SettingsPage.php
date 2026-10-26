@@ -761,7 +761,7 @@ final class SettingsPage
     public function render_login_attempts_section_description(): void
     {
         echo '<p>';
-        echo esc_html__('Счётчик ведётся по IP (в хранилище кладётся хеш, не сырой адрес). После блокировки вход с этого IP отклоняется до истечения таймера.', 'dr-slon-toolkit');
+        echo esc_html__('Счётчик ведётся по IP (в хранилище кладётся хеш, не сырой адрес). После блокировки вход с этого IP отклоняется до истечения таймера. Адреса из белого списка не считаются и не блокируются.', 'dr-slon-toolkit');
         echo '</p>';
     }
 
@@ -800,6 +800,12 @@ final class SettingsPage
                     <?php echo esc_html__('Длительность блокировки, минут', 'dr-slon-toolkit'); ?>
                     <input type="number" min="1" max="1440" name="dstk_settings[login_attempts][lockout_minutes]" value="<?php echo esc_attr((string) (int) ($attempts['lockout_minutes'] ?? 15)); ?>">
                 </label>
+            </p>
+            <p>
+                <label for="dstk-login-whitelist"><strong><?php echo esc_html__('Белый список IP', 'dr-slon-toolkit'); ?></strong></label><br>
+                <textarea id="dstk-login-whitelist" name="dstk_settings[login_attempts][whitelist]" rows="4" class="large-text code"><?php echo esc_textarea((string) ($attempts['whitelist'] ?? '')); ?></textarea>
+                <br>
+                <span class="description"><?php echo esc_html__('По одному IPv4 или IPv6 в строке. Эти адреса не попадают в счётчик.', 'dr-slon-toolkit'); ?></span>
             </p>
             <p class="description">
                 <?php
