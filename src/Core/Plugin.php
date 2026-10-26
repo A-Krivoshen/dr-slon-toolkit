@@ -95,7 +95,17 @@ final class Plugin
             $detector = new SeoFrameworkDetector();
 
             if ($detector->is_active()) {
-                add_action('admin_notices', [$detector, 'render_notice']);
+                add_action('admin_notices', static function () use ($detector): void {
+                    $page = isset($_GET['page']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only screen check, not a form submit.
+                        ? sanitize_key((string) wp_unslash($_GET['page'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                        : '';
+
+                    if (! str_starts_with($page, 'dr-slon-toolkit')) {
+                        return;
+                    }
+
+                    $detector->render_notice();
+                });
             }
         }
     }
