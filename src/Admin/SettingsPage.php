@@ -34,6 +34,7 @@ final class SettingsPage
         add_action('admin_post_dstk_indexnow_manual_submit', [$this, 'handle_indexnow_manual_submit']);
         add_action('admin_post_dstk_clear_login_lockouts', [$this, 'handle_clear_login_lockouts']);
         add_action('admin_post_dstk_transliterate_existing', [$this, 'handle_transliterate_existing']);
+        add_action('admin_post_dstk_redirect_probe', [$this, 'handle_redirect_probe']);
         $this->info_panel->register();
     }
 
@@ -79,6 +80,18 @@ final class SettingsPage
             plugins_url('assets/admin/settings.css', DSTK_PLUGIN_FILE),
             [],
             DSTK_VERSION
+        );
+
+        if ($hook_suffix !== 'toplevel_page_' . self::PAGE_SLUG) {
+            return;
+        }
+
+        wp_enqueue_script(
+            'dstk-admin-redirects',
+            plugins_url('assets/admin/redirects.js', DSTK_PLUGIN_FILE),
+            [],
+            DSTK_VERSION,
+            true
         );
     }
 
@@ -289,6 +302,20 @@ final class SettingsPage
             }
         }
 
+        $redirect_rejected = RedirectManagerModule::rejected_count();
+
+        if ($redirect_rejected > 0) {
+            add_settings_error(
+                Settings::OPTION_KEY,
+                'dstk_redirect_rows',
+                sprintf(
+                    /* translators: %d: number of skipped redirect rules */
+                    __('Пропущено правил редиректа: %d. Пустая цель, петля на себя, служебный путь или повтор источника не сохраняются.', 'dr-slon-toolkit'),
+                    $redirect_rejected
+                )
+            );
+        }
+
         RewriteManager::schedule_if_changed($previous, $sanitized);
 
         return $sanitized;
@@ -357,7 +384,7 @@ final class SettingsPage
             ],
             'redirects' => [
                 'title'       => __('Redirect Manager', 'dr-slon-toolkit'),
-                'description' => __('Точные 301/302 редиректы со старых адресов на новые.', 'dr-slon-toolkit'),
+                'description' => __('301/302 списком: откуда, куда и порядок перетаскиванием.', 'dr-slon-toolkit'),
                 'icon'        => 'dashicons-randomize',
             ],
         ];
@@ -792,7 +819,7 @@ final class SettingsPage
     public function render_redirects_section_description(): void
     {
         echo '<p>';
-        echo esc_html__('Одно правило на строку: /staryj/ -> /novyj/ или /staryj/ -> /novyj/ | 302. Срабатывает точное совпадение пути. wp-admin, wp-login.php и REST не перехватываются.', 'dr-slon-toolkit');
+        echo esc_html__('Каждое правило — два адреса и код. Верхняя строка срабатывает первой: перетащите её за ручку или стрелками вверх и вниз.', 'dr-slon-toolkit');
         echo '</p>';
     }
 
@@ -801,12 +828,89 @@ final class SettingsPage
         $settings = Settings::all();
         $redirects = isset($settings['redirects']) && is_array($settings['redirects']) ? $settings['redirects'] : [];
         $rules = isset($redirects['rules']) && is_array($redirects['rules']) ? $redirects['rules'] : [];
+        $display = $rules;
+
+        if ($display === []) {
+            $display = [
+                ['from' => '', 'to' => '', 'status' => 301, 'enabled' => true],
+            ];
+        }
         ?>
-        <fieldset>
+        <fieldset class="dstk-redirects" data-max="100">
             <input type="hidden" name="dstk_settings[redirects][_submitted]" value="1">
-            <textarea class="large-text code" rows="10" name="dstk_settings[redirects][rules_text]"><?php echo esc_textarea(RedirectManagerModule::rules_to_text($rules)); ?></textarea>
-            <p class="description"><?php echo esc_html__('Максимум 100 правил. Комментарии начинайте с #.', 'dr-slon-toolkit'); ?></p>
+            <input type="hidden" name="dstk_settings[redirects][editor]" value="1">
+            <div class="dstk-redirects__head" aria-hidden="true">
+                <span></span>
+                <span><?php echo esc_html__('Откуда', 'dr-slon-toolkit'); ?></span>
+                <span><?php echo esc_html__('Куда', 'dr-slon-toolkit'); ?></span>
+                <span><?php echo esc_html__('Код', 'dr-slon-toolkit'); ?></span>
+                <span><?php echo esc_html__('Вкл', 'dr-slon-toolkit'); ?></span>
+                <span></span>
+            </div>
+            <div class="dstk-redirects__list">
+                <?php foreach ($display as $index => $rule) : ?>
+                    <?php $this->render_redirect_row((int) $index, is_array($rule) ? $rule : []); ?>
+                <?php endforeach; ?>
+            </div>
+            <p class="dstk-redirects__meta">
+                <button type="button" class="button dstk-redirects__add"><?php echo esc_html__('Добавить правило', 'dr-slon-toolkit'); ?></button>
+                <span class="description">
+                    <?php echo esc_html__('В списке:', 'dr-slon-toolkit'); ?>
+                    <span class="dstk-redirects__count"><?php echo esc_html((string) count($display)); ?></span>
+                    <?php echo esc_html__('из 100.', 'dr-slon-toolkit'); ?>
+                </span>
+            </p>
+            <p class="description"><?php echo esc_html__('Точный путь сравнивается без регистра и без query. В поле «Откуда» символы * и ? включают шаблон: одна звёздочка забирает хвост всего URI. Выключенное правило остаётся в списке, но не срабатывает. wp-admin, вход и REST не перехватываются.', 'dr-slon-toolkit'); ?></p>
+            <details class="dstk-redirects__import">
+                <summary><?php echo esc_html__('Добавить пачкой', 'dr-slon-toolkit'); ?></summary>
+                <textarea class="large-text code" rows="5" name="dstk_settings[redirects][import_text]" placeholder="/staryj/ -> /novyj/ | 302"></textarea>
+                <p class="description"><?php echo esc_html__('Строки допишутся к списку при сохранении. Формат: /старый -> /новый или /старый -> /новый | 302. Комментарий начинается с #.', 'dr-slon-toolkit'); ?></p>
+            </details>
+            <template id="dstk-redirect-template">
+                <?php $this->render_redirect_row(0, ['from' => '', 'to' => '', 'status' => 301, 'enabled' => true]); ?>
+            </template>
         </fieldset>
+        <?php
+    }
+
+    /**
+     * @param array<string, mixed> $rule
+     */
+    private function render_redirect_row(int $index, array $rule): void
+    {
+        $from = (string) ($rule['from'] ?? '');
+        $to = (string) ($rule['to'] ?? '');
+        $status = (int) ($rule['status'] ?? 301) === 302 ? 302 : 301;
+        $enabled = ! array_key_exists('enabled', $rule) || ! empty($rule['enabled']);
+        $base = 'dstk_settings[redirects][rows][' . $index . ']';
+        ?>
+        <div class="dstk-redirect-row">
+            <button type="button" class="dstk-redirect-row__handle" aria-label="<?php echo esc_attr__('Перетащить правило. Стрелки вверх и вниз меняют порядок.', 'dr-slon-toolkit'); ?>">
+                <span class="dashicons dashicons-menu" aria-hidden="true"></span>
+            </button>
+            <label class="dstk-redirect-row__field">
+                <span class="screen-reader-text"><?php echo esc_html__('Откуда', 'dr-slon-toolkit'); ?></span>
+                <input type="text" name="<?php echo esc_attr($base . '[from]'); ?>" value="<?php echo esc_attr($from); ?>" placeholder="/staryj/" spellcheck="false" autocomplete="off">
+            </label>
+            <label class="dstk-redirect-row__field">
+                <span class="screen-reader-text"><?php echo esc_html__('Куда', 'dr-slon-toolkit'); ?></span>
+                <input type="text" name="<?php echo esc_attr($base . '[to]'); ?>" value="<?php echo esc_attr($to); ?>" placeholder="/novyj/ или https://" spellcheck="false" autocomplete="off">
+            </label>
+            <label class="dstk-redirect-row__field dstk-redirect-row__field--code">
+                <span class="screen-reader-text"><?php echo esc_html__('Код', 'dr-slon-toolkit'); ?></span>
+                <select name="<?php echo esc_attr($base . '[status]'); ?>">
+                    <option value="301" <?php selected($status, 301); ?>>301</option>
+                    <option value="302" <?php selected($status, 302); ?>>302</option>
+                </select>
+            </label>
+            <label class="dstk-redirect-row__toggle">
+                <input type="hidden" name="<?php echo esc_attr($base . '[enabled]'); ?>" value="0">
+                <input type="checkbox" name="<?php echo esc_attr($base . '[enabled]'); ?>" value="1" <?php checked($enabled); ?> aria-label="<?php echo esc_attr__('Правило включено', 'dr-slon-toolkit'); ?>">
+            </label>
+            <button type="button" class="dstk-redirect-row__remove" aria-label="<?php echo esc_attr__('Удалить правило', 'dr-slon-toolkit'); ?>">
+                <span class="dashicons dashicons-trash" aria-hidden="true"></span>
+            </button>
+        </div>
         <?php
     }
 
@@ -837,6 +941,133 @@ final class SettingsPage
             <?php submit_button(__('Снять все блокировки IP', 'dr-slon-toolkit'), 'secondary', 'submit', false); ?>
         </form>
         <?php
+    }
+
+    private function render_redirect_probe_form(): void
+    {
+        if (! Settings::module_enabled('redirects')) {
+            return;
+        }
+
+        $code = isset($_GET['dstk_redirect_probe']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            ? sanitize_key((string) wp_unslash($_GET['dstk_redirect_probe'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            : '';
+        $from = isset($_GET['dstk_redirect_from']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            ? sanitize_text_field((string) wp_unslash($_GET['dstk_redirect_from'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            : '';
+        $to = isset($_GET['dstk_redirect_to']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            ? sanitize_text_field((string) wp_unslash($_GET['dstk_redirect_to'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            : '';
+        $status = isset($_GET['dstk_redirect_status']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            ? (int) sanitize_text_field(wp_unslash((string) $_GET['dstk_redirect_status'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            : 0;
+        $sample = isset($_GET['dstk_redirect_sample']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            ? sanitize_text_field((string) wp_unslash($_GET['dstk_redirect_sample'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            : '';
+        $notice = $this->redirect_probe_notice($code, $from, $to, $status);
+        ?>
+        <div class="dstk-tool-block">
+            <h2><?php echo esc_html__('Проверка редиректа', 'dr-slon-toolkit'); ?></h2>
+            <p class="description"><?php echo esc_html__('Смотрит уже сохранённые правила. Сначала сохраните список, потом проверьте путь.', 'dr-slon-toolkit'); ?></p>
+            <?php if ($notice !== null) : ?>
+                <div class="notice notice-<?php echo esc_attr($notice['class']); ?> inline"><p><?php echo esc_html($notice['message']); ?></p></div>
+            <?php endif; ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <?php wp_nonce_field('dstk_redirect_probe', 'dstk_redirect_probe_nonce'); ?>
+                <input type="hidden" name="action" value="dstk_redirect_probe">
+                <input type="text" name="dstk_redirect_sample" class="regular-text code" value="<?php echo esc_attr($sample); ?>" placeholder="/staryj/ или /?client=42" spellcheck="false" autocomplete="off">
+                <?php submit_button(__('Проверить адрес', 'dr-slon-toolkit'), 'secondary', 'submit', false); ?>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     * @return array{class:string,message:string}|null
+     */
+    private function redirect_probe_notice(string $code, string $from, string $to, int $status): ?array
+    {
+        if ($code === 'matched') {
+            return [
+                'class'   => 'success',
+                'message' => sprintf(
+                    /* translators: 1: source path, 2: target URL, 3: HTTP status */
+                    __('%1$s → %2$s, код %3$d.', 'dr-slon-toolkit'),
+                    $from,
+                    $to,
+                    $status === 302 ? 302 : 301
+                ),
+            ];
+        }
+
+        if ($code === 'disabled') {
+            return [
+                'class'   => 'warning',
+                'message' => sprintf(
+                    /* translators: 1: source path, 2: target URL */
+                    __('Правило %1$s → %2$s выключено, поэтому редиректа нет.', 'dr-slon-toolkit'),
+                    $from,
+                    $to
+                ),
+            ];
+        }
+
+        if ($code === 'none') {
+            return [
+                'class'   => 'info',
+                'message' => __('Сохранённые правила этот адрес не перенаправляют.', 'dr-slon-toolkit'),
+            ];
+        }
+
+        if ($code === 'blocked') {
+            return [
+                'class'   => 'error',
+                'message' => __('Этот адрес не перехватывается: служебный путь или некорректная строка.', 'dr-slon-toolkit'),
+            ];
+        }
+
+        if ($code === 'empty') {
+            return [
+                'class'   => 'error',
+                'message' => __('Введите путь, например /staryj/ или /?client=42.', 'dr-slon-toolkit'),
+            ];
+        }
+
+        return null;
+    }
+
+    public function handle_redirect_probe(): void
+    {
+        if (! current_user_can('manage_options')) {
+            wp_die(esc_html__('Недостаточно прав для выполнения действия.', 'dr-slon-toolkit'));
+        }
+
+        check_admin_referer('dstk_redirect_probe', 'dstk_redirect_probe_nonce');
+
+        $sample = isset($_POST['dstk_redirect_sample'])
+            ? sanitize_text_field(wp_unslash((string) $_POST['dstk_redirect_sample']))
+            : '';
+
+        if (strlen($sample) > 300) {
+            $sample = substr($sample, 0, 300);
+        }
+
+        $result = (new RedirectManagerModule())->diagnose($sample);
+
+        wp_safe_redirect(
+            add_query_arg(
+                [
+                    'page'                  => self::PAGE_SLUG,
+                    'dstk_redirect_probe'   => $result['code'],
+                    'dstk_redirect_from'    => $result['from'],
+                    'dstk_redirect_to'      => $result['to'],
+                    'dstk_redirect_status'  => (string) $result['status'],
+                    'dstk_redirect_sample'  => $sample,
+                ],
+                admin_url('admin.php')
+            )
+        );
+        exit;
     }
 
     private function render_indexnow_manual_form(): void
@@ -946,6 +1177,7 @@ final class SettingsPage
                     </div>
                 </form>
 
+                <?php $this->render_redirect_probe_form(); ?>
                 <?php $this->render_transliteration_tool(); ?>
                 <?php $this->render_indexnow_manual_form(); ?>
                 <?php $this->render_lockout_clear_form(); ?>
@@ -1039,7 +1271,7 @@ final class SettingsPage
                 <section class="dstk-help-card">
                     <span class="dashicons dashicons-randomize" aria-hidden="true"></span>
                     <h2><?php echo esc_html__('Redirect Manager', 'dr-slon-toolkit'); ?></h2>
-                    <p><?php echo esc_html__('Точное совпадение пути, 301 по умолчанию. Не трогает wp-admin, login и REST. Пример: /staryj/ -> /novyj/', 'dr-slon-toolkit'); ?></p>
+                    <p><?php echo esc_html__('Список из двух полей: откуда и куда. Порядок строк — приоритет, его можно перетащить. Правило можно выключить, не удаляя. Под списком есть проверка сохранённого адреса. Не трогает wp-admin, вход и REST.', 'dr-slon-toolkit'); ?></p>
                 </section>
 
                 <section class="dstk-help-card">

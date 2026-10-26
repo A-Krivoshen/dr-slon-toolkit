@@ -639,6 +639,13 @@ if (! function_exists('settings_errors')) {
     }
 }
 
+if (! function_exists('add_settings_error')) {
+    function add_settings_error(string $setting, string $code, string $message, string $type = 'error'): void
+    {
+        $GLOBALS['dstk_test_settings_error_list'][] = compact('setting', 'code', 'message', 'type');
+    }
+}
+
 if (! function_exists('settings_fields')) {
     function settings_fields(string $group): void
     {

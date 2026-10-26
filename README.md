@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.12.2 — модульный плагин WordPress: капча на входе не пропускает верный пароль без токена. ZIP из GitHub Releases, без Composer.">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.13.0 — модульный плагин WordPress: капча на входе не пропускает верный пароль без токена. ZIP из GitHub Releases, без Composer.">
 </p>
 
 Модульный плагин для клиентских WordPress-сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация уже существующих URL, капча Яндекса. На сервере клиента Composer не нужен.
 
-**[Скачать dr-slon-toolkit-0.12.2.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
+**[Скачать dr-slon-toolkit-0.13.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
 Новости: [0.12.2 в блоге](https://krivoshein.site/dr-slon-toolkit-0-12-2-kapcha-bolshe-ne-propuskaet-vernyy-parol/) · [0.12.1](https://krivoshein.site/dr-slon-toolkit-0-12-1-knopka-vhoda-snova-vnutri-formy-s-kapchej/) · [0.12.0](https://krivoshein.site/dr-slon-toolkit-0-12-0-kapcha-yandeksa-na-vhode-i-perevod-staryh-kirillicheskih-url/)
 
@@ -36,7 +36,7 @@ WordPress 6.6+, PHP 8.1+.
 | **IndexNow** | Ручная и автоматическая отправка URL через очередь WP-Cron. Ключ `/<key>.txt` без файла на диске. Учитывает noindex/canonical The SEO Framework. |
 | **Sitemap** | `/sitemap.xml` с пагинацией, кешем и `lastmod`. Если TSF отдаёт свою карту — toolkit не дублирует. |
 | **AI Agents** | `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`. Pulse выключен по умолчанию. |
-| **Redirect Manager** | Точные 301/302: `/staryj/ -> /novyj/`. Не перехватывает wp-admin, login и REST. |
+| **Redirect Manager** | Список 301/302: откуда, куда, порядок перетаскиванием, выключатель строки. Не перехватывает wp-admin, login и REST. |
 | **Транслитерация** | Русские slug и имена новых файлов. Уже опубликованные кириллические URL можно перевести кнопкой, со 301. |
 | **Комментарии** | Глобально закрывает комментарии, пинги, REST и UI. |
 | **Очистка** | Emoji, wp-embed, XML-RPC, лишние теги `<head>`. |

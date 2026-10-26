@@ -4,7 +4,7 @@ Tags: toolkit, maintenance, security, transliteration, indexnow
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.12.2
+Stable tag: 0.13.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,10 @@ Composer нужен только разработчику:
 - для публикации: push тега `vX.Y.Z` запускает workflow, который прикрепляет проверенный ZIP к GitHub Release.
 
 == Changelog ==
+
+= 0.13.0 =
+* Redirect Manager: список из двух полей, перетаскивание порядка, выключатель правила и проверка адреса.
+* Пачкой по-прежнему можно дописать строки вида /старый -> /новый | 302.
 
 = 0.12.2 =
 * Капча на входе больше не пропускает верный пароль: отказ остаётся после проверки WordPress.

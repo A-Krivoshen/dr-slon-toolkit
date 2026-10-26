@@ -351,27 +351,7 @@ final class Settings
         $window_minutes = isset($login_attempts['window_minutes']) ? (int) $login_attempts['window_minutes'] : (int) $defaults['login_attempts']['window_minutes'];
         $lockout_minutes = isset($login_attempts['lockout_minutes']) ? (int) $login_attempts['lockout_minutes'] : (int) $defaults['login_attempts']['lockout_minutes'];
 
-        $redirect_rules = [];
-
-        if (isset($redirects['rules_text'])) {
-            $redirect_rules = \DrSlon\Toolkit\Modules\RedirectManagerModule::parse_rules_text((string) $redirects['rules_text']);
-        } elseif (isset($redirects['rules']) && is_array($redirects['rules'])) {
-            foreach ($redirects['rules'] as $rule) {
-                if (! is_array($rule)) {
-                    continue;
-                }
-
-                $parsed = \DrSlon\Toolkit\Modules\RedirectManagerModule::sanitize_rule(
-                    (string) ($rule['from'] ?? ''),
-                    (string) ($rule['to'] ?? ''),
-                    (int) ($rule['status'] ?? 301)
-                );
-
-                if ($parsed !== null) {
-                    $redirect_rules[] = $parsed;
-                }
-            }
-        }
+        $redirect_rules = \DrSlon\Toolkit\Modules\RedirectManagerModule::rules_from_input($redirects);
 
         return [
             'modules' => [

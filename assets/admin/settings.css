@@ -554,6 +554,159 @@
     }
 }
 
+.dstk-redirects {
+    max-width: 980px;
+}
+
+.dstk-redirects__head,
+.dstk-redirect-row {
+    display: grid;
+    grid-template-columns: 36px minmax(140px, 1fr) minmax(180px, 1.3fr) 88px 44px 36px;
+    gap: 8px;
+    align-items: center;
+}
+
+.dstk-redirects__head {
+    padding: 0 8px 4px;
+    color: var(--dstk-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.dstk-redirect-row {
+    margin: 0 0 8px;
+    padding: 8px;
+    border: 1px solid var(--dstk-line);
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.dstk-redirect-row.is-dragging {
+    opacity: 0.45;
+}
+
+.dstk-redirect-row__field input,
+.dstk-redirect-row__field select {
+    width: 100%;
+    min-height: 32px;
+    margin: 0;
+}
+
+.dstk-redirect-row__handle,
+.dstk-redirect-row__remove {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--dstk-line);
+    border-radius: 6px;
+    background: var(--dstk-soft);
+    color: #475467;
+    cursor: pointer;
+}
+
+.dstk-redirect-row__handle {
+    cursor: grab;
+}
+
+.dstk-redirect-row__handle:active {
+    cursor: grabbing;
+}
+
+.dstk-redirect-row__remove {
+    color: #b42318;
+}
+
+.dstk-redirect-row__toggle {
+    display: grid;
+    place-items: center;
+    margin: 0;
+}
+
+.dstk-redirect-row__toggle input {
+    margin: 0;
+}
+
+.dstk-redirects__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin: 4px 0 8px;
+}
+
+.dstk-redirects__count {
+    font-weight: 700;
+}
+
+.dstk-redirects__import {
+    margin-top: 8px;
+}
+
+.dstk-redirects__import summary {
+    width: fit-content;
+    color: var(--dstk-accent-dark);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dstk-redirects__import textarea {
+    margin-top: 8px;
+}
+
+.dstk-settings-form .form-table tr:has(.dstk-redirects) {
+    display: block;
+}
+
+.dstk-settings-form .form-table tr:has(.dstk-redirects) > th {
+    display: none;
+}
+
+.dstk-settings-form .form-table tr:has(.dstk-redirects) > td {
+    display: block;
+    width: auto;
+    padding-top: 4px;
+}
+
+.dstk-tool-block .notice.inline {
+    margin: 12px 0;
+}
+
+@media (max-width: 782px) {
+    .dstk-redirects__head {
+        display: none;
+    }
+
+    .dstk-redirect-row {
+        grid-template-columns: 36px minmax(0, 1fr) 36px;
+    }
+
+    .dstk-redirect-row__handle {
+        grid-row: 1 / span 4;
+    }
+
+    .dstk-redirect-row__field,
+    .dstk-redirect-row__toggle {
+        grid-column: 2;
+    }
+
+    .dstk-redirect-row__field--code {
+        max-width: 120px;
+    }
+
+    .dstk-redirect-row__toggle {
+        justify-content: start;
+    }
+
+    .dstk-redirect-row__remove {
+        grid-row: 1;
+        grid-column: 3;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .dstk-module-card {
         transition: none;

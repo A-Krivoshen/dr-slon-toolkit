@@ -9,6 +9,8 @@ use DrSlon\Toolkit\Core\Settings;
 
 final class RedirectManagerModule implements ModuleInterface
 {
+    private static int $rejected = 0;
+
     public function register(): void
     {
         add_action('template_redirect', [$this, 'maybe_redirect'], 1);
@@ -32,7 +34,10 @@ final class RedirectManagerModule implements ModuleInterface
             return;
         }
 
-        $match = $this->match($this->request_path());
+        $request_uri = isset($_SERVER['REQUEST_URI'])
+            ? (string) wp_unslash($_SERVER['REQUEST_URI'])
+            : '';
+        $match = $this->match($this->request_path(), $request_uri);
 
         if ($match === null) {
             return;
@@ -48,9 +53,13 @@ final class RedirectManagerModule implements ModuleInterface
     }
 
     /**
-     * @return array{from:string,to:string,status:int}|null
+     * Exact paths ignore the query string. Rules whose source contains `*` or `?`
+     * are matched against the raw request URI: one `*` capture, case-insensitive,
+     * first enabled rule wins.
+     *
+     * @return array{from:string,to:string,status:int,enabled:bool}|null
      */
-    public function match(string $path): ?array
+    public function match(string $path, string $request_uri = '', bool $include_disabled = false): ?array
     {
         $path = $this->normalize_from($path);
 
@@ -58,8 +67,26 @@ final class RedirectManagerModule implements ModuleInterface
             return null;
         }
 
+        $subject = strtolower(rtrim($request_uri !== '' ? $request_uri : $path, '/'));
+
         foreach ($this->rules() as $rule) {
-            if ($this->normalize_from($rule['from']) === $path) {
+            if (! $include_disabled && empty($rule['enabled'])) {
+                continue;
+            }
+
+            $from = $rule['from'];
+
+            if (self::is_pattern_rule($from)) {
+                $expanded = $this->expand_pattern($from, $subject, $rule);
+
+                if ($expanded !== null) {
+                    return $expanded;
+                }
+
+                continue;
+            }
+
+            if (strtolower($this->normalize_from($from)) === strtolower($path)) {
                 return $rule;
             }
         }
@@ -68,38 +95,111 @@ final class RedirectManagerModule implements ModuleInterface
     }
 
     /**
-     * @return array<int, array{from:string,to:string,status:int}>
+     * Explain a saved-rule lookup for the admin probe. Does not redirect.
+     *
+     * @return array{code:string,from:string,to:string,status:int}
+     */
+    public function diagnose(string $raw): array
+    {
+        $raw = trim($raw);
+
+        if ($raw === '') {
+            return ['code' => 'empty', 'from' => '', 'to' => '', 'status' => 0];
+        }
+
+        $path = $raw;
+        $uri = $raw;
+
+        if (preg_match('#^https?://#i', $raw) === 1) {
+            $parsed_path = wp_parse_url(esc_url_raw($raw, ['http', 'https']), PHP_URL_PATH);
+            $parsed_query = wp_parse_url($raw, PHP_URL_QUERY);
+            $path = is_string($parsed_path) && $parsed_path !== '' ? $parsed_path : '/';
+            $uri = $path;
+
+            if (is_string($parsed_query) && $parsed_query !== '') {
+                $uri .= '?' . $parsed_query;
+            }
+        }
+
+        $normalized = $this->normalize_from($path);
+
+        if ($normalized === '' || $this->is_protected_path($normalized)) {
+            return ['code' => 'blocked', 'from' => $normalized, 'to' => '', 'status' => 0];
+        }
+
+        $match = $this->match($path, $uri);
+
+        if ($match !== null) {
+            return [
+                'code'   => 'matched',
+                'from'   => $match['from'],
+                'to'     => $match['to'],
+                'status' => $match['status'],
+            ];
+        }
+
+        $shadow = $this->match($path, $uri, true);
+
+        if ($shadow !== null && empty($shadow['enabled'])) {
+            return [
+                'code'   => 'disabled',
+                'from'   => $shadow['from'],
+                'to'     => $shadow['to'],
+                'status' => $shadow['status'],
+            ];
+        }
+
+        return ['code' => 'none', 'from' => $normalized, 'to' => '', 'status' => 0];
+    }
+
+    private static function is_pattern_rule(string $from): bool
+    {
+        return str_contains($from, '*') || str_contains($from, '?');
+    }
+
+    /**
+     * @param array{from:string,to:string,status:int,enabled:bool} $rule
+     * @return array{from:string,to:string,status:int,enabled:bool}|null
+     */
+    private function expand_pattern(string $from, string $subject, array $rule): ?array
+    {
+        $pattern = strtolower(rtrim($from, '/'));
+        $pattern = str_replace('\\*', '(.*)', preg_quote($pattern, '/'));
+
+        if (preg_match('/\A' . $pattern . '\z/', $subject, $matches) !== 1) {
+            return null;
+        }
+
+        $to = $rule['to'];
+
+        if (str_contains($to, '*') && isset($matches[1]) && $matches[1] !== '') {
+            $to = str_replace('*', $matches[1], $to);
+        }
+
+        return [
+            'from'    => $rule['from'],
+            'to'      => $to,
+            'status'  => $rule['status'],
+            'enabled' => $rule['enabled'],
+        ];
+    }
+
+    /**
+     * @return array<int, array{from:string,to:string,status:int,enabled:bool}>
      */
     public function rules(): array
     {
         $settings = Settings::all();
         $redirects = isset($settings['redirects']) && is_array($settings['redirects']) ? $settings['redirects'] : [];
         $rules = isset($redirects['rules']) && is_array($redirects['rules']) ? $redirects['rules'] : [];
-        $clean = [];
 
-        foreach ($rules as $rule) {
-            if (! is_array($rule)) {
-                continue;
-            }
-
-            $parsed = self::sanitize_rule(
-                (string) ($rule['from'] ?? ''),
-                (string) ($rule['to'] ?? ''),
-                (int) ($rule['status'] ?? 301)
-            );
-
-            if ($parsed !== null) {
-                $clean[] = $parsed;
-            }
-        }
-
-        return $clean;
+        return self::sanitize_stored_rules($rules);
     }
 
     /**
-     * @return array{from:string,to:string,status:int}|null
+     * @return array{from:string,to:string,status:int,enabled:bool}|null
      */
-    public static function sanitize_rule(string $from, string $to, int $status): ?array
+    public static function sanitize_rule(string $from, string $to, int $status, bool $enabled = true): ?array
     {
         $from = self::normalize_source($from);
         $to = self::normalize_target($to);
@@ -114,14 +214,155 @@ final class RedirectManagerModule implements ModuleInterface
         }
 
         return [
-            'from'   => $from,
-            'to'     => $to,
-            'status' => $status,
+            'from'    => $from,
+            'to'      => $to,
+            'status'  => $status,
+            'enabled' => $enabled,
         ];
     }
 
+    public static function rejected_count(): int
+    {
+        return self::$rejected;
+    }
+
     /**
-     * @return array<int, array{from:string,to:string,status:int}>
+     * @param array<string, mixed> $redirects
+     * @return array<int, array{from:string,to:string,status:int,enabled:bool}>
+     */
+    public static function rules_from_input(array $redirects): array
+    {
+        self::$rejected = 0;
+
+        if (! empty($redirects['editor'])) {
+            $rows = isset($redirects['rows']) && is_array($redirects['rows']) ? $redirects['rows'] : [];
+            $rules = self::parse_rows($rows);
+            $import = isset($redirects['import_text']) ? (string) $redirects['import_text'] : '';
+
+            if (trim($import) !== '') {
+                $rules = self::append_unique($rules, self::parse_rules_text($import));
+            }
+
+            return $rules;
+        }
+
+        if (isset($redirects['rules_text'])) {
+            return self::parse_rules_text((string) $redirects['rules_text']);
+        }
+
+        if (isset($redirects['rules']) && is_array($redirects['rules'])) {
+            return self::sanitize_stored_rules($redirects['rules']);
+        }
+
+        return [];
+    }
+
+    /**
+     * @param array<mixed> $rows
+     * @return array<int, array{from:string,to:string,status:int,enabled:bool}>
+     */
+    private static function parse_rows(array $rows): array
+    {
+        $rules = [];
+
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $from = trim((string) ($row['from'] ?? ''));
+            $to = trim((string) ($row['to'] ?? ''));
+
+            if ($from === '' && $to === '') {
+                continue;
+            }
+
+            if (count($rules) >= 100) {
+                ++self::$rejected;
+                continue;
+            }
+
+            $parsed = self::sanitize_rule(
+                $from,
+                $to,
+                (int) ($row['status'] ?? 301),
+                ! empty($row['enabled'])
+            );
+
+            if ($parsed === null || isset($rules[$parsed['from']])) {
+                ++self::$rejected;
+                continue;
+            }
+
+            $rules[$parsed['from']] = $parsed;
+        }
+
+        return array_values($rules);
+    }
+
+    /**
+     * @param array<int, array{from:string,to:string,status:int,enabled:bool}> $rules
+     * @param array<int, array{from:string,to:string,status:int,enabled:bool}> $extra
+     * @return array<int, array{from:string,to:string,status:int,enabled:bool}>
+     */
+    private static function append_unique(array $rules, array $extra): array
+    {
+        $seen = [];
+
+        foreach ($rules as $rule) {
+            $seen[$rule['from']] = true;
+        }
+
+        foreach ($extra as $rule) {
+            if (isset($seen[$rule['from']]) || count($rules) >= 100) {
+                ++self::$rejected;
+                continue;
+            }
+
+            $seen[$rule['from']] = true;
+            $rules[] = $rule;
+        }
+
+        return $rules;
+    }
+
+    /**
+     * @param array<mixed> $rules
+     * @return array<int, array{from:string,to:string,status:int,enabled:bool}>
+     */
+    private static function sanitize_stored_rules(array $rules): array
+    {
+        $clean = [];
+
+        foreach ($rules as $rule) {
+            if (! is_array($rule)) {
+                continue;
+            }
+
+            $enabled = ! array_key_exists('enabled', $rule) || ! empty($rule['enabled']);
+            $parsed = self::sanitize_rule(
+                (string) ($rule['from'] ?? ''),
+                (string) ($rule['to'] ?? ''),
+                (int) ($rule['status'] ?? 301),
+                $enabled
+            );
+
+            if ($parsed === null || isset($clean[$parsed['from']])) {
+                continue;
+            }
+
+            $clean[$parsed['from']] = $parsed;
+
+            if (count($clean) >= 100) {
+                break;
+            }
+        }
+
+        return array_values($clean);
+    }
+
+    /**
+     * @return array<int, array{from:string,to:string,status:int,enabled:bool}>
      */
     public static function parse_rules_text(string $raw): array
     {

@@ -67,7 +67,7 @@
 - `LoginAttemptsModule`
   - Считает неудачные входы по хешу IP и временно блокирует адрес.
 - `RedirectManagerModule`
-  - Точные 301/302 редиректы по пути запроса, без rewrite flush.
+  - 301/302 по пути запроса, без rewrite flush. В админке список из двух полей; порядок — приоритет, правило можно выключить.
 - `AiAgentsModule`
   - Отдаёт machine-readable документы `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md` и опциональный pulse.
   - Не пишет файлы на диск; кеш версионируется через `dstk_ai_cache_version`.
@@ -86,7 +86,7 @@
   - `ai_agents` — переключатели endpoint, гибридные текстовые поля, типы записей и лимиты.
   - `yandex_captcha` — клиентский/серверный ключи и язык виджета.
   - `login_attempts` — порог, окно и длительность блокировки.
-  - `redirects.rules` — список from/to/status.
+  - `redirects.rules` — список from/to/status/enabled. Порядок записей — приоритет.
 - `src/Core/DiscoveryIndexability`, `UrlNormalizer`, `CacheVersion`, `Transliterator` — индексация, URL, кеш и кириллица→латиница.
 - Опция версии: `dstk_version`
 - `dstk_translit_redirects` — 301 со старых кириллических путей после массового перевода slug.
