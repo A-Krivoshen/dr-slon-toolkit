@@ -43,7 +43,7 @@ final class SettingsPageTest extends TestCase
         self::assertStringContainsString('name="dstk_settings[redirects][rows][0][from]"', $output);
         self::assertStringContainsString('name="dstk_settings[redirects][rows][0][to]"', $output);
         self::assertStringContainsString('value="/staryj"', $output);
-        self::assertStringContainsString('value="302" selected', $output);
+        self::assertMatchesRegularExpression('/value="302"\s+selected="selected"/', $output);
         self::assertStringNotContainsString('rules_text', $output);
         self::assertStringContainsString('dstk-redirect-row__handle', $output);
     }
