@@ -157,4 +157,46 @@ final class LoginAttemptsModuleTest extends TestCase
 
         self::assertSame("192.0.2.10\n198.51.100.20", $settings['login_attempts']['whitelist']);
     }
+
+    public function test_whitelist_keeps_ipv6_and_caps_at_fifty(): void
+    {
+        $ips = [];
+
+        for ($index = 1; $index <= 50; $index++) {
+            $ips[] = sprintf('2001:db8::%x', $index);
+        }
+
+        $ips[] = '192.0.2.55';
+
+        $settings = \DrSlon\Toolkit\Core\Settings::merge_with_defaults(
+            [
+                'login_attempts' => [
+                    'whitelist' => implode("\n", $ips),
+                ],
+            ],
+            true
+        );
+
+        $saved = explode("\n", $settings['login_attempts']['whitelist']);
+
+        self::assertCount(50, $saved);
+        self::assertSame('2001:db8::1', $saved[0]);
+        self::assertSame('2001:db8::32', $saved[49]);
+        self::assertNotContains('192.0.2.55', $saved);
+    }
+
+    public function test_whitelisted_ipv6_is_not_counted_or_locked(): void
+    {
+        $_SERVER['REMOTE_ADDR'] = '2001:db8::20';
+        $GLOBALS['dstk_test_options']['dstk_settings']['login_attempts']['whitelist'] = '2001:db8::20';
+        $module = new LoginAttemptsModule();
+
+        $module->record_failure();
+        $module->record_failure();
+        $module->record_failure();
+
+        self::assertTrue($module->is_whitelisted());
+        self::assertFalse($module->is_locked());
+        self::assertSame([], $module->store());
+    }
 }

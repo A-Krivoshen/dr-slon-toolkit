@@ -4,7 +4,7 @@ Tags: toolkit, maintenance, security, transliteration, indexnow
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.13.0
+Stable tag: 0.13.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,10 @@ Composer нужен только разработчику:
 - для публикации: push тега `vX.Y.Z` запускает workflow, который прикрепляет проверенный ZIP к GitHub Release.
 
 == Changelog ==
+
+= 0.13.1 =
+* Login Attempts: белый список IP. Эти адреса не считаются и не блокируются.
+* Уведомление о The SEO Framework только на страницах Dr.Slon Toolkit.
 
 = 0.13.0 =
 * Redirect Manager: список из двух полей, перетаскивание порядка, выключатель правила и проверка адреса.
