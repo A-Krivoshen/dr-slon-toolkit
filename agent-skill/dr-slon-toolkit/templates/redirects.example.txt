@@ -1,0 +1,6 @@
+# One rule per line. At most 100 rules. Lines starting with # are ignored.
+# Separate paths with ->, an arrow, or |. A missing status means 301.
+# Do not point these at the plugin: /wp-admin, /wp-login.php, /wp-json, /xmlrpc.php.
+
+/old-path -> /new-path
+/promo -> /sale | 302
