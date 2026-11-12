@@ -8,7 +8,7 @@ description: >-
   redirects, transliteration, comments, cleanup, update policy, Yandex
   SmartCaptcha, login lockouts, or AI discovery files (ai.txt, llms.txt, agents.md).
 summary: Install the latest Dr.Slon Toolkit release and configure its WordPress modules.
-version: "1.0.0"
+version: "1.0.1"
 tags: [wordpress, security, maintenance, seo, indexnow, redirects]
 keywords: [wp-cli, hide-login, indexnow, yandex-smartcaptcha, llms.txt, sitemap]
 use_cases:
@@ -43,6 +43,16 @@ bash scripts/verify.sh --path /path/to/wordpress
 Omit `--path` when the current directory is the WordPress root. Add `--network` only when the user asked for multisite network activation. `install.sh --check` prints the latest asset and stops before any download.
 
 The installer rejects a draft, a prerelease, a wrong asset name, a wrong URL, a bad size, or a bad SHA-256. It then activates the plugin. When that release is already active, it exits without reinstalling.
+
+## Network
+
+The scripts send HTTP GET requests only. Nothing is piped into a shell.
+
+- `https://api.github.com/repos/A-Krivoshen/dr-slon-toolkit/releases/latest` reads the latest stable release.
+- `https://github.com/A-Krivoshen/dr-slon-toolkit/releases/download/` downloads the matching `dr-slon-toolkit-<version>.zip` asset.
+- The home address from `wp option get home` is requested only to confirm HTTP 200. That address is not sent to GitHub or any other host.
+
+`https://krivoshein.site` and `https://drslon.ru` are author pages. The scripts do not call them.
 
 `verify.sh` exits 0 when WordPress, PHP, an active plugin, a release layout, and HTTP 200 from the site home URL all pass. A release layout has `src/Core/Plugin.php` and `vendor/autoload.php`, and has neither `composer.json` nor `tests/`. Read `update_available` in the output. Run `install.sh` again when the user wants the newer release.
 

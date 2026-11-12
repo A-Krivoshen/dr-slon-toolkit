@@ -144,6 +144,13 @@ echo $version, "\n", $url, "\n", substr($digest, 7), "\n", $size, "\n", $assetNa
 PHP
 }
 
+url_has_userinfo() {
+  case "$1" in
+    *"@"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 latest_version() {
   local workdir="$1"
   local json="$workdir/release.json"
@@ -245,7 +252,7 @@ main() {
   fi
 
   site_url="$(wp_cmd option get home | tail -n 1)"
-  if [[ ! "$site_url" =~ ^https?://[^[:space:]@]+$ ]]; then
+  if [[ ! "$site_url" =~ ^https?://[^[:space:]]+$ ]] || url_has_userinfo "$site_url"; then
     fail "site_url_invalid"
   fi
 
