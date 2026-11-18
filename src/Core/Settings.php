@@ -28,6 +28,7 @@ final class Settings
                 'yandex_captcha'   => false,
                 'login_attempts'   => false,
                 'redirects'        => false,
+                'maintenance'      => false,
             ],
             'cleanup' => [
                 'disable_emojis'   => true,
@@ -93,6 +94,10 @@ final class Settings
             ],
             'redirects' => [
                 'rules' => [],
+            ],
+            'maintenance' => [
+                'heading' => 'Сайт на реконструкции',
+                'message' => 'Страница временно закрыта. Скоро здесь снова будет сайт.',
             ],
         ];
     }
@@ -184,6 +189,7 @@ final class Settings
         $yandex_captcha = isset($input['yandex_captcha']) && is_array($input['yandex_captcha']) ? $input['yandex_captcha'] : [];
         $login_attempts = isset($input['login_attempts']) && is_array($input['login_attempts']) ? $input['login_attempts'] : [];
         $redirects = isset($input['redirects']) && is_array($input['redirects']) ? $input['redirects'] : [];
+        $maintenance = isset($input['maintenance']) && is_array($input['maintenance']) ? $input['maintenance'] : [];
         $cleanup_submitted = ! empty($cleanup['_submitted']);
         $indexnow_submitted = ! empty($indexnow['_submitted']);
         $sitemap_submitted = ! empty($sitemap['_submitted']);
@@ -366,6 +372,16 @@ final class Settings
 
         $redirect_rules = \DrSlon\Toolkit\Modules\RedirectManagerModule::rules_from_input($redirects);
 
+        $saved_maintenance = isset($saved_settings['maintenance']) && is_array($saved_settings['maintenance'])
+            ? $saved_settings['maintenance']
+            : [];
+        $heading_source = array_key_exists('heading', $maintenance)
+            ? $maintenance['heading']
+            : ($saved_maintenance['heading'] ?? $defaults['maintenance']['heading']);
+        $message_source = array_key_exists('message', $maintenance)
+            ? $maintenance['message']
+            : ($saved_maintenance['message'] ?? $defaults['maintenance']['message']);
+
         return [
             'modules' => [
                 'transliteration'  => ! empty($modules['transliteration']),
@@ -380,6 +396,7 @@ final class Settings
                 'yandex_captcha'   => ! empty($modules['yandex_captcha']),
                 'login_attempts'   => ! empty($modules['login_attempts']),
                 'redirects'        => ! empty($modules['redirects']),
+                'maintenance'      => ! empty($modules['maintenance']),
             ],
             'cleanup' => [
                 'disable_emojis'   => array_key_exists('disable_emojis', $cleanup) ? ! empty($cleanup['disable_emojis']) : ($cleanup_submitted ? false : $defaults['cleanup']['disable_emojis']),
@@ -446,7 +463,37 @@ final class Settings
             'redirects' => [
                 'rules' => $redirect_rules,
             ],
+            'maintenance' => [
+                'heading' => self::maintenance_text($heading_source, 120, (string) $defaults['maintenance']['heading'], true),
+                'message' => self::maintenance_text($message_source, 400, (string) $defaults['maintenance']['message'], false),
+            ],
         ];
+    }
+
+    private static function maintenance_text(mixed $value, int $limit, string $fallback, bool $single_line): string
+    {
+        $value = is_string($value) ? $value : '';
+        $value = $single_line ? sanitize_text_field($value) : sanitize_textarea_field($value);
+        $value = trim($value);
+
+        if ($single_line) {
+            $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
+            $value = trim($value);
+        }
+
+        if ($value === '') {
+            return $fallback;
+        }
+
+        if (function_exists('mb_strlen') && mb_strlen($value) > $limit) {
+            return rtrim(mb_substr($value, 0, $limit));
+        }
+
+        if (strlen($value) > $limit) {
+            return rtrim(substr($value, 0, $limit));
+        }
+
+        return $value;
     }
 
     public static function sanitize_ip_list(string $raw): string

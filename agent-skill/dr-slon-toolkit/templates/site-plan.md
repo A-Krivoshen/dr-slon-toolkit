@@ -9,6 +9,7 @@ Fill this in from the user's answers. Leave captcha keys, passwords, and tokens 
 
 Enable only the checked modules. Unchecked stays off.
 
+- [ ] maintenance — closes the public site (503 and noindex). Leave off unless the user asked.
 - [ ] hide_login — slug:
 - [ ] yandex_captcha — keys entered in wp-admin, not here
 - [ ] login_attempts — whitelist edited in wp-admin, not here

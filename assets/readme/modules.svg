@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="608" viewBox="0 0 1200 608" role="img" aria-labelledby="title desc">
   <title id="title">Модули Dr.Slon Toolkit</title>
-  <desc id="desc">Двенадцать независимых модулей: доступ, индексация и обслуживание сайта. Каждый включается отдельно. Капча и кнопка входа вписываются в wp-login, старые кириллические URL можно перевести со 301.</desc>
+  <desc id="desc">Тринадцать независимых модулей: доступ, индексация и обслуживание сайта. Каждый включается отдельно. Заглушка реконструкции отдаёт 503 и noindex.</desc>
 
-  <rect width="1200" height="520" rx="12" fill="#f6f8fb" stroke="#d7dde7"/>
+  <rect width="1200" height="608" rx="12" fill="#f6f8fb" stroke="#d7dde7"/>
   <text x="48" y="44" fill="#167d63" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" letter-spacing="1.8">МОДУЛИ · ВКЛЮЧАЮТСЯ ПО ОДНОМУ</text>
-  <text x="48" y="80" fill="#172033" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="32" font-weight="700" letter-spacing="-0.6">Один плагин, двенадцать задач</text>
+  <text x="48" y="80" fill="#172033" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="32" font-weight="700" letter-spacing="-0.6">Один плагин, тринадцать задач</text>
 
   <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
     <text x="48" y="118" fill="#667085" font-size="16" font-weight="700" letter-spacing="1.2">ДОСТУП</text>
@@ -72,5 +72,10 @@
     <rect x="818" y="418" width="28" height="28" rx="6" fill="#167d63"/>
     <text x="860" y="430" fill="#172033" font-size="20" font-weight="700">Update Controls</text>
     <text x="860" y="454" fill="#667085" font-size="18">ядро, плагины, темы, почта</text>
+
+    <rect x="48" y="488" width="1104" height="76" rx="8" fill="#f4fbf8" stroke="#63b69f"/>
+    <rect x="66" y="510" width="28" height="28" rx="6" fill="#167d63"/>
+    <text x="108" y="522" fill="#172033" font-size="20" font-weight="700">Реконструкция</text>
+    <text x="108" y="546" fill="#667085" font-size="18">заглушка для гостей · 503 и noindex · админ видит сайт</text>
   </g>
 </svg>

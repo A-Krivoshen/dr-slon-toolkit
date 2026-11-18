@@ -34,6 +34,10 @@ Add that IP on its own line under **Белый список IP**. Listed address
 
 Switch `rest_api.mode` back to `allow_all` or `authenticated_only`. Whitelist mode hides public posts, pages, and media from guests. The built-in system allowlist cannot be emptied. Editor routes still require a logged-in user.
 
+## Visitors see a reconstruction page
+
+The maintenance module is on. Guests get HTTP 503, `noindex`, and the stub. An administrator still sees the site, and the login URL still works. Turn the module off under **Dr.Slon Toolkit**. The warning on wp-admin screens stays until that switch is off. IndexNow does not submit URLs while the site is closed.
+
 ## Two sitemaps, or no toolkit sitemap
 
 When The SEO Framework serves a sitemap, Dr.Slon Toolkit does not serve a second one. That is intentional. IndexNow and AI Agents still skip noindex URLs and URLs with an external canonical. The compatibility notice is shown only on Dr.Slon Toolkit admin screens.

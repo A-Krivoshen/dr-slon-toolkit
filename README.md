@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.13.1 — модульный плагин WordPress: капча на входе не пропускает верный пароль без токена. ZIP из GitHub Releases, без Composer.">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.14.0 — модульный плагин WordPress. Заглушка «На реконструкции» отдаёт 503 и noindex. ZIP из GitHub Releases, без Composer.">
 </p>
 
 Модульный плагин для клиентских WordPress-сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация уже существующих URL, капча Яндекса. На сервере клиента Composer не нужен.
 
-**[Скачать dr-slon-toolkit-0.13.1.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
+**[Скачать dr-slon-toolkit-0.14.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
 Новости: [0.13.0 в блоге](https://krivoshein.site/dr-slon-toolkit-0-13-0-spisok-redirektov/) · [0.12.2](https://krivoshein.site/dr-slon-toolkit-0-12-2-kapcha-bolshe-ne-propuskaet-vernyy-parol/) · [0.12.1](https://krivoshein.site/dr-slon-toolkit-0-12-1-knopka-vhoda-snova-vnutri-formy-s-kapchej/) · [0.12.0](https://krivoshein.site/dr-slon-toolkit-0-12-0-kapcha-yandeksa-na-vhode-i-perevod-staryh-kirillicheskih-url/)
 
@@ -24,7 +24,7 @@ WordPress 6.6+, PHP 8.1+.
 ## Что умеет
 
 <p align="center">
-  <img src="./assets/readme/modules.svg" width="100%" alt="Двенадцать модулей Dr.Slon Toolkit: доступ, индексация и обслуживание сайта. Каждый включается отдельно.">
+  <img src="./assets/readme/modules.svg" width="100%" alt="Модули Dr.Slon Toolkit, включая реконструкцию: доступ, индексация и обслуживание сайта. Каждый включается отдельно.">
 </p>
 
 | Модуль | Что делает |
@@ -41,6 +41,7 @@ WordPress 6.6+, PHP 8.1+.
 | **Комментарии** | Глобально закрывает комментарии, пинги, REST и UI. |
 | **Очистка** | Emoji, wp-embed, XML-RPC, лишние теги `<head>`. |
 | **Update Controls** | Автообновления ядра, плагинов, тем, переводов и писем. |
+| **Реконструкция** | Заглушка для гостей: ответ 503 и noindex. Администратор видит сайт, вход и wp-admin открыты. |
 
 Страница настроек нативная. Карточки поддержки локальные, без удалённого JavaScript.
 

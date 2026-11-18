@@ -4,7 +4,7 @@ Tags: toolkit, maintenance, security, transliteration, indexnow
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.13.1
+Stable tag: 0.14.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,7 @@ Dr.Slon Toolkit — модульный плагин, созданный с ну�
 - модуль «Транслитерация»
 - модуль «Отключение комментариев»
 - модуль «Очистка»
+- модуль «Реконструкция»: заглушка для посетителей, ответ 503 и noindex
 - модуль «AI Agents» (`/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`)
 - интеграцию с The SEO Framework для Sitemap, IndexNow и AI Agents
 - безопасные обновления из GitHub Releases
@@ -57,6 +58,11 @@ Composer нужен только разработчику:
 - для публикации: push тега `vX.Y.Z` запускает workflow, который прикрепляет проверенный ZIP к GitHub Release.
 
 == Changelog ==
+
+= 0.14.0 =
+* Модуль «Реконструкция»: публичный сайт закрывается заглушкой. Ответ 503, Retry-After и noindex. Администратор видит сайт, вход и wp-admin остаются открытыми.
+* Внизу заглушки указаны версия плагина и ссылка на разработчика. В админке, пока модуль включён, висит предупреждение.
+* IndexNow не отправляет адреса, пока сайт закрыт.
 
 = 0.13.1 =
 * Login Attempts: белый список IP. Эти адреса не считаются и не блокируются.

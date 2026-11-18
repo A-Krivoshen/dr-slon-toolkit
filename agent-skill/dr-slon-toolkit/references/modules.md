@@ -1,6 +1,6 @@
 # Modules
 
-Twelve modules. Each switch lives in `dstk_settings.modules` and defaults to `false`. The wp-admin menu is **Dr.Slon Toolkit**. Labels there are Russian. `ExistingSlugRewriter` is part of transliteration, not a thirteenth module.
+Thirteen modules. Each switch lives in `dstk_settings.modules` and defaults to `false`. The wp-admin menu is **Dr.Slon Toolkit**. Labels there are Russian. `ExistingSlugRewriter` is part of transliteration, not an extra module.
 
 | Key | What it does | Extra settings |
 | --- | --- | --- |
@@ -16,6 +16,7 @@ Twelve modules. Each switch lives in `dstk_settings.modules` and defaults to `fa
 | `disable_comments` | Closes comments, pings, the REST routes, and the UI. | Module switch |
 | `cleanup` | Emoji, wp-embed, XML-RPC, extra `<head>` tags. | `cleanup.*` below |
 | `update_controls` | Auto-updates for core, plugins, themes, translations, and the emails. | `update_controls.*` below |
+| `maintenance` | Closes the public site with a reconstruction page: HTTP 503 and noindex. Administrators still see the site. | `maintenance.heading`, `maintenance.message` |
 
 ## Hide login
 
@@ -73,6 +74,14 @@ New post slugs, term slugs, and upload names are transliterated while the module
 Cleanup defaults when the module is on: emojis off, wp-embed off, extra head tags removed, XML-RPC left on (`cleanup.disable_xmlrpc` defaults false).
 
 Update controls default to core channel `minor`, with plugins, themes, translations, and email notices on. Allowed core modes are `all`, `minor`, and `off`. A stored `security` value is treated as `minor`. There is no separate security mode in the UI.
+
+## Maintenance
+
+Turn `maintenance` on only when the user asked to close the public site. Guests, feeds, sitemaps, and anonymous REST then receive the stub with status 503, `Retry-After`, and `noindex`. `robots.txt` stays open so a crawler can see the temporary status.
+
+An administrator with `manage_options` still sees the front end. `wp-login.php`, the hide-login slug, wp-admin, cron, and WP-CLI stay available. A user who can `edit_posts` can keep saving in the editor. XML-RPC is closed. IndexNow does not enqueue URLs while the module is on.
+
+The stub footer shows the plugin version and a link, “Плагин разработан ИП Кривошеин”, to https://krivoshein.site in a new window. While the module is on, every wp-admin screen shows a warning. There is a preview link on the settings screen for administrators.
 
 ## Comments
 

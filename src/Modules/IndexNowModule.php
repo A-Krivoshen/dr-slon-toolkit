@@ -162,6 +162,13 @@ final class IndexNowModule implements ModuleInterface
 
     public function submit_manual_url(string $url): array
     {
+        if (Settings::module_enabled('maintenance')) {
+            return [
+                'success' => false,
+                'message' => __('IndexNow не отправляет адреса, пока включена реконструкция.', 'dr-slon-toolkit'),
+            ];
+        }
+
         $url = $this->normalize_site_url($url);
 
         if ($url === '') {
@@ -229,6 +236,10 @@ final class IndexNowModule implements ModuleInterface
 
     private function enqueue_url(string $url, string $reason, int $post_id): void
     {
+        if (Settings::module_enabled('maintenance')) {
+            return;
+        }
+
         $url = $this->normalize_site_url($url);
 
         if ($url === '') {
@@ -295,6 +306,10 @@ final class IndexNowModule implements ModuleInterface
 
     public function process_queue(): void
     {
+        if (Settings::module_enabled('maintenance')) {
+            return;
+        }
+
         $claim = $this->claim_due_entries();
         $snapshot = $claim['entries'];
         $now = time();

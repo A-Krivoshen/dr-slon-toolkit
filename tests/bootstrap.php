@@ -918,6 +918,24 @@ if (! function_exists('esc_textarea')) {
     }
 }
 
+if (! function_exists('wp_create_nonce')) {
+    function wp_create_nonce(string $action = '-1'): string
+    {
+        return 'test-nonce-' . $action;
+    }
+}
+
+if (! function_exists('wp_verify_nonce')) {
+    function wp_verify_nonce(?string $nonce, string $action = '-1'): int|false
+    {
+        if (! is_string($nonce)) {
+            return false;
+        }
+
+        return hash_equals('test-nonce-' . $action, $nonce) ? 1 : false;
+    }
+}
+
 if (! function_exists('wp_nonce_field')) {
     function wp_nonce_field(string $action = '', string $name = '_wpnonce', bool $referer = true, bool $echo = true): string
     {

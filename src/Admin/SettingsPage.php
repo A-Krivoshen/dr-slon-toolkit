@@ -10,6 +10,7 @@ use DrSlon\Toolkit\Integrations\SeoFrameworkDetector;
 use DrSlon\Toolkit\Modules\ExistingSlugRewriter;
 use DrSlon\Toolkit\Modules\IndexNowModule;
 use DrSlon\Toolkit\Modules\LoginAttemptsModule;
+use DrSlon\Toolkit\Modules\MaintenanceModule;
 use DrSlon\Toolkit\Modules\RedirectManagerModule;
 
 final class SettingsPage
@@ -120,6 +121,21 @@ final class SettingsPage
             [$this, 'render_module_fields'],
             'dr-slon-toolkit',
             'dstk_modules_section'
+        );
+
+        add_settings_section(
+            'dstk_maintenance_section',
+            __('Параметры реконструкции', 'dr-slon-toolkit'),
+            [$this, 'render_maintenance_section_description'],
+            'dr-slon-toolkit'
+        );
+
+        add_settings_field(
+            'dstk_maintenance',
+            __('Текст заглушки', 'dr-slon-toolkit'),
+            [$this, 'render_maintenance_fields'],
+            'dr-slon-toolkit',
+            'dstk_maintenance_section'
         );
 
         add_settings_section(
@@ -387,6 +403,11 @@ final class SettingsPage
                 'description' => __('301/302 списком: откуда, куда и порядок перетаскиванием.', 'dr-slon-toolkit'),
                 'icon'        => 'dashicons-randomize',
             ],
+            'maintenance' => [
+                'title'       => __('Реконструкция', 'dr-slon-toolkit'),
+                'description' => __('Закрывает сайт заглушкой: ответ 503 и noindex. Администратор видит сайт.', 'dr-slon-toolkit'),
+                'icon'        => 'dashicons-admin-tools',
+            ],
         ];
         ?>
         <fieldset class="dstk-module-grid">
@@ -404,6 +425,50 @@ final class SettingsPage
             <?php endforeach; ?>
             <?php if (! $can_manage_update_controls) : ?>
                 <p class="description dstk-module-grid__notice"><?php echo esc_html__('Для управления обновлениями требуется право обновлять ядро WordPress.', 'dr-slon-toolkit'); ?></p>
+            <?php endif; ?>
+        </fieldset>
+        <?php
+    }
+
+    public function render_maintenance_section_description(): void
+    {
+        echo '<p>';
+        echo esc_html__('Пока модуль включён, гости видят заглушку вместо сайта. Ответ 503 и метка noindex, чтобы поисковик не забирал временную страницу в индекс. robots.txt не закрывается: краулер должен увидеть именно 503. Администратор смотрит сайт как обычно, вход и wp-admin остаются открытыми. Редактор в админке продолжает сохранять записи. IndexNow в это время адреса не отправляет. Если страницы кешируются, после выключения сбросьте кеш.', 'dr-slon-toolkit');
+        echo '</p>';
+    }
+
+    public function render_maintenance_fields(): void
+    {
+        $settings = Settings::all();
+        $maintenance = isset($settings['maintenance']) && is_array($settings['maintenance']) ? $settings['maintenance'] : [];
+        $heading = isset($maintenance['heading']) ? (string) $maintenance['heading'] : '';
+        $message = isset($maintenance['message']) ? (string) $maintenance['message'] : '';
+        ?>
+        <fieldset>
+            <input type="hidden" name="dstk_settings[maintenance][_submitted]" value="1">
+            <p>
+                <label for="dstk-maintenance-heading"><?php echo esc_html__('Заголовок', 'dr-slon-toolkit'); ?></label><br>
+                <input type="text" class="regular-text" id="dstk-maintenance-heading" name="dstk_settings[maintenance][heading]" value="<?php echo esc_attr($heading); ?>" maxlength="120">
+            </p>
+            <p>
+                <label for="dstk-maintenance-message"><?php echo esc_html__('Текст на странице', 'dr-slon-toolkit'); ?></label><br>
+                <textarea class="large-text" rows="3" id="dstk-maintenance-message" name="dstk_settings[maintenance][message]" maxlength="400"><?php echo esc_textarea($message); ?></textarea>
+            </p>
+            <?php if (Settings::module_enabled('maintenance')) : ?>
+                <?php
+                $preview_url = add_query_arg(
+                    [
+                        'dstk_maintenance_preview' => '1',
+                        '_wpnonce'                 => wp_create_nonce(MaintenanceModule::PREVIEW_ACTION),
+                    ],
+                    home_url('/')
+                );
+                ?>
+                <p>
+                    <a class="button" href="<?php echo esc_url($preview_url); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Посмотреть заглушку', 'dr-slon-toolkit'); ?></a>
+                </p>
+            <?php else : ?>
+                <p class="description"><?php echo esc_html__('Включите модуль и сохраните настройки. После этого здесь появится ссылка на просмотр заглушки.', 'dr-slon-toolkit'); ?></p>
             <?php endif; ?>
         </fieldset>
         <?php
@@ -1222,6 +1287,12 @@ final class SettingsPage
                     <h2><?php echo esc_html__('Транслитерация URL', 'dr-slon-toolkit'); ?></h2>
                     <p><?php echo esc_html__('Новые slug и имена файлов транслитерируются сразу. Уже опубликованные кириллические URL можно перевести кнопкой на странице настроек — со 301 со старых адресов.', 'dr-slon-toolkit'); ?></p>
                     <code>Главная страница → glavnaya-stranitsa</code>
+                </section>
+
+                <section class="dstk-help-card dstk-help-card--warning">
+                    <span class="dashicons dashicons-admin-tools" aria-hidden="true"></span>
+                    <h2><?php echo esc_html__('Реконструкция', 'dr-slon-toolkit'); ?></h2>
+                    <p><?php echo esc_html__('Модуль закрывает публичный сайт заглушкой. Гости, ленты и анонимный REST получают 503 и noindex. Администратор видит сайт, страница входа и wp-admin работают. Пока модуль включён, на каждой странице админки висит предупреждение.', 'dr-slon-toolkit'); ?></p>
                 </section>
 
                 <section class="dstk-help-card dstk-help-card--warning">

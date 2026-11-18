@@ -15,6 +15,7 @@ use DrSlon\Toolkit\Modules\ExistingSlugRewriter;
 use DrSlon\Toolkit\Modules\HideLoginModule;
 use DrSlon\Toolkit\Modules\IndexNowModule;
 use DrSlon\Toolkit\Modules\LoginAttemptsModule;
+use DrSlon\Toolkit\Modules\MaintenanceModule;
 use DrSlon\Toolkit\Modules\RedirectManagerModule;
 use DrSlon\Toolkit\Modules\RestApiControlModule;
 use DrSlon\Toolkit\Modules\SitemapModule;
@@ -69,6 +70,7 @@ final class Plugin
     private function register_modules(): void
     {
         $modules = [
+            'maintenance'      => new MaintenanceModule(),
             'transliteration'  => new TransliterationModule(),
             'disable_comments' => new DisableCommentsModule(),
             'cleanup'          => new CleanupModule(),

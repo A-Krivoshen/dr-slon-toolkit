@@ -68,6 +68,10 @@
   - Считает неудачные входы по хешу IP и временно блокирует адрес.
 - `RedirectManagerModule`
   - 301/302 по пути запроса, без rewrite flush. В админке список из двух полей; порядок — приоритет, правило можно выключить.
+- `MaintenanceModule`
+  - Пока модуль включён, гости получают заглушку «Сайт на реконструкции»: HTTP 503, `Retry-After`, `X-Robots-Tag: noindex` и такая же meta в HTML.
+  - Администратор видит сайт. Вход (`wp-login.php` и скрытый slug), wp-admin, cron и WP-CLI не закрываются. Редактор сохраняет записи через REST. XML-RPC и анонимный REST получают 503.
+  - В подвале заглушки версия плагина и ссылка на разработчика. В админке висит предупреждение.
 - `AiAgentsModule`
   - Отдаёт machine-readable документы `/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md` и опциональный pulse.
   - Не пишет файлы на диск; кеш версионируется через `dstk_ai_cache_version`.
@@ -87,6 +91,7 @@
   - `yandex_captcha` — клиентский/серверный ключи и язык виджета.
   - `login_attempts` — порог, окно и длительность блокировки.
   - `redirects.rules` — список from/to/status/enabled. Порядок записей — приоритет.
+  - `maintenance` — заголовок и текст заглушки. Пустые значения возвращаются к тексту по умолчанию.
 - `src/Core/DiscoveryIndexability`, `UrlNormalizer`, `CacheVersion`, `Transliterator` — индексация, URL, кеш и кириллица→латиница.
 - Опция версии: `dstk_version`
 - `dstk_translit_redirects` — 301 со старых кириллических путей после массового перевода slug.

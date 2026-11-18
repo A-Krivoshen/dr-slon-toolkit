@@ -6,9 +6,10 @@ description: >-
   install and configures its modules. Use when the user asks to install, update,
   or set up Dr.Slon Toolkit: hide wp-login, limit REST, IndexNow, sitemap,
   redirects, transliteration, comments, cleanup, update policy, Yandex
-  SmartCaptcha, login lockouts, or AI discovery files (ai.txt, llms.txt, agents.md).
+  SmartCaptcha, login lockouts, a public under-construction page, or AI
+  discovery files (ai.txt, llms.txt, agents.md).
 summary: Install the latest Dr.Slon Toolkit release and configure its WordPress modules.
-version: "1.0.1"
+version: "1.1.0"
 tags: [wordpress, security, maintenance, seo, indexnow, redirects]
 keywords: [wp-cli, hide-login, indexnow, yandex-smartcaptcha, llms.txt, sitemap]
 use_cases:
@@ -28,7 +29,7 @@ Install and configure the free WordPress plugin Dr.Slon Toolkit on the site the 
 
 - WordPress 6.6 or newer and PHP 8.1 or newer, on the site WP-CLI uses.
 - WP-CLI, bash, curl, PHP 8.1 or newer in the CLI, and Info-ZIP `unzip`.
-- Minimum verified plugin version: 0.13.1. `scripts/install.sh` always installs the latest stable GitHub Release asset `dr-slon-toolkit-<version>.zip`. Run the script. Do not type a version or a download URL from memory.
+- Minimum verified plugin version: 0.14.0. `scripts/install.sh` always installs the latest stable GitHub Release asset `dr-slon-toolkit-<version>.zip`. Run the script. Do not type a version or a download URL from memory.
 - A clear yes from the user for that site. Ask which site when they did not name one.
 
 ## Run the scripts as shipped
@@ -59,6 +60,8 @@ The scripts send HTTP GET requests only. Nothing is piped into a shell.
 ## Configure
 
 Read `references/modules.md` before changing settings. Copy `templates/site-plan.md` and fill in only what the user decided. Change settings in the **Dr.Slon Toolkit** wp-admin screen. The option key is `dstk_settings`. An edit through WP-CLI must merge into the saved option and leave every unrelated key in place.
+
+Do not enable `maintenance` unless the user asked to close the public site. That switch returns 503 and `noindex` to visitors. Administrators still see the site.
 
 Hide-login recovery is in `references/faq.md`. The emergency switch is `KRV_DSTK_DISABLE_HIDE_LOGIN`. Redirect lines use `templates/redirects.example.txt`.
 
