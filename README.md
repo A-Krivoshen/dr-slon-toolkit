@@ -6,7 +6,7 @@
 
 **[Скачать dr-slon-toolkit-0.15.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
-Новости: [0.14.0 в блоге](https://krivoshein.site/dr-slon-toolkit-0-14-0-rekonstruktsiya/) · [0.13.1](https://krivoshein.site/dr-slon-toolkit-0-13-1-belyy-spisok-ip/) · [0.13.0](https://krivoshein.site/dr-slon-toolkit-0-13-0-spisok-redirektov/) · [0.12.2](https://krivoshein.site/dr-slon-toolkit-0-12-2-kapcha-bolshe-ne-propuskaet-vernyy-parol/)
+Новости: [0.15.0 в блоге](https://krivoshein.site/dr-slon-toolkit-0-15-0-google-recaptcha/) · [0.14.0](https://krivoshein.site/dr-slon-toolkit-0-14-0-rekonstruktsiya/) · [0.13.1](https://krivoshein.site/dr-slon-toolkit-0-13-1-belyy-spisok-ip/) · [0.13.0](https://krivoshein.site/dr-slon-toolkit-0-13-0-spisok-redirektov/)
 
 Карточка проекта: [Dr.Slon Toolkit](https://krivoshein.site/project/dr-slon-toolkit-modulnyy-plagin-dlya-obsluzhivaniya-klientskih-saytov/)
 
