@@ -39,12 +39,38 @@ body.login .dstk-login-captcha .smart-captcha {
     min-height: 102px;
 }
 
+body.login.dstk-has-google-captcha #login {
+    width: 360px;
+}
+
+body.login.dstk-has-google-captcha #loginform {
+    display: flow-root;
+    overflow: visible;
+}
+
+body.login.dstk-has-google-captcha #loginform::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+body.login.dstk-has-google-captcha #loginform p.submit {
+    min-height: 36px;
+}
+
+body.login .dstk-login-captcha .g-recaptcha {
+    width: 304px;
+    max-width: 100%;
+    min-height: 78px;
+}
+
 body.login .dstk-login-captcha iframe {
     max-width: 100%;
 }
 
 @media screen and (max-width: 380px) {
-    body.login.dstk-has-yandex-captcha #login {
+    body.login.dstk-has-yandex-captcha #login,
+    body.login.dstk-has-google-captcha #login {
         width: auto;
         margin-right: 12px;
         margin-left: 12px;

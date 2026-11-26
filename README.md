@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.14.0 — модульный плагин WordPress. Заглушка «На реконструкции» отдаёт 503 и noindex. ZIP из GitHub Releases, без Composer.">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Dr.Slon Toolkit 0.15.0 — модульный плагин WordPress. На входе Яндекс SmartCaptcha или Google reCAPTCHA v2. ZIP из GitHub Releases, без Composer.">
 </p>
 
-Модульный плагин для клиентских WordPress-сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация уже существующих URL, капча Яндекса. На сервере клиента Composer не нужен.
+Модульный плагин для клиентских WordPress-сайтов: скрытый вход, REST, IndexNow, sitemap, транслитерация уже существующих URL, капча на входе (Яндекс или Google). На сервере клиента Composer не нужен.
 
-**[Скачать dr-slon-toolkit-0.14.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
+**[Скачать dr-slon-toolkit-0.15.0.zip](https://github.com/A-Krivoshen/dr-slon-toolkit/releases/latest)** · не кнопку **Code → Download ZIP**
 
 Новости: [0.14.0 в блоге](https://krivoshein.site/dr-slon-toolkit-0-14-0-rekonstruktsiya/) · [0.13.1](https://krivoshein.site/dr-slon-toolkit-0-13-1-belyy-spisok-ip/) · [0.13.0](https://krivoshein.site/dr-slon-toolkit-0-13-0-spisok-redirektov/) · [0.12.2](https://krivoshein.site/dr-slon-toolkit-0-12-2-kapcha-bolshe-ne-propuskaet-vernyy-parol/)
 
@@ -30,7 +30,7 @@ WordPress 6.6+, PHP 8.1+.
 | Модуль | Что делает |
 | --- | --- |
 | **Скрытый вход** | 404 на прямой `wp-login.php` (кроме reset/recovery). Вход по slug, например `/my-login/`. Аварийно: `define('KRV_DSTK_DISABLE_HIDE_LOGIN', true);` в `wp-config.php`. |
-| **Yandex SmartCaptcha** | Капча на форме входа, в том числе на скрытом slug. Виджет и кнопка «Войти» вписаны в форму wp-login. Отказ не затирается проверкой пароля. Ключи из Yandex Cloud. Не трогает reset password и XML-RPC. |
+| **Капча на входе** | Один виджет на форме входа, в том числе на скрытом slug: Яндекс SmartCaptcha или Google reCAPTCHA v2 (галочка). Кнопка «Войти» остаётся в форме. Отказ не затирается проверкой пароля. Не трогает reset password и XML-RPC. |
 | **Login Attempts** | Блокирует IP после серии неверных паролей. Верный пароль блокировку не снимает. В опции хранится хеш, не сырой адрес. |
 | **REST API Control** | Всем / только авторизованным / whitelist. Системный allowlist WordPress нельзя выключить. |
 | **IndexNow** | Ручная и автоматическая отправка URL через очередь WP-Cron. Ключ `/<key>.txt` без файла на диске. Учитывает noindex/canonical The SEO Framework. |

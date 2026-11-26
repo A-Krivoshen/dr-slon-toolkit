@@ -6,6 +6,7 @@ namespace DrSlon\Toolkit\Modules;
 
 use DrSlon\Toolkit\Core\ModuleInterface;
 use DrSlon\Toolkit\Core\Settings;
+use DrSlon\Toolkit\Integrations\GoogleRecaptcha;
 use DrSlon\Toolkit\Integrations\YandexSmartCaptcha;
 use WP_Error;
 use WP_User;
@@ -14,9 +15,12 @@ final class YandexCaptchaModule implements ModuleInterface
 {
     private YandexSmartCaptcha $captcha;
 
-    public function __construct(?YandexSmartCaptcha $captcha = null)
+    private GoogleRecaptcha $google;
+
+    public function __construct(?YandexSmartCaptcha $captcha = null, ?GoogleRecaptcha $google = null)
     {
         $this->captcha = $captcha ?? new YandexSmartCaptcha();
+        $this->google = $google ?? new GoogleRecaptcha();
     }
 
     public function register(): void
@@ -45,13 +49,25 @@ final class YandexCaptchaModule implements ModuleInterface
             [],
             DSTK_VERSION
         );
-        wp_enqueue_script(
-            'dstk-yandex-smartcaptcha',
-            YandexSmartCaptcha::SCRIPT_URL,
-            [],
-            false,
-            true
-        );
+
+        if ($this->provider() === 'google') {
+            wp_enqueue_script(
+                'dstk-google-recaptcha',
+                add_query_arg(['hl' => $this->language()], GoogleRecaptcha::SCRIPT_URL),
+                [],
+                false,
+                true
+            );
+        } else {
+            wp_enqueue_script(
+                'dstk-yandex-smartcaptcha',
+                YandexSmartCaptcha::SCRIPT_URL,
+                [],
+                false,
+                true
+            );
+        }
+
         add_filter('script_loader_tag', [$this, 'defer_script'], 10, 2);
     }
 
@@ -61,14 +77,16 @@ final class YandexCaptchaModule implements ModuleInterface
      */
     public function body_class(array $classes): array
     {
-        $classes[] = 'dstk-has-yandex-captcha';
+        $classes[] = $this->provider() === 'google' ? 'dstk-has-google-captcha' : 'dstk-has-yandex-captcha';
 
         return $classes;
     }
 
     public function defer_script(string $tag, string $handle): string
     {
-        if ($handle !== 'dstk-yandex-smartcaptcha' || str_contains($tag, ' defer')) {
+        $captcha_handles = ['dstk-yandex-smartcaptcha', 'dstk-google-recaptcha'];
+
+        if (! in_array($handle, $captcha_handles, true) || str_contains($tag, ' defer')) {
             return $tag;
         }
 
@@ -77,10 +95,18 @@ final class YandexCaptchaModule implements ModuleInterface
 
     public function render_widget(): void
     {
+        echo '<div class="dstk-login-captcha">';
+
+        if ($this->provider() === 'google') {
+            echo '<div class="g-recaptcha" data-sitekey="' . esc_attr($this->google_site_key()) . '"></div>';
+            echo '</div>';
+
+            return;
+        }
+
         $key = $this->client_key();
         $language = $this->language();
 
-        echo '<div class="dstk-login-captcha">';
         echo '<div class="smart-captcha" data-sitekey="' . esc_attr($key) . '" data-hl="' . esc_attr($language) . '"></div>';
         echo '</div>';
     }
@@ -95,18 +121,28 @@ final class YandexCaptchaModule implements ModuleInterface
             return $user;
         }
 
-        $result = $this->captcha->verify(
-            $this->server_key(),
-            $this->captcha->posted_token(),
-            $this->request_ip()
-        );
+        if ($this->provider() === 'google') {
+            $result = $this->google->verify(
+                $this->google_secret_key(),
+                $this->google->posted_token(),
+                $this->request_ip()
+            );
+            $error_code = 'dstk_google_captcha';
+        } else {
+            $result = $this->captcha->verify(
+                $this->server_key(),
+                $this->captcha->posted_token(),
+                $this->request_ip()
+            );
+            $error_code = 'dstk_yandex_captcha';
+        }
 
         if (! empty($result['ok'])) {
             return $user;
         }
 
         return new WP_Error(
-            'dstk_yandex_captcha',
+            $error_code,
             __('Подтвердите, что вы не робот.', 'dr-slon-toolkit')
         );
     }
@@ -122,12 +158,22 @@ final class YandexCaptchaModule implements ModuleInterface
         }
 
         echo '<div class="notice notice-warning"><p>';
-        echo esc_html__('Yandex SmartCaptcha включена, но не работает: укажите клиентский и серверный ключи.', 'dr-slon-toolkit');
+
+        if ($this->provider() === 'google') {
+            echo esc_html__('Google reCAPTCHA включена, но не работает: укажите ключ сайта и секретный ключ.', 'dr-slon-toolkit');
+        } else {
+            echo esc_html__('Yandex SmartCaptcha включена, но не работает: укажите клиентский и серверный ключи.', 'dr-slon-toolkit');
+        }
+
         echo '</p></div>';
     }
 
     public function is_runtime_enabled(): bool
     {
+        if ($this->provider() === 'google') {
+            return $this->google_site_key() !== '' && $this->google_secret_key() !== '';
+        }
+
         return $this->client_key() !== '' && $this->server_key() !== '';
     }
 
@@ -161,28 +207,48 @@ final class YandexCaptchaModule implements ModuleInterface
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '';
     }
 
+    private function provider(): string
+    {
+        $provider = (string) ($this->captcha_settings()['provider'] ?? 'yandex');
+
+        return $provider === 'google' ? 'google' : 'yandex';
+    }
+
     private function client_key(): string
     {
-        $settings = Settings::all();
-        $captcha = isset($settings['yandex_captcha']) && is_array($settings['yandex_captcha']) ? $settings['yandex_captcha'] : [];
-
-        return isset($captcha['client_key']) ? (string) $captcha['client_key'] : '';
+        return (string) ($this->captcha_settings()['client_key'] ?? '');
     }
 
     private function server_key(): string
     {
-        $settings = Settings::all();
-        $captcha = isset($settings['yandex_captcha']) && is_array($settings['yandex_captcha']) ? $settings['yandex_captcha'] : [];
+        return (string) ($this->captcha_settings()['server_key'] ?? '');
+    }
 
-        return isset($captcha['server_key']) ? (string) $captcha['server_key'] : '';
+    private function google_site_key(): string
+    {
+        return (string) ($this->captcha_settings()['google_site_key'] ?? '');
+    }
+
+    private function google_secret_key(): string
+    {
+        return (string) ($this->captcha_settings()['google_secret_key'] ?? '');
     }
 
     private function language(): string
     {
-        $settings = Settings::all();
-        $captcha = isset($settings['yandex_captcha']) && is_array($settings['yandex_captcha']) ? $settings['yandex_captcha'] : [];
-        $language = isset($captcha['language']) ? (string) $captcha['language'] : 'ru';
+        $language = (string) ($this->captcha_settings()['language'] ?? 'ru');
 
         return in_array($language, ['ru', 'en'], true) ? $language : 'ru';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function captcha_settings(): array
+    {
+        $settings = Settings::all();
+        $captcha = isset($settings['yandex_captcha']) && is_array($settings['yandex_captcha']) ? $settings['yandex_captcha'] : [];
+
+        return $captcha;
     }
 }

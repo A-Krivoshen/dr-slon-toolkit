@@ -82,9 +82,12 @@ final class Settings
                 'exclude_noindex'  => true,
             ],
             'yandex_captcha' => [
-                'client_key' => '',
-                'server_key' => '',
-                'language'   => 'ru',
+                'provider'          => 'yandex',
+                'client_key'        => '',
+                'server_key'        => '',
+                'language'          => 'ru',
+                'google_site_key'   => '',
+                'google_secret_key' => '',
             ],
             'login_attempts' => [
                 'max_attempts'    => 5,
@@ -343,9 +346,24 @@ final class Settings
 
         $client_key = self::sanitize_captcha_key(isset($yandex_captcha['client_key']) ? (string) $yandex_captcha['client_key'] : '');
         $server_key = self::sanitize_captcha_key(isset($yandex_captcha['server_key']) ? (string) $yandex_captcha['server_key'] : '');
+        $google_site_key = self::sanitize_captcha_key(isset($yandex_captcha['google_site_key']) ? (string) $yandex_captcha['google_site_key'] : '');
+        $google_secret_key = self::sanitize_captcha_key(isset($yandex_captcha['google_secret_key']) ? (string) $yandex_captcha['google_secret_key'] : '');
+        $saved_captcha = isset($saved_settings['yandex_captcha']) && is_array($saved_settings['yandex_captcha'])
+            ? $saved_settings['yandex_captcha']
+            : [];
 
-        if ($server_key === '' && isset($saved_settings['yandex_captcha']) && is_array($saved_settings['yandex_captcha'])) {
-            $server_key = self::sanitize_captcha_key((string) ($saved_settings['yandex_captcha']['server_key'] ?? ''));
+        if ($server_key === '') {
+            $server_key = self::sanitize_captcha_key((string) ($saved_captcha['server_key'] ?? ''));
+        }
+
+        if ($google_secret_key === '') {
+            $google_secret_key = self::sanitize_captcha_key((string) ($saved_captcha['google_secret_key'] ?? ''));
+        }
+
+        $captcha_provider = isset($yandex_captcha['provider']) ? sanitize_key((string) $yandex_captcha['provider']) : 'yandex';
+
+        if (! in_array($captcha_provider, ['yandex', 'google'], true)) {
+            $captcha_provider = 'yandex';
         }
 
         $captcha_language = isset($yandex_captcha['language']) ? sanitize_key((string) $yandex_captcha['language']) : 'ru';
@@ -450,9 +468,12 @@ final class Settings
                 'exclude_noindex'  => array_key_exists('exclude_noindex', $ai_agents) ? ! empty($ai_agents['exclude_noindex']) : ($ai_submitted ? false : (bool) $defaults['ai_agents']['exclude_noindex']),
             ],
             'yandex_captcha' => [
-                'client_key' => $client_key,
-                'server_key' => $server_key,
-                'language'   => $captcha_language,
+                'provider'          => $captcha_provider,
+                'client_key'        => $client_key,
+                'server_key'        => $server_key,
+                'language'          => $captcha_language,
+                'google_site_key'   => $google_site_key,
+                'google_secret_key' => $google_secret_key,
             ],
             'login_attempts' => [
                 'max_attempts'    => max(1, min(20, $max_attempts)),

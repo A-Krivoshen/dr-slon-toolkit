@@ -6,12 +6,12 @@ description: >-
   install and configures its modules. Use when the user asks to install, update,
   or set up Dr.Slon Toolkit: hide wp-login, limit REST, IndexNow, sitemap,
   redirects, transliteration, comments, cleanup, update policy, Yandex
-  SmartCaptcha, login lockouts, a public under-construction page, or AI
+  SmartCaptcha or Google reCAPTCHA v2 on the login form, login lockouts, a public under-construction page, or AI
   discovery files (ai.txt, llms.txt, agents.md).
 summary: Install the latest Dr.Slon Toolkit release and configure its WordPress modules.
-version: "1.1.0"
+version: "1.2.0"
 tags: [wordpress, security, maintenance, seo, indexnow, redirects]
-keywords: [wp-cli, hide-login, indexnow, yandex-smartcaptcha, llms.txt, sitemap]
+keywords: [wp-cli, hide-login, indexnow, yandex-smartcaptcha, recaptcha, llms.txt, sitemap]
 use_cases:
   - Install or update Dr.Slon Toolkit from the latest GitHub Release.
   - Enable hide-login, REST limits, redirects, or AI files with the owner's consent.
@@ -29,7 +29,7 @@ Install and configure the free WordPress plugin Dr.Slon Toolkit on the site the 
 
 - WordPress 6.6 or newer and PHP 8.1 or newer, on the site WP-CLI uses.
 - WP-CLI, bash, curl, PHP 8.1 or newer in the CLI, and Info-ZIP `unzip`.
-- Minimum verified plugin version: 0.14.0. `scripts/install.sh` always installs the latest stable GitHub Release asset `dr-slon-toolkit-<version>.zip`. Run the script. Do not type a version or a download URL from memory.
+- Minimum verified plugin version: 0.15.0. `scripts/install.sh` always installs the latest stable GitHub Release asset `dr-slon-toolkit-<version>.zip`. Run the script. Do not type a version or a download URL from memory.
 - A clear yes from the user for that site. Ask which site when they did not name one.
 
 ## Run the scripts as shipped

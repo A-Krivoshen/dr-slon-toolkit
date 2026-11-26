@@ -18,9 +18,9 @@ Dr.Slon Toolkit is a free modular WordPress plugin for client sites. This skill 
 
 The release asset is `dr-slon-toolkit-<version>.zip`. The installer does not pin a version and does not use the GitHub source archive from Code → Download ZIP.
 
-Thirteen modules, each off until enabled: hidden login with an emergency switch, Yandex SmartCaptcha on the login form, login lockouts with an IP allow list, REST API control, IndexNow, sitemap, AI discovery files (`/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`), redirects, transliteration, comments, cleanup, update controls, and a public reconstruction page (HTTP 503 and noindex; administrators still see the site). When The SEO Framework is active, the toolkit does not publish a second sitemap.
+Thirteen modules, each off until enabled: hidden login with an emergency switch, login captcha (Yandex SmartCaptcha or Google reCAPTCHA v2 checkbox), login lockouts with an IP allow list, REST API control, IndexNow, sitemap, AI discovery files (`/ai.txt`, `/llms.txt`, `/llms-full.txt`, `/agents.md`), redirects, transliteration, comments, cleanup, update controls, and a public reconstruction page (HTTP 503 and noindex; administrators still see the site). When The SEO Framework is active, the toolkit does not publish a second sitemap.
 
-Instructions were checked against plugin 0.14.0. Later releases still install through the same latest-release path.
+Instructions were checked against plugin 0.15.0. Later releases still install through the same latest-release path.
 
 The plugin is GPL-2.0-or-later. The site does not need Composer.
 

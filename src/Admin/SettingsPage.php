@@ -230,7 +230,7 @@ final class SettingsPage
 
         add_settings_section(
             'dstk_yandex_captcha_section',
-            __('Параметры Yandex SmartCaptcha', 'dr-slon-toolkit'),
+            __('Капча на форме входа', 'dr-slon-toolkit'),
             [$this, 'render_yandex_captcha_section_description'],
             'dr-slon-toolkit'
         );
@@ -389,8 +389,8 @@ final class SettingsPage
                 'icon'        => 'dashicons-format-aside',
             ],
             'yandex_captcha' => [
-                'title'       => __('Yandex SmartCaptcha', 'dr-slon-toolkit'),
-                'description' => __('Капча Яндекса на форме входа в админку. Нужны клиентский и серверный ключи.', 'dr-slon-toolkit'),
+                'title'       => __('Капча на входе', 'dr-slon-toolkit'),
+                'description' => __('Один провайдер на форме входа: Яндекс SmartCaptcha или Google reCAPTCHA v2.', 'dr-slon-toolkit'),
                 'icon'        => 'dashicons-yes-alt',
             ],
             'login_attempts' => [
@@ -789,7 +789,11 @@ final class SettingsPage
     public function render_yandex_captcha_section_description(): void
     {
         echo '<p>';
-        echo esc_html__('Капча показывается на форме входа (в том числе на скрытом URL). Ключи создаются в Yandex Cloud SmartCaptcha. Восстановление пароля капчей не закрывается.', 'dr-slon-toolkit');
+        echo esc_html__('На форме входа один виджет: Яндекс SmartCaptcha или Google reCAPTCHA v2, галочка «Я не робот». Скрытый URL входа тоже закрыт. Восстановление пароля и XML-RPC капча не закрывает.', 'dr-slon-toolkit');
+        echo '</p><p>';
+        echo esc_html__('Скрипт Google грузится с google.com. Если с сети администратора Google не открывается, токена не будет и форма входа не пустит. Для таких сайтов оставьте Яндекс.', 'dr-slon-toolkit');
+        echo '</p><p>';
+        echo esc_html__('Если токен отправлен, а сервис капчи не ответил, вход не блокируется. Без токена верный пароль не проходит.', 'dr-slon-toolkit');
         echo '</p>';
     }
 
@@ -797,20 +801,24 @@ final class SettingsPage
     {
         $settings = Settings::all();
         $captcha = isset($settings['yandex_captcha']) && is_array($settings['yandex_captcha']) ? $settings['yandex_captcha'] : [];
+        $provider = (string) ($captcha['provider'] ?? 'yandex');
         $client_key = (string) ($captcha['client_key'] ?? '');
         $has_server = (string) ($captcha['server_key'] ?? '') !== '';
+        $google_site_key = (string) ($captcha['google_site_key'] ?? '');
+        $has_google_secret = (string) ($captcha['google_secret_key'] ?? '') !== '';
         $language = (string) ($captcha['language'] ?? 'ru');
+
+        if (! in_array($provider, ['yandex', 'google'], true)) {
+            $provider = 'yandex';
+        }
         ?>
         <fieldset>
             <p>
-                <label for="dstk-yandex-client"><strong><?php echo esc_html__('Клиентский ключ', 'dr-slon-toolkit'); ?></strong></label><br>
-                <input id="dstk-yandex-client" class="regular-text" type="text" name="dstk_settings[yandex_captcha][client_key]" value="<?php echo esc_attr($client_key); ?>" autocomplete="off">
-            </p>
-            <p>
-                <label for="dstk-yandex-server"><strong><?php echo esc_html__('Серверный ключ', 'dr-slon-toolkit'); ?></strong></label><br>
-                <input id="dstk-yandex-server" class="regular-text" type="password" name="dstk_settings[yandex_captcha][server_key]" value="" autocomplete="new-password">
-                <br>
-                <span class="description"><?php echo esc_html($has_server ? __('Ключ сохранён. Оставьте поле пустым, чтобы не менять его.', 'dr-slon-toolkit') : __('Вставьте серверный ключ из консоли Yandex Cloud.', 'dr-slon-toolkit')); ?></span>
+                <label for="dstk-captcha-provider"><strong><?php echo esc_html__('Провайдер', 'dr-slon-toolkit'); ?></strong></label><br>
+                <select id="dstk-captcha-provider" name="dstk_settings[yandex_captcha][provider]">
+                    <option value="yandex" <?php selected($provider, 'yandex'); ?>><?php echo esc_html__('Yandex SmartCaptcha', 'dr-slon-toolkit'); ?></option>
+                    <option value="google" <?php selected($provider, 'google'); ?>><?php echo esc_html__('Google reCAPTCHA v2', 'dr-slon-toolkit'); ?></option>
+                </select>
             </p>
             <p>
                 <label for="dstk-yandex-hl"><strong><?php echo esc_html__('Язык виджета', 'dr-slon-toolkit'); ?></strong></label><br>
@@ -818,6 +826,28 @@ final class SettingsPage
                     <option value="ru" <?php selected($language, 'ru'); ?>><?php echo esc_html__('Русский', 'dr-slon-toolkit'); ?></option>
                     <option value="en" <?php selected($language, 'en'); ?>><?php echo esc_html__('English', 'dr-slon-toolkit'); ?></option>
                 </select>
+            </p>
+            <p>
+                <label for="dstk-yandex-client"><strong><?php echo esc_html__('Клиентский ключ Яндекса', 'dr-slon-toolkit'); ?></strong></label><br>
+                <input id="dstk-yandex-client" class="regular-text" type="text" name="dstk_settings[yandex_captcha][client_key]" value="<?php echo esc_attr($client_key); ?>" autocomplete="off">
+            </p>
+            <p>
+                <label for="dstk-yandex-server"><strong><?php echo esc_html__('Серверный ключ Яндекса', 'dr-slon-toolkit'); ?></strong></label><br>
+                <input id="dstk-yandex-server" class="regular-text" type="password" name="dstk_settings[yandex_captcha][server_key]" value="" autocomplete="new-password">
+                <br>
+                <span class="description"><?php echo esc_html($has_server ? __('Ключ сохранён. Оставьте поле пустым, чтобы не менять его.', 'dr-slon-toolkit') : __('Вставьте серверный ключ из консоли Yandex Cloud.', 'dr-slon-toolkit')); ?></span>
+            </p>
+            <p>
+                <label for="dstk-google-site"><strong><?php echo esc_html__('Ключ сайта Google', 'dr-slon-toolkit'); ?></strong></label><br>
+                <input id="dstk-google-site" class="regular-text" type="text" name="dstk_settings[yandex_captcha][google_site_key]" value="<?php echo esc_attr($google_site_key); ?>" autocomplete="off">
+                <br>
+                <span class="description"><?php echo esc_html__('Ключ типа checkbox, бывшая reCAPTCHA v2. Score-ключ (v3) сюда не подходит.', 'dr-slon-toolkit'); ?></span>
+            </p>
+            <p>
+                <label for="dstk-google-secret"><strong><?php echo esc_html__('Секретный ключ Google', 'dr-slon-toolkit'); ?></strong></label><br>
+                <input id="dstk-google-secret" class="regular-text" type="password" name="dstk_settings[yandex_captcha][google_secret_key]" value="" autocomplete="new-password">
+                <br>
+                <span class="description"><?php echo esc_html($has_google_secret ? __('Ключ сохранён. Оставьте поле пустым, чтобы не менять его.', 'dr-slon-toolkit') : __('Вставьте секретный ключ той же пары checkbox.', 'dr-slon-toolkit')); ?></span>
             </p>
         </fieldset>
         <?php
@@ -1335,8 +1365,8 @@ final class SettingsPage
 
                 <section class="dstk-help-card">
                     <span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-                    <h2><?php echo esc_html__('Yandex SmartCaptcha', 'dr-slon-toolkit'); ?></h2>
-                    <p><?php echo esc_html__('Работает на форме входа, в том числе на скрытом slug. Виджет вписан в стандартную ширину wp-login. Ключи из Yandex Cloud. Если сервис Яндекса недоступен, вход не блокируется (fail-open). XML-RPC и восстановление пароля капчей не закрываются.', 'dr-slon-toolkit'); ?></p>
+                    <h2><?php echo esc_html__('Капча на входе', 'dr-slon-toolkit'); ?></h2>
+                    <p><?php echo esc_html__('Один виджет на форме входа, в том числе на скрытом slug: Яндекс SmartCaptcha или Google reCAPTCHA v2 (галочка). Виджет вписан в ширину wp-login. Если сервис не ответил на уже отправленный токен, вход не блокируется. Без токена верный пароль не проходит. XML-RPC и восстановление пароля капчей не закрываются.', 'dr-slon-toolkit'); ?></p>
                 </section>
 
                 <section class="dstk-help-card dstk-help-card--warning">

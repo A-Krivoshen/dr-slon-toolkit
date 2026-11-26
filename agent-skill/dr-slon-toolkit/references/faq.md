@@ -24,7 +24,7 @@ The copy on disk is a GitHub source archive or a partial tree. `composer.json` o
 
 ## Captcha rejects a correct password
 
-The captcha failure is applied after WordPress checks the password. Ask the person to complete the checkbox. If the widget is missing, both Yandex keys are required. The module does not protect password reset or XML-RPC.
+The captcha failure is applied after WordPress checks the password. Ask the person to complete the checkbox. If the widget is missing, both keys of the selected provider are required (Yandex client and server, or Google site key and secret). Google reCAPTCHA here is the v2 checkbox, not a score key. The module does not protect password reset or XML-RPC. If Google's script does not load, there is no token and the form will not sign anyone in. Switch the provider back to Yandex in that case.
 
 ## An office IP is locked out
 

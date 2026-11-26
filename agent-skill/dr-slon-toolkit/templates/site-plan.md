@@ -11,7 +11,7 @@ Enable only the checked modules. Unchecked stays off.
 
 - [ ] maintenance — closes the public site (503 and noindex). Leave off unless the user asked.
 - [ ] hide_login — slug:
-- [ ] yandex_captcha — keys entered in wp-admin, not here
+- [ ] yandex_captcha — provider yandex or google; keys entered in wp-admin, not here
 - [ ] login_attempts — whitelist edited in wp-admin, not here
 - [ ] rest_api_control — mode: allow_all
 - [ ] indexnow

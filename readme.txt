@@ -4,7 +4,7 @@ Tags: toolkit, maintenance, security, transliteration, indexnow
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.14.0
+Stable tag: 0.15.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,6 +58,11 @@ Composer нужен только разработчику:
 - для публикации: push тега `vX.Y.Z` запускает workflow, который прикрепляет проверенный ZIP к GitHub Release.
 
 == Changelog ==
+
+= 0.15.0 =
+* На форме входа можно выбрать Яндекс SmartCaptcha или Google reCAPTCHA v2 (галочка «Я не робот»). Одновременно работает один провайдер.
+* Уже включённый модуль остаётся на Яндексе, ключи не сбрасываются. Секретный ключ Google, как и серверный ключ Яндекса, не стирается пустым полем.
+* Score-ключ (бывшая v3) не используется. Восстановление пароля и XML-RPC по-прежнему без капчи.
 
 = 0.14.0 =
 * Модуль «Реконструкция»: публичный сайт закрывается заглушкой. Ответ 503, Retry-After и noindex. Администратор видит сайт, вход и wp-admin остаются открытыми.

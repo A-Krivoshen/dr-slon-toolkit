@@ -5,7 +5,7 @@ Thirteen modules. Each switch lives in `dstk_settings.modules` and defaults to `
 | Key | What it does | Extra settings |
 | --- | --- | --- |
 | `hide_login` | Serves login on a slug and returns 404 for direct `wp-login.php`, except WordPress recovery mode. | `hide_login.slug`, default `login` |
-| `yandex_captcha` | Yandex SmartCaptcha on the login form, including the custom slug. | `yandex_captcha.client_key`, `server_key`, `language` (`ru`) |
+| `yandex_captcha` | One login captcha: Yandex SmartCaptcha or Google reCAPTCHA v2 checkbox, including the custom slug. | `provider` (`yandex` or `google`), Yandex `client_key` / `server_key`, Google `google_site_key` / `google_secret_key`, `language` (`ru`) |
 | `login_attempts` | Locks an IP after repeated failed logins. A correct password does not clear the lock. | `max_attempts` 5, `window_minutes` 15, `lockout_minutes` 15, `whitelist` |
 | `rest_api_control` | REST open, authenticated only, or whitelist. | `rest_api.mode`, route and namespace lists, `trusted_capability` |
 | `indexnow` | Manual and WP-Cron URL submission. The key is served at `/<key>.txt` with no file on disk. | `indexnow.key`, `endpoint`, `post_types` |
@@ -32,9 +32,13 @@ define('KRV_DSTK_DISABLE_HIDE_LOGIN', true);
 
 When that constant is true, the module registers no hooks, so `wp-login.php` works again even if the module switch is still on. Remove the constant after the slug is fixed. Keep a logged-in browser open while testing the new URL in a private window.
 
-## Yandex SmartCaptcha
+## Login captcha
 
-Both keys come from Yandex Cloud. With either key empty, the module shows a warning and does not render the widget. The check runs on `authenticate` at priority 100, so a failed captcha stays failed after WordPress accepts the password. It runs for the login action only. Password reset, XML-RPC, and REST are outside it. Store the keys only in the admin fields.
+The module key stays `yandex_captcha`. `provider` is `yandex` or `google`. A missing provider stays `yandex`, so an upgrade does not switch an existing site and does not drop saved Yandex keys.
+
+Yandex keys come from Yandex Cloud. Google keys are a reCAPTCHA v2 checkbox pair (site key and secret). A score key (former v3) does not work here. With either key of the selected provider empty, the module shows a warning and does not render the widget. A blank secret field keeps the saved secret.
+
+The check runs on `authenticate` at priority 100, so a failed captcha stays failed after WordPress accepts the password. It runs for the login action only. Password reset, XML-RPC, and REST are outside it. If a token was sent and the provider did not answer, login is allowed. A missing token still blocks. The Google script loads from google.com. Store the keys only in the admin fields.
 
 ## Login attempts
 
